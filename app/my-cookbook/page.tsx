@@ -23,9 +23,9 @@ const MyCookBookPage = async () => {
   return (
     <main>
       <Accordion type="single" collapsible>
-        <AccordionItem value="my-recipes">
+        <AccordionItem value="my-documents">
           <AccordionTrigger className="text-2xl font-bold">
-            My Recipes
+            My PRD Documents
           </AccordionTrigger>
           <AccordionContent>
             {userRecipes.length > 0 ? (
@@ -40,7 +40,7 @@ const MyCookBookPage = async () => {
               </ul>
             ) : (
               <p>
-                You haven&apos;t created any recipes yet.{" "}
+                You haven&apos;t created any PRD documents yet.{" "}
                 <Link href="/recipes/new" className="font-semibold underline">
                   Create one now
                 </Link>
@@ -49,9 +49,9 @@ const MyCookBookPage = async () => {
             )}
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="unlocked-recipes">
+        <AccordionItem value="shared-documents">
           <AccordionTrigger className="text-2xl font-bold">
-            Unlocked Recipes
+            Shared Documents
           </AccordionTrigger>
           <AccordionContent>
             {unlockedRecipes.length > 0 ? (
@@ -65,7 +65,7 @@ const MyCookBookPage = async () => {
                 ))}
               </ul>
             ) : (
-              <p>You haven&apos;t unlocked any recipes yet.</p>
+              <p>You haven&apos;t accessed any shared documents yet.</p>
             )}
           </AccordionContent>
         </AccordionItem>

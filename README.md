@@ -1,142 +1,185 @@
-<div align="center">
-  <br />
-    <a href="https://jsmastery.com/course/build-launch-your-saas-in-under-7-days" target="_blank">
-      <img src="public/readme/hero.png" alt="Project Banner">
-    </a>
-  <br />
+# PRD Generator - AI Documentation Generator for Vibe Coders
 
-  <div>
-    <img src="https://img.shields.io/badge/-Next.JS-black?style=for-the-badge&logoColor=white&logo=nextdotjs&color=black" alt="next.js" />
-        <img src="https://img.shields.io/badge/-Tailwind-00BCFF?style=for-the-badge&logo=tailwind-css&logoColor=white" />
-    <img src="https://img.shields.io/badge/-Clerk-6C47FF?style=for-the-badge&logoColor=white&logo=clerk" alt="next.js" />
-    <img src="https://img.shields.io/badge/-Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" />
-  </div>
+A comprehensive web application that helps vibe coders (developers who build with AI tools) generate professional documentation suites for their projects. Transform your project ideas into complete, development-ready documentation in minutes.
 
-  <h3 align="center">SaaS App - LMS with Next.js, Supabase & Payments</h3>
+## 🚀 Features
 
-   <div align="center">
-     Build this project step by step with our detailed tutorial on <a href="https://jsmastery.com/course/build-launch-your-saas-in-under-7-days" target="_blank"><b>JavaScript Mastery</b></a> platform. Join the JSM family!
-    </div>
-</div>
+### Core Documentation Suite
+- **Product Requirements Document (PRD)** - Comprehensive feature specifications and requirements
+- **User Journey & Story Documents** - Detailed user flows, personas, and interaction patterns
+- **Sitemap Documents** - Complete application structure and navigation mapping
+- **Features & Tech Stack Requirements** - Technology recommendations with compatibility analysis
+- **Screen-by-Screen Specifications** - Detailed content and functionality for each interface
 
-## 📋 <a name="table">Table of Contents</a>
+### Key Capabilities
+- 🤖 **AI-Powered Generation** - Advanced prompts create comprehensive documentation
+- ⚡ **Lightning Fast** - Complete documentation suites in under 5 minutes
+- 🔧 **Tech Stack Integration** - Support for 10+ popular technology stacks
+- 📱 **Multi-Platform** - Web, mobile, and desktop application documentation
+- 🎨 **Professional Templates** - Pre-built templates for common project types
+- 📄 **Export Options** - PDF downloads and online viewing
+- 🔄 **Project Management** - Organize documentation in project folders
 
-1. 🤖 [Introduction](#introduction)
-2. ⚙️ [Tech Stack](#tech-stack)
-3. 🔋 [Features](#features)
-4. 🤸 [Quick Start](#quick-start)
-5. 🔗 [Assets](#links)
-6. 🚀 [More](#more)
+## 🛠️ Technology Stack
 
-## 🚨 Tutorial
+- **Frontend**: Next.js 15.4.1 with App Router
+- **UI Components**: Shadcn/ui + Radix UI primitives
+- **Styling**: Tailwind CSS with custom design system
+- **Authentication**: Clerk (ready for integration)
+- **Database**: Supabase (ready for integration)
+- **Webhook Integration**: N8N workflow automation
+- **TypeScript**: Full type safety throughout
 
-This repository contains the code corresponding to an in-depth tutorial available on our Platform, <a href="https://jsmastery.com/" target="_blank"><b>JS Mastery Pro</b></a>.
+## 🎯 Target Users
 
-## <a name="introduction">🤖 Introduction</a>
+**Vibe Coders** - Developers who:
+- Build applications using AI coding tools
+- Need comprehensive documentation to guide AI development
+- Want professional project specifications without manual writing
+- Require structured documentation for team collaboration
+- Seek to streamline the project planning process
 
-Supercharge your SaaS app launch with this high-powered template – packed with built-in user auth, subscriptions, and payments using Next.js, Supabase, and Stripe! Hit the ground running and turn your idea into reality faster than ever.
+## 🚀 Getting Started
 
-If you're getting started and need assistance or face any bugs, join our active Discord community with over **50k+** members. It's a place where people help each other out.
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Modern web browser
 
-<a href="https://discord.com/invite/n6EdbFJ" target="_blank"><img src="https://github.com/sujatagunale/EasyRead/assets/151519281/618f4872-1e10-42da-8213-1d69e486d02e" /></a>
+### Installation
 
-## <a name="tech-stack">⚙️ Tech Stack</a>
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/prd-generator.git
+   cd prd-generator
+   ```
 
-- **[Clerk](https://jsm.dev/converso-clerk)** is a unified platform for authentication, user management, and billing. It offers embeddable UI components, flexible APIs, and admin dashboards for secure user management. Clerk also simplifies subscription management, allowing you to define plans, create pricing pages, and control access based on subscription tiers—all in one solution.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-* **[Next.js](https://nextjs.org/)** is a powerful React framework that enables the development of fast, scalable web applications with features like server-side rendering, static site generation, and API routes for building full-stack applications.
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Configure your environment variables:
+   ```env
+   # N8N Webhook Configuration
+   NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/generate-docs
+   NEXT_PUBLIC_N8N_STATUS_WEBHOOK_URL=https://your-n8n-instance.com/webhook/status
+   
+   # Clerk Authentication (Optional)
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
+   CLERK_SECRET_KEY=your_clerk_secret
+   
+   # Supabase Database (Optional)
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+   ```
 
-* **[shadcn/ui](https://ui.shadcn.com/)** is a customizable component library built on Radix UI and Tailwind CSS. It offers a modern, accessible design system with pre-built components that are easy to theme and extend, making it ideal for building polished UIs with minimal effort.
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-- **[Supabase](https://supabase.com/)** is an open-source backend-as-a-service platform that provides instant APIs, real-time subscriptions, authentication, storage, and a PostgreSQL database, enabling developers to build scalable and secure applications with ease.
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-* **[Tailwind CSS](https://tailwindcss.com/)** is a utility-first CSS framework that allows developers to design custom user interfaces by applying low-level utility classes directly in HTML, streamlining the design process.
+## 🔧 N8N Webhook Integration
 
-* **[TypeScript](https://www.typescriptlang.org/)** is a superset of JavaScript that adds static typing, providing better tooling, code quality, and error detection for developers, making it ideal for building large-scale applications.
+The application integrates with N8N workflows for document generation:
 
-* **[Zod](https://zod.dev/)** is a TypeScript-first schema validation library that provides a simple and expressive way to define and validate data structures. Zod ensures data integrity by catching errors early during development.
+### Required Endpoints
 
-## <a name="features">🔋 Features</a>
+1. **Generation Webhook** (`/webhook/generate-docs`)
+   - Method: POST
+   - Payload: Project details and requirements
+   - Response: Project ID for tracking
 
-👉 **Authentication**: Secure user sign-up and sign-in with Clerk; Google authentication and many more.
+2. **Status Webhook** (`/webhook/status`)
+   - Method: GET
+   - Query: `projectId`
+   - Response: Generation status and document URLs
 
-👉 **Billing & Subscriptions**: Easily manage plans, upgrades, and payment details.
+### Mock Mode
+For development, the application includes mock webhook functions that simulate the generation process using local storage.
 
-👉 **Code Reusability**: Leverage reusable components and a modular codebase for efficient development.
+## 📱 Application Structure
 
-👉 **Cross-Device Compatibility**: Fully responsive design that works seamlessly across all devices.
-
-👉 **Database Integration**: Uses Supabase for real-time data handling and storage needs.
-
-👉 **No opinionated UI**: Easily bring your own style to the app, without the need for removing leftover styles.
-
-👉 **Scalable Tech Stack**: Built with Next.js for a fast, production-ready web application that scales seamlessly.
-
-## <a name="quick-start">🤸 Quick Start</a>
-
-Follow these steps to set up the project locally on your machine.
-
-**Prerequisites**
-
-Make sure you have the following installed on your machine:
-
-- [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/en)
-- [npm](https://www.npmjs.com/) (Node Package Manager)
-
-**Cloning the Repository**
-
-```bash
-git clone https://github.com/JavaScript-Mastery-Pro/saas-template.git
-cd saas-template
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── dashboard/         # Document generation interface
+│   ├── projects/          # Project management dashboard
+│   ├── templates/         # Pre-built documentation templates
+│   └── page.tsx          # Landing page
+├── components/            # Reusable React components
+│   ├── ui/               # Shadcn/ui components
+│   ├── DocumentViewer.tsx # PDF viewer and document display
+│   ├── GenerationProgress.tsx # Real-time generation tracking
+│   └── Navbar.tsx        # Main navigation
+├── lib/                   # Utility functions and integrations
+│   ├── webhook.ts        # N8N webhook integration
+│   └── utils.ts          # Helper functions
+└── types/                # TypeScript type definitions
 ```
 
-**Installation**
+## 🎨 Design System
 
-Install the project dependencies using npm:
+- **Font**: Apple system fonts (SF Pro Display/Text)
+- **Colors**: Blue and purple gradients with professional grays
+- **Border Radius**: Consistent 2px radius across components
+- **Spacing**: Tailwind's spacing scale for consistency
+- **Components**: Built on Radix UI primitives for accessibility
 
-```bash
-npm install
-```
+## 🚀 Deployment
 
-**Set Up Environment Variables**
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
 
-Create a new file named `.env` in the root of your project and add the following content:
+### Other Platforms
+- **Netlify**: Full Next.js support with serverless functions
+- **Railway**: Simple deployment with environment management
+- **Self-hosted**: Any Node.js environment with Docker support
 
-```env
-# Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+## 🔮 Future Enhancements
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-```
+- **Real-time Collaboration** - Multiple users editing documents
+- **Version Control** - Track document changes and revisions
+- **Advanced Templates** - Industry-specific documentation templates
+- **API Integration** - Direct integration with development tools
+- **Team Management** - Multi-user workspaces and permissions
+- **Custom Branding** - White-label solutions for agencies
 
-Replace the placeholder values with your actual Supabase and Clerk credentials. You can obtain these by signing up on: [Supabase](https://supabase.com/dashboard), [Clerk](https://jsm.dev/converso-clerk).
+## 🤝 Contributing
 
-**Running the Project**
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
-```bash
-npm run dev
-```
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
+## 📄 License
 
-## <a name="links">🔗 Assets</a>
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-You can find the example database schema in the root of this repository.
+## 🙏 Acknowledgments
 
-## <a name="more">🚀 More</a>
+- **Shadcn/ui** for the beautiful component library
+- **Radix UI** for accessible component primitives
+- **Tailwind CSS** for the utility-first styling approach
+- **Next.js** for the robust React framework
+- **The Vibe Coder Community** for inspiration and feedback
 
-**Advance your skills with Next.js Pro Course**
+---
 
-Enjoyed creating this project? Dive deeper into our PRO courses for a richer learning adventure. They're packed with
-detailed explanations, cool features, and exercises to boost your skills. Give it a go!
+**Built with ❤️ for the vibe coder community**
 
-<a href="https://jsm.dev/converso-nextjs" target="_blank">
-  <img src="public/readme/jsmpro.png" alt="Project Banner">
-</a>
+Transform your ideas into production-ready documentation with PRD Generator.
