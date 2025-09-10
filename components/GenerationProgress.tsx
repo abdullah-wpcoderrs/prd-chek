@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useGeneration } from "@/lib/context/GenerationContext";
 import { 
   FileText, 
   Users, 
@@ -18,25 +19,13 @@ import {
   AlertCircle
 } from "lucide-react";
 
-interface GenerationProgress {
-  projectId: string;
-  projectName: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  currentStep: string;
-  estimatedTime?: number;
-  documents: Array<{
-    type: string;
-    name: string;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
-    size?: string;
-  }>;
-}
+
 
 interface GenerationProgressComponentProps {
   projectId: string;
   onComplete: (projectId: string) => void;
   onCancel: () => void;
+  onClickOutside?: () => void;
 }
 
 const documentIcons = {
@@ -84,74 +73,54 @@ const statusConfig: Record<string, {
 export function GenerationProgressComponent({ 
   projectId, 
   onComplete, 
-  onCancel 
+  onCancel,
+  onClickOutside 
 }: GenerationProgressComponentProps) {
-  const [progress, setProgress] = useState<GenerationProgress>({
-    projectId,
-    projectName: "New Project",
-    status: 'pending',
-    progress: 0,
-    currentStep: "Initializing...",
-    documents: [
-      { type: "PRD", name: "Product Requirements Document", status: "pending" },
-      { type: "User Stories", name: "User Journey Document", status: "pending" },
-      { type: "Sitemap", name: "Application Sitemap", status: "pending" },
-      { type: "Tech Stack", name: "Technology Requirements", status: "pending" },
-      { type: "Screens", name: "Screen Specifications", status: "pending" }
-    ]
-  });
-
+  const { getGenerationStatus, startGeneration } = useGeneration();
+  const modalRef = useRef<HTMLDivElement>(null);
+  
+  // Get status from context
+  const progress = getGenerationStatus(projectId);
+  
+  // Initialize generation polling when component mounts
   useEffect(() => {
-    // Simulate progress updates
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev.status === 'completed' || prev.status === 'failed') {
-          clearInterval(interval);
-          return prev;
-        }
-
-        const newProgress = Math.min(100, prev.progress + Math.random() * 10);
-        const completedDocs = Math.floor(newProgress / 20);
-        
-        const updatedDocuments = prev.documents.map((doc, index) => {
-          if (index < completedDocs) {
-            return { 
-              ...doc, 
-              status: 'completed' as const,
-              size: `${(Math.random() * 3 + 1).toFixed(1)} MB`
-            };
-          } else if (index === completedDocs && newProgress % 20 > 0) {
-            return { ...doc, status: 'processing' as const };
-          }
-          return doc;
-        });
-
-        const processingDoc = updatedDocuments.find(doc => doc.status === 'processing');
-        const currentStep = processingDoc 
-          ? `Generating ${processingDoc.name}...`
-          : newProgress >= 100 
-            ? "Finalizing documents..."
-            : "Preparing generation...";
-
-        const status = newProgress >= 100 ? 'completed' : 'processing';
-        
-        if (status === 'completed') {
-          setTimeout(() => onComplete(projectId), 2000);
-        }
-
-        return {
-          ...prev,
-          progress: newProgress,
-          status,
-          currentStep,
-          documents: updatedDocuments,
-          estimatedTime: status === 'processing' ? Math.max(0, (100 - newProgress) * 3000) : 0
-        };
-      });
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [projectId, onComplete]);
+    startGeneration(projectId);
+  }, [projectId, startGeneration]);
+  
+  // Handle completion
+  useEffect(() => {
+    if (progress?.status === 'completed') {
+      setTimeout(() => onComplete(projectId), 2000);
+    }
+  }, [progress?.status, projectId, onComplete]);
+  
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClickOutside?.();
+      }
+    };
+    
+    if (onClickOutside) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [onClickOutside]);
+  
+  // Fallback if no progress data
+  if (!progress) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <Card className="w-full max-w-2xl shadow-sm" ref={modalRef}>
+          <CardContent className="p-8 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{color: 'var(--steel-blue-600)'}} />
+            <p className="text-gray-600 font-sans">Initializing generation...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const formatTime = (ms: number) => {
     const seconds = Math.ceil(ms / 1000);
@@ -162,7 +131,7 @@ export function GenerationProgressComponent({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl shadow-sm">
+      <Card className="w-full max-w-2xl shadow-sm" ref={modalRef}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>

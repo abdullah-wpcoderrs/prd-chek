@@ -61,6 +61,7 @@ export default function DashboardPage() {
   };
 
   const handleGenerationComplete = (projectId: string) => {
+    // Generation completed - close modal and redirect
     setShowProgress(false);
     setCurrentProjectId(null);
     router.push('/projects');
@@ -70,6 +71,13 @@ export default function DashboardPage() {
     setShowProgress(false);
     setCurrentProjectId(null);
     setIsGenerating(false);
+  };
+  
+  const handleClickOutside = () => {
+    // Hide the progress modal and redirect to projects page while keeping generation running in background
+    setShowProgress(false);
+    setCurrentProjectId(null);
+    router.push('/projects');
   };
 
   return (
@@ -326,6 +334,7 @@ Example: A social media platform for developers where they can share code snippe
           projectId={currentProjectId}
           onComplete={handleGenerationComplete}
           onCancel={handleCancelGeneration}
+          onClickOutside={handleClickOutside}
         />
       )}
     </>

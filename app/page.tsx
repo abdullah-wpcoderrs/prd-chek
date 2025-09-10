@@ -27,13 +27,13 @@ export default function HomePage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/dashboard">
-                <Button className="text-white px-8 py-4 text-lg rounded-sm font-medium font-sans flex items-center gap-2" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
+                <Button className="text-white px-10 py-6 text-md rounded-sm font-medium font-sans flex items-center gap-2" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
                   <span>Start Generating</span>
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
               
-              <Button variant="outline" className="px-8 py-4 text-lg rounded-sm font-medium font-sans border-2 border-gray-300 hover:border-gray-400">
+              <Button variant="outline" className="px-10 py-6 text-lg rounded-sm font-medium font-sans border-2 border-gray-300 hover:border-gray-400">
                 View Templates
               </Button>
             </div>

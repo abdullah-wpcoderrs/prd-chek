@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DocumentViewer } from "@/components/DocumentViewer";
+import { useGeneration } from "@/lib/context/GenerationContext";
 import { 
   FileText, 
   Users, 
@@ -18,12 +19,30 @@ import {
   Plus,
   Folder,
   Search,
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 
 // Mock data for demonstration
-const mockProjects = [
+interface Project {
+  id: number | string;
+  name: string;
+  description: string;
+  techStack: string;
+  createdAt: string;
+  status: string;
+  progress?: number;
+  currentStep?: string;
+  documents: Array<{
+    type: string;
+    name: string;
+    status: string;
+    size?: string | null;
+  }>;
+}
+
+const mockProjects: Project[] = [
   {
     id: 1,
     name: "Social Media for Developers",
@@ -86,12 +105,43 @@ const statusColors = {
 };
 
 export default function ProjectsPage() {
+  const { activeGenerations } = useGeneration();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [selectedProject, setSelectedProject] = useState<number | string | null>(null);
   const [viewerDocument, setViewerDocument] = useState<any>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
-  const filteredProjects = mockProjects.filter(project =>
+  // Combine mock projects with active generations
+  const [allProjects, setAllProjects] = useState<Project[]>(mockProjects);
+  
+  useEffect(() => {
+    // Convert active generations to project format and merge with mock projects
+    const generationProjects = Array.from(activeGenerations.values()).map(generation => ({
+      id: generation.projectId,
+      name: `Project ${generation.projectId.slice(-8)}`, // Use last 8 chars of ID as name
+      description: "AI-generated documentation project",
+      techStack: "AI Generated",
+      createdAt: new Date().toISOString().split('T')[0],
+      status: generation.status,
+      progress: generation.progress,
+      currentStep: generation.currentStep,
+      documents: generation.documents.map(doc => ({
+        type: doc.type,
+        name: doc.name,
+        status: doc.status === 'completed' ? 'ready' : doc.status,
+        size: doc.size || null
+      }))
+    }));
+    
+    // Remove any mock projects that might conflict with active generations
+    const filteredMockProjects = mockProjects.filter(project => 
+      !Array.from(activeGenerations.keys()).includes(project.id.toString())
+    );
+    
+    setAllProjects([...generationProjects, ...filteredMockProjects]);
+  }, [activeGenerations]);
+
+  const filteredProjects = allProjects.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -164,7 +214,10 @@ export default function ProjectsPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Projects List */}
             <div className="lg:col-span-2 space-y-6">
-              {filteredProjects.map((project) => (
+            {filteredProjects.map((project) => {
+              const isActiveGeneration = typeof project.id === 'string' && activeGenerations.has(project.id);
+              
+              return (
                 <Card 
                   key={project.id} 
                   className={`cursor-pointer transition-all hover:shadow-sm ${
@@ -179,15 +232,45 @@ export default function ProjectsPage() {
                         <div className="flex items-center gap-3 mb-2">
                           <CardTitle className="font-sans text-xl">{project.name}</CardTitle>
                           <Badge className={`${
-                            project.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                            project.status === 'completed' ? 'bg-green-100 text-green-700' : 
+                            project.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
                           }`}>
-                            {project.status === 'completed' ? 'Completed' : 'Processing'}
+                            {isActiveGeneration && project.status === 'processing' && (
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            )}
+                            {project.status === 'completed' ? 'Completed' : 
+                             project.status === 'processing' ? 'Processing' : 'Pending'}
                           </Badge>
                         </div>
                         
                         <CardDescription className="font-sans text-gray-600 mb-3">
                           {project.description}
                         </CardDescription>
+                        
+                        {/* Show progress for active generations */}
+                        {isActiveGeneration && project.progress !== undefined && (
+                          <div className="mb-3">
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span className="font-medium text-gray-700 font-sans">Progress</span>
+                              <span className="text-gray-600 font-sans">{Math.round(project.progress)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="h-2 rounded-full transition-all duration-300" 
+                                style={{
+                                  backgroundColor: 'var(--steel-blue-600)',
+                                  width: `${project.progress}%`
+                                }}
+                              />
+                            </div>
+                            {project.currentStep && (
+                              <p className="text-xs text-gray-500 mt-1 font-sans">
+                                {project.currentStep}
+                              </p>
+                            )}
+                          </div>
+                        )}
                         
                         <div className="flex items-center gap-4 text-sm text-gray-500 font-sans">
                           <div className="flex items-center gap-1">
@@ -214,12 +297,17 @@ export default function ProjectsPage() {
                         return (
                           <div 
                             key={index}
-                            className={`p-3 rounded-sm border-2 text-center ${
+                            className={`p-3 rounded-sm border-2 text-center relative ${
                               doc.status === 'ready' ? 'border-green-200 bg-green-50' :
                               doc.status === 'processing' ? 'border-yellow-200 bg-yellow-50' :
                               'border-gray-200 bg-gray-50'
                             }`}
                           >
+                            {doc.status === 'processing' && (
+                              <div className="absolute top-1 right-1">
+                                <Loader2 className="w-3 h-3 animate-spin text-yellow-600" />
+                              </div>
+                            )}
                             <IconComponent className={`w-6 h-6 mx-auto mb-1 ${
                               doc.status === 'ready' ? 'text-green-600' :
                               doc.status === 'processing' ? 'text-yellow-600' :
@@ -234,7 +322,8 @@ export default function ProjectsPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              );
+            })}
             </div>
 
             {/* Project Details Panel */}
@@ -244,12 +333,12 @@ export default function ProjectsPage() {
                   <CardHeader>
                     <CardTitle className="font-sans">Project Documents</CardTitle>
                     <CardDescription className="font-sans">
-                      {mockProjects.find(p => p.id === selectedProject)?.name}
+                      {allProjects.find(p => p.id === selectedProject)?.name}
                     </CardDescription>
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    {mockProjects.find(p => p.id === selectedProject)?.documents.map((doc, index) => {
+                    {allProjects.find(p => p.id === selectedProject)?.documents.map((doc, index) => {
                       const IconComponent = documentIcons[doc.type as keyof typeof documentIcons];
                       return (
                         <div key={index} className="flex items-center justify-between p-3 border rounded-sm">
@@ -280,7 +369,13 @@ export default function ProjectsPage() {
                               </>
                             )}
                             {doc.status === 'processing' && (
-                              <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                              <div className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin text-yellow-600" />
+                                <span className="text-xs text-yellow-600 font-sans">Processing</span>
+                              </div>
+                            )}
+                            {doc.status === 'pending' && (
+                              <span className="text-xs text-gray-500 font-sans">Waiting</span>
                             )}
                           </div>
                         </div>
@@ -288,7 +383,13 @@ export default function ProjectsPage() {
                     })}
                     
                     <div className="pt-4">
-                      <Button className="w-full text-white font-sans" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
+                      <Button 
+                        className="w-full text-white font-sans" 
+                        disabled={allProjects.find(p => p.id === selectedProject)?.status !== 'completed'}
+                        style={{backgroundColor: 'var(--steel-blue-600)'}} 
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} 
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Download All Documents
                       </Button>
