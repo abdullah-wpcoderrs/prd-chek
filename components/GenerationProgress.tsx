@@ -62,8 +62,8 @@ const statusConfig: Record<string, {
   },
   processing: {
     icon: Loader2,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-white",
+    bgColor: "bg-opacity-90",
     label: "Processing",
     animate: true
   },
@@ -167,7 +167,7 @@ export function GenerationProgressComponent({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 font-sans">
-                {progress.status === 'processing' && <Loader2 className="w-5 h-5 animate-spin text-blue-600" />}
+                {progress.status === 'processing' && <Loader2 className="w-5 h-5 animate-spin" style={{color: 'var(--steel-blue-600)'}} />}
                 {progress.status === 'completed' && <CheckCircle2 className="w-5 h-5 text-green-600" />}
                 {progress.status === 'failed' && <XCircle className="w-5 h-5 text-red-600" />}
                 {progress.status === 'pending' && <Clock className="w-5 h-5 text-gray-400" />}
@@ -225,8 +225,10 @@ export function GenerationProgressComponent({
                     className="flex items-center justify-between p-3 border rounded-sm"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-sm flex items-center justify-center ${config.bgColor}`}>
-                        <IconComponent className="w-5 h-5 text-gray-600" />
+                      <div className={`w-10 h-10 rounded-sm flex items-center justify-center ${config.bgColor}`}
+                           style={doc.status === 'processing' ? {backgroundColor: 'var(--steel-blue-100)'} : {}}>
+                        <IconComponent className="w-5 h-5 text-gray-600" 
+                                     style={doc.status === 'processing' ? {color: 'var(--steel-blue-600)'} : {}} />
                       </div>
                       
                       <div>

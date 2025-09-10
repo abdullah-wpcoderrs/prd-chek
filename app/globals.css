@@ -77,6 +77,18 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Custom Steel Blue Variables matching the image */
+  --steel-blue-50: #f1f5f7;
+  --steel-blue-100: #dae4e9;
+  --steel-blue-200: #b5c9d3;
+  --steel-blue-300: #8faebb;
+  --steel-blue-400: #6b93a6;
+  --steel-blue-500: #4a6a7c;
+  --steel-blue-600: #3e5766;
+  --steel-blue-700: #334650;
+  --steel-blue-800: #28363b;
+  --steel-blue-900: #1d2529;
 }
 
 .dark {

@@ -129,7 +129,7 @@ src/
 ## 🎨 Design System
 
 - **Font**: Apple system fonts (SF Pro Display/Text)
-- **Colors**: Blue and purple gradients with professional grays
+- **Colors**: Steel blue color scheme with professional grays
 - **Border Radius**: Consistent 2px radius across components
 - **Spacing**: Tailwind's spacing scale for consistency
 - **Components**: Built on Radix UI primitives for accessibility

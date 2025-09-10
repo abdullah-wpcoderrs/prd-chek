@@ -74,11 +74,11 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pt-20">
         <div className="max-w-6xl mx-auto px-4 py-12">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6" style={{backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-700)'}}>
               <Sparkles className="w-4 h-4" />
               AI Documentation Generator
             </div>
@@ -94,9 +94,9 @@ export default function DashboardPage() {
 
           {/* Main Generation Interface */}
           <Card className="max-w-4xl mx-auto mb-12 shadow-sm border-0">
-            <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-700 text-white rounded-t-sm">
+            <CardHeader className="text-white rounded-t-sm" style={{background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))`}}>
               <CardTitle className="text-2xl font-sans">Create Your Project Documentation</CardTitle>
-              <CardDescription className="text-blue-100 font-sans">
+              <CardDescription className="font-sans" style={{color: 'var(--steel-blue-100)'}}>
                 Describe your project idea and select your preferred tech stack to get started
               </CardDescription>
             </CardHeader>
@@ -112,7 +112,19 @@ export default function DashboardPage() {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="My Awesome Project"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-sans"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-sm font-sans focus:outline-none focus:border-opacity-100"
+                  style={{
+                    '--focus-border-color': 'var(--steel-blue-500)',
+                    '--focus-ring-color': 'var(--steel-blue-200)'
+                  } as React.CSSProperties}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--steel-blue-500)';
+                    e.target.style.boxShadow = '0 0 0 3px var(--steel-blue-200)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                   disabled={isGenerating}
                 />
               </div>
@@ -199,7 +211,18 @@ Example: A social media platform for developers where they can share code snippe
               <Button
                 onClick={handleGenerate}
                 disabled={!prompt.trim() || !techStack || isGenerating}
-                className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white text-lg font-semibold font-sans rounded-sm"
+                className="w-full h-14 text-white text-lg font-semibold font-sans rounded-sm"
+                style={{background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))`}}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.background = `linear-gradient(to right, var(--steel-blue-700), var(--steel-blue-800))`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.background = `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))`;
+                  }
+                }}
               >
                 {isGenerating ? (
                   <>
@@ -223,9 +246,9 @@ Example: A social media platform for developers where they can share code snippe
             </h2>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="border-2 border-blue-100 hover:border-blue-200 transition-colors">
+              <Card className="border-2 hover:border-gray-300 transition-colors" style={{borderColor: 'var(--steel-blue-100)'}}>
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-sm flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-sm flex items-center justify-center mx-auto mb-4" style={{backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-600)'}}>
                     <FileText className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 font-sans">

@@ -368,7 +368,7 @@ For questions or clarifications regarding this document, please contact the proj
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gray-50 rounded-t-sm">
           <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-blue-600" />
+            <FileText className="w-5 h-5" style={{color: 'var(--steel-blue-600)'}} />
             <div>
               <h2 className="font-semibold text-gray-900 font-sans">{document.name}</h2>
               <p className="text-sm text-gray-600 font-sans">
@@ -526,17 +526,17 @@ For questions or clarifications regarding this document, please contact the proj
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">1. Executive Summary</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">2. Project Overview</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">3. Core Features</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">4. Technical Requirements</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">5. User Experience Design</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">6. Implementation Timeline</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">7. Success Metrics</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">8. Risk Assessment</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">9. Quality Assurance</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">10. Deployment & Maintenance</div>
-                  <div className="cursor-pointer hover:text-blue-600 font-sans">11. Conclusion</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>1. Executive Summary</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>2. Project Overview</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>3. Core Features</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>4. Technical Requirements</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>5. User Experience Design</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>6. Implementation Timeline</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>7. Success Metrics</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>8. Risk Assessment</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>9. Quality Assurance</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>10. Deployment & Maintenance</div>
+                  <div className="cursor-pointer font-sans" onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--steel-blue-600)'} onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'inherit'}>11. Conclusion</div>
                 </div>
               </CardContent>
             </Card>

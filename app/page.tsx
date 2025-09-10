@@ -1,15 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileText, Users, Map, Code, Layout, ArrowRight, Sparkles, Zap, Shield, Globe } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6" style={{backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-700)'}}>
               <Sparkles className="w-4 h-4" />
               AI-Powered Documentation Generator
             </div>
@@ -25,7 +27,7 @@ export default function HomePage() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/dashboard">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-sm font-medium font-sans flex items-center gap-2">
+                <Button className="text-white px-8 py-4 text-lg rounded-sm font-medium font-sans flex items-center gap-2" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
                   <span>Start Generating</span>
                   <ArrowRight className="w-5 h-5" />
                 </Button>
@@ -43,7 +45,7 @@ export default function HomePage() {
           
           {/* Feature Preview */}
           <div className="relative bg-white rounded-sm shadow-sm p-8 max-w-5xl mx-auto">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-6 rounded-sm text-white">
+            <div className="p-6 rounded-sm text-white" style={{background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))`}}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold font-sans">Generate Documentation Suite</h3>
                 <div className="flex gap-2">
@@ -53,13 +55,13 @@ export default function HomePage() {
                 </div>
               </div>
               
-              <p className="text-blue-100 mb-6 font-sans">
+              <p className="mb-6 font-sans" style={{color: 'var(--steel-blue-100)'}}>
                 Describe your project idea and select your preferred tech stack. 
                 Get a complete documentation suite in minutes.
               </p>
               
               <div className="bg-white/10 rounded-sm p-4 backdrop-blur-sm">
-                <div className="text-sm text-blue-100 mb-2 font-sans">Project Description</div>
+                <div className="text-sm mb-2 font-sans" style={{color: 'var(--steel-blue-100)'}}>Project Description</div>
                 <div className="bg-white/20 rounded-sm px-3 py-2 text-white font-sans text-sm">
                   A social media app for developers to share code snippets and collaborate...
                 </div>
@@ -84,7 +86,7 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center group">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform" style={{backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-600)'}}>
                 <FileText className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Generate PRDs</h3>
@@ -140,7 +142,7 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold">
+              <div className="w-12 h-12 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold" style={{backgroundColor: 'var(--steel-blue-600)'}}>
                 1
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4 font-sans">
@@ -153,7 +155,7 @@ export default function HomePage() {
             </div>
             
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold">
+              <div className="w-12 h-12 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold" style={{backgroundColor: 'var(--steel-blue-600)'}}>
                 2
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4 font-sans">
@@ -166,7 +168,7 @@ export default function HomePage() {
             </div>
             
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold">
+              <div className="w-12 h-12 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold" style={{backgroundColor: 'var(--steel-blue-600)'}}>
                 3
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4 font-sans">
@@ -196,7 +198,7 @@ export default function HomePage() {
               
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-sm flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 mt-1" style={{backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-600)'}}>
                     <Zap className="w-4 h-4" />
                   </div>
                   <div>
@@ -227,7 +229,7 @@ export default function HomePage() {
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-sm p-8 text-white">
+            <div className="p-8 text-white" style={{background: `linear-gradient(to right, var(--steel-blue-500), var(--steel-blue-600))`}}>
               <h3 className="text-2xl font-bold mb-6 font-sans">Documentation Suite Includes:</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -257,17 +259,17 @@ export default function HomePage() {
       </section>
       
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+      <section className="py-20 px-4 text-white" style={{background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))`}}>
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 font-sans">
             Ready to Build Your Dream Project?
           </h2>
-          <p className="text-xl mb-8 text-blue-100 font-sans">
+          <p className="text-xl mb-8 font-sans" style={{color: 'var(--steel-blue-100)'}}>
             Join thousands of vibe coders who trust PRDGen for their documentation needs
           </p>
           
           <Link href="/dashboard">
-            <Button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg rounded-sm font-medium font-sans">
+            <Button className="text-white px-8 py-4 text-lg rounded-sm font-medium font-sans" style={{backgroundColor: 'white', color: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}>
               Start Generating Now
             </Button>
           </Link>

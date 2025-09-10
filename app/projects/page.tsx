@@ -126,7 +126,7 @@ export default function ProjectsPage() {
             </div>
             
             <Link href="/dashboard">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-sans">
+              <Button className="text-white font-sans" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
                 <Plus className="w-4 h-4 mr-2" />
                 New Project
               </Button>
@@ -142,7 +142,15 @@ export default function ProjectsPage() {
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-sans"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm font-sans focus:outline-none"
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--steel-blue-500)';
+                  e.target.style.boxShadow = '0 0 0 2px var(--steel-blue-200)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
             
@@ -160,8 +168,9 @@ export default function ProjectsPage() {
                 <Card 
                   key={project.id} 
                   className={`cursor-pointer transition-all hover:shadow-sm ${
-                    selectedProject === project.id ? 'ring-2 ring-blue-500 border-blue-200' : ''
-                  }`}
+                    selectedProject === project.id ? 'border-opacity-100 shadow-sm' : ''
+                  } border-2`}
+                  style={selectedProject === project.id ? {borderColor: 'var(--steel-blue-500)'} : {}}
                   onClick={() => setSelectedProject(project.id)}
                 >
                   <CardHeader>
@@ -279,7 +288,7 @@ export default function ProjectsPage() {
                     })}
                     
                     <div className="pt-4">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-sans">
+                      <Button className="w-full text-white font-sans" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
                         <Download className="w-4 h-4 mr-2" />
                         Download All Documents
                       </Button>
@@ -317,7 +326,7 @@ export default function ProjectsPage() {
               </p>
               {!searchTerm && (
                 <Link href="/dashboard">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-sans">
+                  <Button className="text-white font-sans" style={{backgroundColor: 'var(--steel-blue-600)'}} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your First Project
                   </Button>
