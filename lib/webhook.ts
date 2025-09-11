@@ -1,5 +1,7 @@
 // lib/webhook.ts - N8N Webhook Integration
 
+import { ProjectSpec } from '@/types';
+
 export interface ProjectGenerationRequest {
   projectName?: string;
   description: string;
@@ -7,6 +9,7 @@ export interface ProjectGenerationRequest {
   targetPlatform: string;
   complexity: string;
   userId?: string;
+  projectSpec?: ProjectSpec;
 }
 
 export interface GenerationStatus {

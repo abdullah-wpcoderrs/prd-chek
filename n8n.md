@@ -83,7 +83,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
   "complexity": "medium",
   "userId": "user_123",
   "timestamp": "2025-01-10T12:00:00.000Z",
-  "requestId": "req_1704974400000_abc123xyz"
+  "requestId": "req_1704974400000_abc123xyz",
+  "projectSpec": {
+    "coreFeatures": "User authentication, real-time messaging, file sharing, collaborative workspaces",
+    "targetUsers": "Remote teams, project managers, developers who need seamless collaboration tools",
+    "designStyle": "modern",
+    "customDesignStyle": null,
+    "brandGuidelines": "Clean, professional interface with blue color scheme (#2563eb), Geist Sans font family, 2px border radius for consistency",
+    "multiUserRoles": true,
+    "roleDefinitions": "Admin (full access), Manager (team management), Member (basic access), Guest (read-only)"
+  }
 }
 ```
 
@@ -98,6 +107,32 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 | `userId` | string | No | - | User identifier (if authentication enabled) |
 | `timestamp` | string | **Yes** | ISO 8601 | Request submission timestamp |
 | `requestId` | string | **Yes** | - | Unique request identifier |
+| `projectSpec` | object | No | See Project Specification fields | Optional detailed project specifications |
+
+#### Project Specification Object (Optional)
+When users provide additional project specifications via the "Add Project Spec" modal, the `projectSpec` object will be included with the following structure:
+
+| Field | Type | Required | Options | Description |
+|-------|------|----------|---------|-------------|
+| `coreFeatures` | string | **Yes** | - | Detailed description of main features and functionality |
+| `targetUsers` | string | **Yes** | - | Description of primary users, their needs and characteristics |
+| `designStyle` | string | **Yes** | See design style options | Selected design style preference |
+| `customDesignStyle` | string | No | - | Custom design style description (when "other" is selected) |
+| `brandGuidelines` | string | No | - | Brand colors, typography, design system preferences |
+| `multiUserRoles` | boolean | **Yes** | `true`, `false` | Whether the product supports multiple user roles |
+| `roleDefinitions` | string | No | - | Definition of user roles and permissions (when multiUserRoles is true) |
+
+#### Available Design Style Options
+```json
+[
+  { "value": "minimalist", "label": "Minimalist & Clean" },
+  { "value": "modern", "label": "Modern & Sleek" },
+  { "value": "playful", "label": "Playful & Vibrant" },
+  { "value": "professional", "label": "Professional & Corporate" },
+  { "value": "dark", "label": "Dark Mode Focused" },
+  { "value": "other", "label": "Other (Custom)" }
+]
+```
 
 #### Available Tech Stack Options
 ```json
@@ -200,6 +235,93 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 
 ---
 
+## 🎯 Utilizing Project Specifications in N8N Workflows
+
+### Project Specification Integration
+
+When the optional `projectSpec` object is provided, your N8N workflow should leverage this enhanced data to generate more accurate and tailored documentation:
+
+#### Content Enhancement Strategies
+
+1. **Core Features Integration**:
+   ```javascript
+   // Example N8N JavaScript code node
+   const coreFeatures = $json.projectSpec?.coreFeatures;
+   if (coreFeatures) {
+     // Use core features to enhance PRD generation
+     prompt += `\nDetailed Features: ${coreFeatures}`;
+   }
+   ```
+
+2. **Target User Personalization**:
+   ```javascript
+   const targetUsers = $json.projectSpec?.targetUsers;
+   if (targetUsers) {
+     // Tailor user journey documents
+     prompt += `\nTarget Audience: ${targetUsers}`;
+   }
+   ```
+
+3. **Design Style Implementation**:
+   ```javascript
+   const designStyle = $json.projectSpec?.designStyle;
+   const customStyle = $json.projectSpec?.customDesignStyle;
+   
+   let styleGuidance = "";
+   if (designStyle === 'other' && customStyle) {
+     styleGuidance = customStyle;
+   } else {
+     const styleMap = {
+       'minimalist': 'Clean, minimal interface with lots of whitespace',
+       'modern': 'Contemporary design with bold typography and gradients',
+       'playful': 'Vibrant colors, rounded corners, and engaging animations',
+       'professional': 'Conservative design with formal typography',
+       'dark': 'Dark theme with high contrast and modern aesthetics'
+     };
+     styleGuidance = styleMap[designStyle] || 'Standard modern design';
+   }
+   ```
+
+4. **Multi-User Role Architecture**:
+   ```javascript
+   const multiUserRoles = $json.projectSpec?.multiUserRoles;
+   const roleDefinitions = $json.projectSpec?.roleDefinitions;
+   
+   if (multiUserRoles && roleDefinitions) {
+     // Include role-based functionality in specifications
+     prompt += `\nUser Roles & Permissions: ${roleDefinitions}`;
+   }
+   ```
+
+5. **Brand Guidelines Application**:
+   ```javascript
+   const brandGuidelines = $json.projectSpec?.brandGuidelines;
+   if (brandGuidelines) {
+     // Apply brand consistency across all documents
+     prompt += `\nBrand Guidelines: ${brandGuidelines}`;
+   }
+   ```
+
+#### Conditional Content Generation
+
+Your N8N workflow should adapt content generation based on the presence and values of project specifications:
+
+- **Basic Mode**: When `projectSpec` is null/undefined, generate standard documentation
+- **Enhanced Mode**: When `projectSpec` is provided, generate enriched, tailored documentation
+- **Validation**: Ensure all required fields within `projectSpec` are present before using enhanced mode
+
+#### Document Quality Improvements
+
+With project specifications, expect these improvements in generated documents:
+
+1. **More Specific Requirements**: Core features translate to detailed functional requirements
+2. **Better User Experience Design**: Target user descriptions enable more accurate persona creation
+3. **Consistent Visual Design**: Design style preferences ensure cohesive design documentation
+4. **Role-Based Functionality**: Multi-user role definitions create comprehensive permission matrices
+5. **Brand-Aligned Output**: Brand guidelines ensure documentation reflects intended visual identity
+
+---
+
 ## 📑 Document Generation Requirements
 
 Your N8N workflow must generate these 5 document types:
@@ -212,6 +334,11 @@ Your N8N workflow must generate these 5 document types:
   - User requirements and acceptance criteria
   - Technical constraints and assumptions
   - Functional and non-functional requirements
+- **Enhanced with Project Specifications**:
+  - Core features detailed from projectSpec.coreFeatures
+  - Target user analysis from projectSpec.targetUsers
+  - Multi-user role requirements from projectSpec.multiUserRoles and roleDefinitions
+  - Design style preferences integrated into UI requirements
 
 ### 2. **User Stories/Journey Document**
 - **Type**: `"User Stories"`
@@ -221,6 +348,10 @@ Your N8N workflow must generate these 5 document types:
   - User flow diagrams
   - Interaction patterns
   - User acceptance criteria
+- **Enhanced with Project Specifications**:
+  - Detailed user personas based on projectSpec.targetUsers
+  - Role-based user journeys when multiUserRoles is enabled
+  - User flows tailored to specified core features
 
 ### 3. **Sitemap Document**
 - **Type**: `"Sitemap"`
@@ -248,6 +379,11 @@ Your N8N workflow must generate these 5 document types:
   - Content requirements for each screen
   - Functionality specifications
   - UI/UX considerations
+- **Enhanced with Project Specifications**:
+  - Design style implementation guidelines based on projectSpec.designStyle
+  - Brand guidelines integration from projectSpec.brandGuidelines
+  - Role-based interface variations when multiUserRoles is enabled
+  - Screen specifications aligned with core features from projectSpec.coreFeatures
 
 ---
 
@@ -295,6 +431,7 @@ graph TB
 2. **Data Validation Node**:
    - Validate required fields
    - Check data types and constraints
+   - Validate optional projectSpec object structure
    - Generate error responses for invalid data
 
 3. **Project ID Generation Node**:
@@ -309,6 +446,9 @@ graph TB
 5. **Document Generation Trigger**:
    - Parallel execution for all 5 documents
    - Use AI/LLM services for content generation
+   - Utilize projectSpec data for enhanced, tailored content generation
+   - Apply design style preferences to document formatting
+   - Incorporate user role definitions into functional specifications
    - Update status to 'processing'
 
 6. **Response Node**:
@@ -341,11 +481,13 @@ graph TB
 1. **Frontend Testing**:
    - Navigate to `/dashboard`
    - Fill out the project form
+   - Optionally click "Add Project Spec" to add detailed specifications
    - Click "Generate Documentation Suite"
    - Monitor browser network tab for request/response
 
 2. **Direct API Testing**:
    ```bash
+   # Basic request without project specifications
    curl -X POST https://your-n8n-instance.com/webhook/generate-docs \
      -H "Content-Type: application/json" \
      -d '{
@@ -355,6 +497,27 @@ graph TB
        "complexity": "medium",
        "timestamp": "2025-01-10T12:00:00.000Z",
        "requestId": "test_req_123"
+     }'
+
+   # Enhanced request with project specifications
+   curl -X POST https://your-n8n-instance.com/webhook/generate-docs \
+     -H "Content-Type: application/json" \
+     -d '{
+       "projectName": "Collaborative Workspace Platform",
+       "description": "A comprehensive collaboration platform for remote teams",
+       "techStack": "Next.js + Supabase + TypeScript",
+       "targetPlatform": "web",
+       "complexity": "complex",
+       "timestamp": "2025-01-10T12:00:00.000Z",
+       "requestId": "test_req_124",
+       "projectSpec": {
+         "coreFeatures": "Real-time messaging, file sharing, task management, video conferencing",
+         "targetUsers": "Remote teams, project managers, developers in distributed organizations",
+         "designStyle": "modern",
+         "brandGuidelines": "Professional blue theme, clean typography, accessible design",
+         "multiUserRoles": true,
+         "roleDefinitions": "Admin, Manager, Member, Guest with different permission levels"
+       }
      }'
    ```
 
@@ -370,12 +533,15 @@ graph TB
    ```
 
 ### Expected Test Scenarios
-- [ ] Successful project submission
+- [ ] Successful project submission (basic form only)
+- [ ] Successful project submission (with project specifications)
 - [ ] Invalid data rejection
+- [ ] Project specification validation
 - [ ] Status polling with various project states
 - [ ] Document completion with download URLs
 - [ ] Error handling for failed generations
 - [ ] Timeout handling for long-running processes
+- [ ] Enhanced document generation using project specification data
 
 ---
 
@@ -481,6 +647,8 @@ NEXT_PUBLIC_DEBUG_WEBHOOKS=true
 - **Webhook Implementation**: [`lib/webhook.ts`](./lib/webhook.ts)
 - **Dashboard Integration**: [`app/dashboard/page.tsx`](./app/dashboard/page.tsx)
 - **Progress Component**: [`components/GenerationProgress.tsx`](./components/GenerationProgress.tsx)
+- **Project Specification Modal**: [`components/ProjectSpecModal.tsx`](./components/ProjectSpecModal.tsx)
+- **Type Definitions**: [`types/index.d.ts`](./types/index.d.ts)
 - **Environment Config**: [`.env.local`](./.env.local)
 
 ### Important Functions
@@ -492,5 +660,12 @@ NEXT_PUBLIC_DEBUG_WEBHOOKS=true
 ---
 
 **Status**: ✅ **IMPLEMENTATION COMPLETE - READY FOR N8N INTEGRATION**
+
+**Latest Updates**:
+- ✅ Added Project Specification Modal with enhanced form fields
+- ✅ Updated webhook payload to include optional projectSpec object
+- ✅ Enhanced documentation generation capabilities with detailed user requirements
+- ✅ Improved content personalization through design style and brand guidelines
+- ✅ Added multi-user role support for complex applications
 
 *Last Updated: January 10, 2025*

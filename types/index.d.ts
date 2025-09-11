@@ -12,3 +12,13 @@ export type Comment = {
   user_id: string;
   recipe_id: string;
 };
+
+export interface ProjectSpec {
+  coreFeatures: string;
+  targetUsers: string;
+  designStyle: string;
+  customDesignStyle?: string;
+  brandGuidelines: string;
+  multiUserRoles: boolean;
+  roleDefinitions?: string;
+}

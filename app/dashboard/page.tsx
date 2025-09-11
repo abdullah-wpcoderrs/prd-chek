@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GenerationProgressComponent } from "@/components/GenerationProgress";
+import { ProjectSpecModal, ProjectSpec } from "@/components/ProjectSpecModal";
 import { webhookAPI } from "@/lib/webhook";
-import { Sparkles, Rocket, FileText, Users, Map, Code, Layout, Loader2 } from "lucide-react";
+import { Sparkles, Rocket, FileText, Users, Map, Code, Layout, Loader2, Settings, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const techStackOptions = [
@@ -23,6 +24,15 @@ const techStackOptions = [
   { value: "spring-boot-react", label: "Spring Boot + React + MySQL" },
 ];
 
+const designStyleOptions = [
+  { value: "minimalist", label: "Minimalist & Clean" },
+  { value: "modern", label: "Modern & Sleek" },
+  { value: "playful", label: "Playful & Vibrant" },
+  { value: "professional", label: "Professional & Corporate" },
+  { value: "dark", label: "Dark Mode Focused" },
+  { value: "other", label: "Other (Custom)" },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
@@ -33,6 +43,8 @@ export default function DashboardPage() {
   const [projectName, setProjectName] = useState("");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [showProgress, setShowProgress] = useState(false);
+  const [showProjectSpec, setShowProjectSpec] = useState(false);
+  const [projectSpec, setProjectSpec] = useState<ProjectSpec | null>(null);
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !techStack) {
@@ -48,6 +60,7 @@ export default function DashboardPage() {
         techStack: techStackOptions.find(opt => opt.value === techStack)?.label || techStack,
         targetPlatform,
         complexity,
+        projectSpec: projectSpec || undefined,
       });
       
       setCurrentProjectId(result.projectId);
@@ -78,6 +91,14 @@ export default function DashboardPage() {
     setShowProgress(false);
     setCurrentProjectId(null);
     router.push('/projects');
+  };
+
+  const handleProjectSpecSave = (spec: ProjectSpec) => {
+    setProjectSpec(spec);
+  };
+
+  const handleRemoveProjectSpec = () => {
+    setProjectSpec(null);
   };
 
   return (
@@ -213,6 +234,89 @@ Example: A social media platform for developers where they can share code snippe
                     </Select>
                   </div>
                 </div>
+
+                {/* Project Specification Section */}
+                <div className="border-t pt-4 mt-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="text-base font-medium text-gray-900 font-sans">Project Specification</h4>
+                      <p className="text-sm text-gray-600 font-sans">Add detailed requirements for more accurate documentation</p>
+                    </div>
+                    {!projectSpec ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowProjectSpec(true)}
+                        disabled={isGenerating}
+                        className="font-sans border-2"
+                        style={{
+                          borderColor: 'var(--steel-blue-300)',
+                          color: 'var(--steel-blue-700)'
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Project Spec
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-green-600 font-medium font-sans flex items-center gap-1">
+                          <Settings className="w-4 h-4" />
+                          Specification Added
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowProjectSpec(true)}
+                          disabled={isGenerating}
+                          className="font-sans text-xs"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRemoveProjectSpec}
+                          disabled={isGenerating}
+                          className="font-sans text-xs text-red-600 hover:text-red-700"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {projectSpec && (
+                    <Card className="bg-white border" style={{ borderColor: 'var(--steel-blue-200)' }}>
+                      <CardContent className="p-4">
+                        <div className="grid md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-700 font-sans">Design Style:</span>
+                            <span className="ml-2 text-gray-600 font-sans">
+                              {projectSpec.designStyle === 'other' && projectSpec.customDesignStyle 
+                                ? projectSpec.customDesignStyle 
+                                : designStyleOptions.find(opt => opt.value === projectSpec.designStyle)?.label}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700 font-sans">Multi-User Roles:</span>
+                            <span className="ml-2 text-gray-600 font-sans">
+                              {projectSpec.multiUserRoles ? 'Yes' : 'No'}
+                            </span>
+                          </div>
+                        </div>
+                        {(projectSpec.coreFeatures || projectSpec.targetUsers) && (
+                          <div className="mt-3 pt-3 border-t">
+                            <div className="text-xs text-gray-500 font-sans">
+                              Additional specifications configured for enhanced documentation generation.
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </div>
 
               {/* Generate Button */}
@@ -337,6 +441,14 @@ Example: A social media platform for developers where they can share code snippe
           onClickOutside={handleClickOutside}
         />
       )}
+
+      {/* Project Specification Modal */}
+      <ProjectSpecModal
+        open={showProjectSpec}
+        onOpenChange={setShowProjectSpec}
+        onSave={handleProjectSpecSave}
+        initialSpec={projectSpec || undefined}
+      />
     </>
   );
 }
