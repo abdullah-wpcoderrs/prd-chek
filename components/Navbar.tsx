@@ -5,12 +5,26 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useGeneration } from "@/lib/context/GenerationContext";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { Loader2, User, LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const { activeGenerations } = useGeneration();
+  const { user, loading, signOut } = useAuth();
+  const router = useRouter();
   const activeCount = activeGenerations.size;
+  
+  const handleSignOut = async () => {
+    await signOut();
+    // The redirect will be handled by the auth state change listener in useAuth
+  };
   
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -19,34 +33,72 @@ const Navbar = () => {
           PRDGen
         </Link>
         <div className="flex gap-6 items-center">
-          <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors font-sans">
-            Dashboard
-          </Link>
-          <div className="relative">
-            <Link href="/projects" className="text-sm font-medium hover:text-primary transition-colors font-sans">
-              Projects
-            </Link>
-            {activeCount > 0 && (
-              <Badge 
-                className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-yellow-500 text-white"
-              >
-                <Loader2 className="w-3 h-3 animate-spin" />
-              </Badge>
-            )}
-          </div>
-          <Link href="/templates" className="text-sm font-medium hover:text-primary transition-colors font-sans">
-            Templates
-          </Link>
-          <SignedOut>
-            <SignInButton>
+          {/* Show navigation links only for authenticated users */}
+          {user && (
+            <>
+              <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+                Dashboard
+              </Link>
+              <div className="relative">
+                <Link href="/projects" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+                  Projects
+                </Link>
+                {activeCount > 0 && (
+                  <Badge 
+                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-yellow-500 text-white"
+                  >
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  </Badge>
+                )}
+              </div>
+              <Link href="/templates" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+                Templates
+              </Link>
+            </>
+          )}
+          
+          {/* Show public links for unauthenticated users */}
+          {!loading && !user && (
+            <>
+              <Link href="/#features" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+                Features
+              </Link>
+              <Link href="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+                How It Works
+              </Link>
+            </>
+          )}
+          
+          {loading ? (
+            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {user.email?.split('@')[0] || 'User'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center">
+                    <User className="w-4 h-4 mr-2" />
+                    Profile Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/sign-in">
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Sign In
               </Button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
+            </Link>
+          )}
         </div>
       </div>
     </header>

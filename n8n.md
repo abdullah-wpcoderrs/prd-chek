@@ -51,8 +51,9 @@ NEXT_PUBLIC_N8N_STATUS_WEBHOOK_URL=https://your-n8n-instance.com/webhook/status
 NODE_ENV=production
 
 # Optional: Authentication & Database
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
-CLERK_SECRET_KEY=your_clerk_secret
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 ```

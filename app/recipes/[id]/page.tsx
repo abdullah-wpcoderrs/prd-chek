@@ -2,23 +2,24 @@ import CommentCard from "@/components/CommentCard";
 import CommentForm from "@/components/CommentForm";
 import { getRecipeComments } from "@/lib/actions/comment.actions";
 import { getRecipe } from "@/lib/actions/recipe.actions";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
 const RecipePage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id: recipeId } = await params;
-  const { userId, has } = await auth();
-
-  if (!userId) redirect("/sign-in");
   
-  const hasCommentsAccess = has({ feature: "comments" });
+  try {
+    const userId = await getAuthenticatedUser();
+    // For now, allow all authenticated users to access comments
+    // In the future, you can implement subscription-based access here
+    const hasCommentsAccess = true;
 
-  const [recipe, comments] = await Promise.all([
-    getRecipe(recipeId),
-    getRecipeComments(recipeId),
-  ]);
+    const [recipe, comments] = await Promise.all([
+      getRecipe(recipeId),
+      getRecipeComments(recipeId),
+    ]);
 
-  if (!recipe) redirect("/recipes");
+    if (!recipe) redirect("/recipes");
 
   return (
     <main className="flex flex-col gap-10">
@@ -47,6 +48,10 @@ const RecipePage = async ({ params }: { params: Promise<{ id: string }> }) => {
       </section>
     </main>
   );
+} catch (error) {
+    // User not authenticated, redirect to sign-in
+    redirect("/sign-in");
+  }
 };
 
 export default RecipePage;

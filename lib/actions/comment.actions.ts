@@ -1,15 +1,11 @@
 "use server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { createSupabaseClient } from "../supabase";
+import { createSupabaseServerClient, getAuthenticatedUser } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 
 // Create a new comment
 export const createComment = async (comment: string, recipeId: string) => {
-  const { userId } = await auth();
-
-  if (!userId) throw new Error("Unauthorized");
-
-  const supabase = createSupabaseClient();
+  const userId = await getAuthenticatedUser();
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase.from("comments").insert({
     comment,
@@ -26,7 +22,7 @@ export const createComment = async (comment: string, recipeId: string) => {
 
 // Get all comments for a recipe
 export const getRecipeComments = async (recipeId: string) => {
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("comments")
@@ -38,18 +34,23 @@ export const getRecipeComments = async (recipeId: string) => {
 
   const userIds = data.map((comment) => comment.user_id);
 
-  const clerk = await clerkClient();
-  const users = await clerk.users.getUserList({ userId: userIds }); // Get user details for each comment's author
+  // Get user details from profiles table
+  const { data: profiles, error: profilesError } = await supabase
+    .from("users")
+    .select("id, email, display_name")
+    .in("id", userIds);
+
+  if (profilesError) throw new Error(profilesError.message);
 
   const commentsWithUserDetails = data.map((comment) => {
-    const user = users.data.find((user) => user.id === comment.user_id);
+    const profile = profiles?.find((profile) => profile.id === comment.user_id);
 
     return {
       ...comment,
-      userFirstName: user?.firstName,
-      userImageUrl: user?.imageUrl,
+      userFirstName: profile?.display_name?.split(' ')[0] || profile?.email?.split('@')[0] || 'User',
+      userImageUrl: null, // No image URL in basic profile
     };
   });
 
-  return commentsWithUserDetails; // Return the comments with user details
+  return commentsWithUserDetails;
 };

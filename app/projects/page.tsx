@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DocumentViewer } from "@/components/DocumentViewer";
-import { useGeneration } from "@/lib/context/GenerationContext";
+import { useRealtimeProjects } from "@/lib/hooks/useRealtimeProjects";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import { 
   FileText, 
   Users, 
@@ -23,72 +25,7 @@ import {
   Loader2
 } from "lucide-react";
 import Link from "next/link";
-
-// Mock data for demonstration
-interface Project {
-  id: number | string;
-  name: string;
-  description: string;
-  techStack: string;
-  createdAt: string;
-  status: string;
-  progress?: number;
-  currentStep?: string;
-  documents: Array<{
-    type: string;
-    name: string;
-    status: string;
-    size?: string | null;
-  }>;
-}
-
-const mockProjects: Project[] = [
-  {
-    id: 1,
-    name: "Social Media for Developers",
-    description: "A platform for developers to share code snippets and collaborate",
-    techStack: "React + Node.js + MongoDB",
-    createdAt: "2024-01-15",
-    status: "completed",
-    documents: [
-      { type: "PRD", name: "Product Requirements Document", status: "ready", size: "2.4 MB" },
-      { type: "User Stories", name: "User Journey Document", status: "ready", size: "1.8 MB" },
-      { type: "Sitemap", name: "Application Sitemap", status: "ready", size: "1.2 MB" },
-      { type: "Tech Stack", name: "Technology Requirements", status: "ready", size: "2.1 MB" },
-      { type: "Screens", name: "Screen Specifications", status: "ready", size: "3.2 MB" }
-    ]
-  },
-  {
-    id: 2,
-    name: "E-commerce Mobile App",
-    description: "Modern mobile shopping application with AI recommendations",
-    techStack: "React Native + Firebase",
-    createdAt: "2024-01-12",
-    status: "processing",
-    documents: [
-      { type: "PRD", name: "Product Requirements Document", status: "ready", size: "2.1 MB" },
-      { type: "User Stories", name: "User Journey Document", status: "ready", size: "1.5 MB" },
-      { type: "Sitemap", name: "Application Sitemap", status: "processing", size: null },
-      { type: "Tech Stack", name: "Technology Requirements", status: "pending", size: null },
-      { type: "Screens", name: "Screen Specifications", status: "pending", size: null }
-    ]
-  },
-  {
-    id: 3,
-    name: "Task Management SaaS",
-    description: "Team productivity tool with advanced project management features",
-    techStack: "Next.js + Supabase + TypeScript",
-    createdAt: "2024-01-10",
-    status: "completed",
-    documents: [
-      { type: "PRD", name: "Product Requirements Document", status: "ready", size: "2.8 MB" },
-      { type: "User Stories", name: "User Journey Document", status: "ready", size: "2.0 MB" },
-      { type: "Sitemap", name: "Application Sitemap", status: "ready", size: "1.4 MB" },
-      { type: "Tech Stack", name: "Technology Requirements", status: "ready", size: "1.9 MB" },
-      { type: "Screens", name: "Screen Specifications", status: "ready", size: "3.8 MB" }
-    ]
-  }
-];
+import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
 
 const documentIcons = {
   "PRD": FileText,
@@ -100,59 +37,46 @@ const documentIcons = {
 
 const statusColors = {
   ready: "bg-green-100 text-green-700",
+  completed: "bg-green-100 text-green-700",
   processing: "bg-yellow-100 text-yellow-700",
-  pending: "bg-gray-100 text-gray-700"
+  pending: "bg-gray-100 text-gray-700",
+  failed: "bg-red-100 text-red-700"
 };
 
 export default function ProjectsPage() {
-  const { activeGenerations } = useGeneration();
+  const { projects, loading: projectsLoading, error } = useRealtimeProjects();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProject, setSelectedProject] = useState<number | string | null>(null);
-  const [viewerDocument, setViewerDocument] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [viewerDocument, setViewerDocument] = useState<{
+    id: string;
+    name: string;
+    type: string;
+    size: string;
+    downloadUrl: string;
+  } | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
-  // Combine mock projects with active generations
-  const [allProjects, setAllProjects] = useState<Project[]>(mockProjects);
-  
+  // Redirect if not authenticated
   useEffect(() => {
-    // Convert active generations to project format and merge with mock projects
-    const generationProjects = Array.from(activeGenerations.values()).map(generation => ({
-      id: generation.projectId,
-      name: `Project ${generation.projectId.slice(-8)}`, // Use last 8 chars of ID as name
-      description: "AI-generated documentation project",
-      techStack: "AI Generated",
-      createdAt: new Date().toISOString().split('T')[0],
-      status: generation.status,
-      progress: generation.progress,
-      currentStep: generation.currentStep,
-      documents: generation.documents.map(doc => ({
-        type: doc.type,
-        name: doc.name,
-        status: doc.status === 'completed' ? 'ready' : doc.status,
-        size: doc.size || null
-      }))
-    }));
-    
-    // Remove any mock projects that might conflict with active generations
-    const filteredMockProjects = mockProjects.filter(project => 
-      !Array.from(activeGenerations.keys()).includes(project.id.toString())
-    );
-    
-    setAllProjects([...generationProjects, ...filteredMockProjects]);
-  }, [activeGenerations]);
+    if (!authLoading && !user) {
+      router.push('/sign-in');
+    }
+  }, [user, authLoading, router]);
 
-  const filteredProjects = allProjects.filter(project =>
+  const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchTerm.toLowerCase())
+    project.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleViewDocument = (document: any) => {
+  const handleViewDocument = (document: DocumentRecord) => {
     setViewerDocument({
       id: `${selectedProject}-${document.type}`,
       name: document.name,
       type: document.type,
-      size: document.size || "Processing...",
-      downloadUrl: `#download-${document.type}`
+      size: document.file_size ? `${(document.file_size / 1024 / 1024).toFixed(1)} MB` : "Processing...",
+      downloadUrl: document.download_url || `#download-${document.type}`
     });
     setIsViewerOpen(true);
   };
@@ -161,6 +85,42 @@ export default function ProjectsPage() {
     setIsViewerOpen(false);
     setViewerDocument(null);
   };
+
+  // Show loading state while checking authentication or loading projects
+  if (authLoading || projectsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-600" />
+          <p className="text-gray-600 font-sans">
+            {authLoading ? 'Checking authentication...' : 'Loading your projects...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render the page if user is not authenticated
+  if (!user) {
+    return null;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-red-600 text-2xl">!</span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Error Loading Projects</h3>
+          <p className="text-gray-600 mb-4 font-sans">{error}</p>
+          <Button onClick={() => window.location.reload()} className="font-sans">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -215,7 +175,7 @@ export default function ProjectsPage() {
             {/* Projects List */}
             <div className="lg:col-span-2 space-y-6">
             {filteredProjects.map((project) => {
-              const isActiveGeneration = typeof project.id === 'string' && activeGenerations.has(project.id);
+              const isProcessing = project.status === 'processing';
               
               return (
                 <Card 
@@ -231,16 +191,13 @@ export default function ProjectsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <CardTitle className="font-sans text-xl">{project.name}</CardTitle>
-                          <Badge className={`${
-                            project.status === 'completed' ? 'bg-green-100 text-green-700' : 
-                            project.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {isActiveGeneration && project.status === 'processing' && (
+                          <Badge className={statusColors[project.status as keyof typeof statusColors] || statusColors.pending}>
+                            {isProcessing && (
                               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                             )}
                             {project.status === 'completed' ? 'Completed' : 
-                             project.status === 'processing' ? 'Processing' : 'Pending'}
+                             project.status === 'processing' ? 'Processing' : 
+                             project.status === 'failed' ? 'Failed' : 'Pending'}
                           </Badge>
                         </div>
                         
@@ -248,12 +205,12 @@ export default function ProjectsPage() {
                           {project.description}
                         </CardDescription>
                         
-                        {/* Show progress for active generations */}
-                        {isActiveGeneration && project.progress !== undefined && (
+                        {/* Show progress for processing projects */}
+                        {isProcessing && (
                           <div className="mb-3">
                             <div className="flex justify-between items-center text-sm mb-1">
                               <span className="font-medium text-gray-700 font-sans">Progress</span>
-                              <span className="text-gray-600 font-sans">{Math.round(project.progress)}%</span>
+                              <span className="text-gray-600 font-sans">{project.progress}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div 
@@ -264,9 +221,9 @@ export default function ProjectsPage() {
                                 }}
                               />
                             </div>
-                            {project.currentStep && (
+                            {project.current_step && (
                               <p className="text-xs text-gray-500 mt-1 font-sans">
-                                {project.currentStep}
+                                {project.current_step}
                               </p>
                             )}
                           </div>
@@ -275,11 +232,11 @@ export default function ProjectsPage() {
                         <div className="flex items-center gap-4 text-sm text-gray-500 font-sans">
                           <div className="flex items-center gap-1">
                             <Code className="w-4 h-4" />
-                            {project.techStack}
+                            {project.tech_stack}
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(project.createdAt).toLocaleDateString()}
+                            {new Date(project.created_at).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
@@ -298,7 +255,7 @@ export default function ProjectsPage() {
                           <div 
                             key={index}
                             className={`p-3 rounded-sm border-2 text-center relative ${
-                              doc.status === 'ready' ? 'border-green-200 bg-green-50' :
+                              doc.status === 'ready' || doc.status === 'completed' ? 'border-green-200 bg-green-50' :
                               doc.status === 'processing' ? 'border-yellow-200 bg-yellow-50' :
                               'border-gray-200 bg-gray-50'
                             }`}
@@ -309,7 +266,7 @@ export default function ProjectsPage() {
                               </div>
                             )}
                             <IconComponent className={`w-6 h-6 mx-auto mb-1 ${
-                              doc.status === 'ready' ? 'text-green-600' :
+                              doc.status === 'ready' || doc.status === 'completed' ? 'text-green-600' :
                               doc.status === 'processing' ? 'text-yellow-600' :
                               'text-gray-400'
                             }`} />
@@ -333,12 +290,12 @@ export default function ProjectsPage() {
                   <CardHeader>
                     <CardTitle className="font-sans">Project Documents</CardTitle>
                     <CardDescription className="font-sans">
-                      {allProjects.find(p => p.id === selectedProject)?.name}
+                      {projects.find(p => p.id === selectedProject)?.name}
                     </CardDescription>
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    {allProjects.find(p => p.id === selectedProject)?.documents.map((doc, index) => {
+                    {projects.find(p => p.id === selectedProject)?.documents.map((doc, index) => {
                       const IconComponent = documentIcons[doc.type as keyof typeof documentIcons];
                       return (
                         <div key={index} className="flex items-center justify-between p-3 border rounded-sm">
@@ -347,13 +304,13 @@ export default function ProjectsPage() {
                             <div>
                               <div className="font-medium text-sm font-sans">{doc.name}</div>
                               <div className="text-xs text-gray-500 font-sans">
-                                {doc.size || 'Processing...'}
+                                {doc.file_size ? `${(doc.file_size / 1024 / 1024).toFixed(1)} MB` : 'Processing...'}
                               </div>
                             </div>
                           </div>
                           
                           <div className="flex gap-1">
-                            {doc.status === 'ready' && (
+                            {(doc.status === 'ready' || doc.status === 'completed') && (
                               <>
                                 <Button 
                                   size="sm" 
@@ -385,7 +342,7 @@ export default function ProjectsPage() {
                     <div className="pt-4">
                       <Button 
                         className="w-full text-white font-sans" 
-                        disabled={allProjects.find(p => p.id === selectedProject)?.status !== 'completed'}
+                        disabled={projects.find(p => p.id === selectedProject)?.status !== 'completed'}
                         style={{backgroundColor: 'var(--steel-blue-600)'}} 
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} 
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}

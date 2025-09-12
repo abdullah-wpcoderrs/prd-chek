@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { GenerationProgressComponent } from "@/components/GenerationProgress";
 import { ProjectSpecModal, ProjectSpec } from "@/components/ProjectSpecModal";
 import { webhookAPI } from "@/lib/webhook";
+import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { Sparkles, Rocket, FileText, Users, Map, Code, Layout, Loader2, Settings, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 const techStackOptions = [
   { value: "react-node", label: "React + Node.js + MongoDB" },
@@ -35,6 +37,7 @@ const designStyleOptions = [
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [prompt, setPrompt] = useState("");
   const [techStack, setTechStack] = useState("");
   const [targetPlatform, setTargetPlatform] = useState("web");
@@ -44,7 +47,31 @@ export default function DashboardPage() {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [showProgress, setShowProgress] = useState(false);
   const [showProjectSpec, setShowProjectSpec] = useState(false);
-  const [projectSpec, setProjectSpec] = useState<ProjectSpec | null>(null);
+  const [projectSpec, setProjectSpec] = useState<ProjectSpec | undefined>(undefined);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/sign-in');
+    }
+  }, [user, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-600" />
+          <p className="text-gray-600 font-sans">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render the page if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !techStack) {
@@ -54,13 +81,13 @@ export default function DashboardPage() {
     setIsGenerating(true);
     
     try {
-      const result = await webhookAPI.submitProjectGeneration({
-        projectName: projectName || undefined,
+      const result = await createProjectAndStartGeneration({
+        name: projectName || 'Untitled Project',
         description: prompt,
         techStack: techStackOptions.find(opt => opt.value === techStack)?.label || techStack,
         targetPlatform,
         complexity,
-        projectSpec: projectSpec || undefined,
+        projectSpec,
       });
       
       setCurrentProjectId(result.projectId);
@@ -98,7 +125,7 @@ export default function DashboardPage() {
   };
 
   const handleRemoveProjectSpec = () => {
-    setProjectSpec(null);
+    setProjectSpec(undefined);
   };
 
   return (
@@ -447,7 +474,7 @@ Example: A social media platform for developers where they can share code snippe
         open={showProjectSpec}
         onOpenChange={setShowProjectSpec}
         onSave={handleProjectSpecSave}
-        initialSpec={projectSpec || undefined}
+        initialSpec={projectSpec}
       />
     </>
   );

@@ -9,16 +9,15 @@ import {
   getUserRecipes,
 } from "@/lib/actions/recipe.actions";
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
 const MyCookBookPage = async () => {
-  const { userId } = await auth();
+  try {
+    await getAuthenticatedUser();
 
-  if (!userId) redirect("/sign-in");
-
-  const userRecipes = await getUserRecipes();
-  const unlockedRecipes = await getUnlockedRecipes();
+    const userRecipes = await getUserRecipes();
+    const unlockedRecipes = await getUnlockedRecipes();
 
   return (
     <main>
@@ -72,6 +71,10 @@ const MyCookBookPage = async () => {
       </Accordion>
     </main>
   );
+} catch (error) {
+    // User not authenticated, redirect to sign-in
+    redirect("/sign-in");
+  }
 };
 
 export default MyCookBookPage;

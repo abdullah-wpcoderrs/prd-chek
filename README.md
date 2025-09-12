@@ -25,8 +25,8 @@ A comprehensive web application that helps vibe coders (developers who build wit
 - **Frontend**: Next.js 15.4.1 with App Router
 - **UI Components**: Shadcn/ui + Radix UI primitives
 - **Styling**: Tailwind CSS with custom design system
-- **Authentication**: Clerk (ready for integration)
-- **Database**: Supabase (ready for integration)
+- **Authentication**: Native Supabase Auth with SSR support
+- **Database**: Supabase PostgreSQL with Row Level Security
 - **Webhook Integration**: N8N workflow automation
 - **TypeScript**: Full type safety throughout
 
@@ -70,13 +70,13 @@ A comprehensive web application that helps vibe coders (developers who build wit
    NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/generate-docs
    NEXT_PUBLIC_N8N_STATUS_WEBHOOK_URL=https://your-n8n-instance.com/webhook/status
    
-   # Clerk Authentication (Optional)
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
-   CLERK_SECRET_KEY=your_clerk_secret
+   # Supabase Authentication & Database
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    
-   # Supabase Database (Optional)
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+   # Application Configuration
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ```
 
 4. **Start the development server**

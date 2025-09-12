@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 
 import Navbar from "@/components/Navbar";
 import { GenerationProvider } from "@/lib/context/GenerationContext";
+import { AuthProvider } from "@/lib/context/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,15 +18,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-        <body className="antialiased font-sans">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="antialiased font-sans">
+        <AuthProvider>
           <GenerationProvider>
             <Navbar />
             {children}
           </GenerationProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

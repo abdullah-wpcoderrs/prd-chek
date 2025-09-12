@@ -72,7 +72,7 @@ export default function HomePage() {
       </section>
       
       {/* What You Can Do Section */}
-      <section className="py-20 px-4 bg-white">
+      <section id="features" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-sans">
@@ -129,7 +129,7 @@ export default function HomePage() {
       </section>
       
       {/* How It Works Section */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section id="how-it-works" className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-sans">

@@ -35,9 +35,19 @@ const N8N_STATUS_WEBHOOK_URL = process.env.NEXT_PUBLIC_N8N_STATUS_WEBHOOK_URL ||
 
 /**
  * Submit a project for documentation generation
+ * Note: This function should be called from server components or server actions
  */
-export async function submitProjectGeneration(request: ProjectGenerationRequest): Promise<{ projectId: string }> {
+export async function submitProjectGeneration(request: ProjectGenerationRequest & { projectId?: string }): Promise<{ projectId: string }> {
   try {
+    // If projectId is not provided, it means project creation should happen elsewhere
+    if (!request.projectId) {
+      throw new Error('Project ID is required for webhook submission');
+    }
+
+    console.log('🚀 Submitting to webhook:', N8N_WEBHOOK_URL);
+    console.log('📦 Payload:', JSON.stringify(request, null, 2));
+
+    // Send to N8N with the provided project ID
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -50,14 +60,20 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest)
       }),
     });
 
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error(`Webhook request failed: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('❌ Webhook error response:', errorText);
+      throw new Error(`Webhook request failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const result = await response.json();
-    return result;
+    console.log('✅ Webhook success response:', result);
+    return { projectId: request.projectId };
   } catch (error) {
-    console.error('Failed to submit project generation:', error);
+    console.error('❌ Failed to submit project generation:', error);
     throw new Error('Failed to submit project for generation. Please try again.');
   }
 }
