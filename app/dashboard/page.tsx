@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GenerationProgressComponent } from "@/components/GenerationProgress";
 import { ProjectSpecModal, ProjectSpec } from "@/components/ProjectSpecModal";
-import { webhookAPI } from "@/lib/webhook";
 import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { Sparkles, Rocket, FileText, Users, Map, Code, Layout, Loader2, Settings, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useToast } from "@/lib/hooks/use-toast";
 
 const techStackOptions = [
   { value: "react-node", label: "React + Node.js + MongoDB" },
@@ -38,14 +37,13 @@ const designStyleOptions = [
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
   const [techStack, setTechStack] = useState("");
   const [targetPlatform, setTargetPlatform] = useState("web");
   const [complexity, setComplexity] = useState("medium");
   const [isGenerating, setIsGenerating] = useState(false);
   const [projectName, setProjectName] = useState("");
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const [showProgress, setShowProgress] = useState(false);
   const [showProjectSpec, setShowProjectSpec] = useState(false);
   const [projectSpec, setProjectSpec] = useState<ProjectSpec | undefined>(undefined);
 
@@ -90,35 +88,31 @@ export default function DashboardPage() {
         projectSpec,
       });
       
-      setCurrentProjectId(result.projectId);
-      setShowProgress(true);
+      // Show success toast notification
+      toast({
+        variant: "success",
+        title: "Documents Being Prepared",
+        description: "Your documentation suite is being generated. You can track progress in your projects dashboard.",
+      });
+      
+      // Redirect to projects page immediately
+      setTimeout(() => {
+        router.push('/projects');
+      }, 2000);
+      
     } catch (error) {
       console.error('Generation failed:', error);
-      alert('Failed to start generation. Please try again.');
+      toast({
+        variant: "destructive",
+        title: "Generation Failed",
+        description: "Failed to start generation. Please try again.",
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleGenerationComplete = (projectId: string) => {
-    // Generation completed - close modal and redirect
-    setShowProgress(false);
-    setCurrentProjectId(null);
-    router.push('/projects');
-  };
 
-  const handleCancelGeneration = () => {
-    setShowProgress(false);
-    setCurrentProjectId(null);
-    setIsGenerating(false);
-  };
-  
-  const handleClickOutside = () => {
-    // Hide the progress modal and redirect to projects page while keeping generation running in background
-    setShowProgress(false);
-    setCurrentProjectId(null);
-    router.push('/projects');
-  };
 
   const handleProjectSpecSave = (spec: ProjectSpec) => {
     setProjectSpec(spec);
@@ -458,16 +452,6 @@ Example: A social media platform for developers where they can share code snippe
           </div>
         </div>
       </div>
-
-      {/* Generation Progress Modal */}
-      {showProgress && currentProjectId && (
-        <GenerationProgressComponent
-          projectId={currentProjectId}
-          onComplete={handleGenerationComplete}
-          onCancel={handleCancelGeneration}
-          onClickOutside={handleClickOutside}
-        />
-      )}
 
       {/* Project Specification Modal */}
       <ProjectSpecModal

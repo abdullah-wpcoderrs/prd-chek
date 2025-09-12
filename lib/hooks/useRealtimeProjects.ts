@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useGeneration } from '@/lib/context/GenerationContext';
 import type { ProjectWithDocuments } from '@/lib/actions/project.actions';
 import { useSupabase } from './useSupabase';
 
 export function useRealtimeProjects() {
   const { user } = useAuth();
+  const { addGeneration, removeGeneration } = useGeneration();
   const supabase = useSupabase();
   const [projects, setProjects] = useState<ProjectWithDocuments[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,16 @@ export function useRealtimeProjects() {
 
         if (error) throw error;
         setProjects(data || []);
+        
+        // Update generation context with active projects
+        data?.forEach(project => {
+          if (project.status === 'processing' || project.status === 'pending') {
+            addGeneration(project.id);
+          } else if (project.status === 'completed' || project.status === 'failed') {
+            removeGeneration(project.id);
+          }
+        });
+        
         setReconnectAttempts(0); // Reset on successful fetch
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch projects';
@@ -77,15 +89,31 @@ export function useRealtimeProjects() {
           
           // Optimistic updates for better UX
           if (payload.eventType === 'INSERT') {
-            setProjects(prev => [payload.new as ProjectWithDocuments, ...prev]);
+            const newProject = payload.new as ProjectWithDocuments;
+            setProjects(prev => [newProject, ...prev]);
+            
+            // Add to generation context if it's being processed
+            if (newProject.status === 'processing' || newProject.status === 'pending') {
+              addGeneration(newProject.id);
+            }
           } else if (payload.eventType === 'UPDATE') {
+            const updatedProject = payload.new as ProjectWithDocuments;
             setProjects(prev => prev.map(project => 
-              project.id === payload.new.id 
-                ? { ...project, ...payload.new }
+              project.id === updatedProject.id 
+                ? { ...project, ...updatedProject }
                 : project
             ));
+            
+            // Update generation context based on status
+            if (updatedProject.status === 'completed' || updatedProject.status === 'failed') {
+              removeGeneration(updatedProject.id);
+            } else if (updatedProject.status === 'processing' || updatedProject.status === 'pending') {
+              addGeneration(updatedProject.id);
+            }
           } else if (payload.eventType === 'DELETE') {
-            setProjects(prev => prev.filter(project => project.id !== payload.old.id));
+            const deletedProject = payload.old as ProjectWithDocuments;
+            setProjects(prev => prev.filter(project => project.id !== deletedProject.id));
+            removeGeneration(deletedProject.id);
           }
           
           // Also fetch to ensure data consistency

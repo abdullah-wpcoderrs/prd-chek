@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,112 +12,7 @@ import {
   Download,
   Eye
 } from "lucide-react";
-
-// Mock template data
-const templates = [
-  {
-    id: 1,
-    name: "Social Media Platform",
-    description: "Complete documentation suite for building a modern social media application",
-    category: "Social",
-    techStacks: ["React + Node.js", "Next.js + Supabase", "Vue + Laravel"],
-    rating: 4.8,
-    downloads: 1247,
-    previewUrl: "#",
-    features: [
-      "User authentication & profiles",
-      "Real-time messaging",
-      "Content sharing & feeds",
-      "Social interactions",
-      "Mobile responsive design"
-    ]
-  },
-  {
-    id: 2,
-    name: "E-commerce Marketplace",
-    description: "Comprehensive docs for building a multi-vendor marketplace platform",
-    category: "E-commerce",
-    techStacks: ["React Native", "Flutter", "Next.js + Stripe"],
-    rating: 4.9,
-    downloads: 856,
-    previewUrl: "#",
-    features: [
-      "Vendor management system",
-      "Payment processing",
-      "Inventory management",
-      "Order tracking",
-      "Review & rating system"
-    ]
-  },
-  {
-    id: 3,
-    name: "SaaS Dashboard",
-    description: "Business intelligence and analytics dashboard documentation",
-    category: "Business",
-    techStacks: ["Angular + .NET", "React + Django", "Vue + Spring Boot"],
-    rating: 4.7,
-    downloads: 692,
-    previewUrl: "#",
-    features: [
-      "Data visualization",
-      "User role management",
-      "API integration",
-      "Reporting system",
-      "Multi-tenant architecture"
-    ]
-  },
-  {
-    id: 4,
-    name: "Learning Management System",
-    description: "Educational platform with course creation and student management",
-    category: "Education",
-    techStacks: ["React + Rails", "Next.js + PostgreSQL", "Vue + Express"],
-    rating: 4.6,
-    downloads: 534,
-    previewUrl: "#",
-    features: [
-      "Course creation tools",
-      "Student progress tracking",
-      "Assignment management",
-      "Video streaming",
-      "Certificate generation"
-    ]
-  },
-  {
-    id: 5,
-    name: "Healthcare Management",
-    description: "Patient management and telemedicine platform documentation",
-    category: "Healthcare",
-    techStacks: ["React + Node.js", "Flutter + Firebase", "Angular + MongoDB"],
-    rating: 4.8,
-    downloads: 423,
-    previewUrl: "#",
-    features: [
-      "Patient records management",
-      "Appointment scheduling",
-      "Telemedicine integration",
-      "Medical history tracking",
-      "HIPAA compliance features"
-    ]
-  },
-  {
-    id: 6,
-    name: "Task Management Tool",
-    description: "Project and team collaboration platform with advanced features",
-    category: "Productivity",
-    techStacks: ["Svelte + Express", "React + GraphQL", "Next.js + Prisma"],
-    rating: 4.5,
-    downloads: 789,
-    previewUrl: "#",
-    features: [
-      "Project planning tools",
-      "Team collaboration",
-      "Time tracking",
-      "Resource management",
-      "Gantt charts & reporting"
-    ]
-  }
-];
+import { getTemplates, getTemplateStats, type Template, type TemplateStats } from "@/lib/actions/template.actions";
 
 const categoryColors = {
   "Social": "bg-purple-100 text-purple-700",
@@ -130,7 +23,10 @@ const categoryColors = {
   "Productivity": "bg-indigo-100 text-indigo-700"
 };
 
-export default function TemplatesPage() {
+export default async function TemplatesPage() {
+  const templates: Template[] = await getTemplates();
+  const stats: TemplateStats = await getTemplateStats();
+  
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -148,21 +44,21 @@ export default function TemplatesPage() {
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white rounded-sm p-6 text-center shadow-sm">
-            <div className="text-2xl font-bold mb-1" style={{color: 'var(--steel-blue-600)'}}>{templates.length}</div>
+            <div className="text-2xl font-bold mb-1" style={{color: 'var(--steel-blue-600)'}}>{stats.total_templates}</div>
             <div className="text-sm text-gray-600 font-sans">Templates Available</div>
           </div>
           <div className="bg-white rounded-sm p-6 text-center shadow-sm">
             <div className="text-2xl font-bold text-green-600 mb-1">
-              {templates.reduce((sum, t) => sum + t.downloads, 0).toLocaleString()}
+              {stats.total_downloads.toLocaleString()}
             </div>
             <div className="text-sm text-gray-600 font-sans">Total Downloads</div>
           </div>
           <div className="bg-white rounded-sm p-6 text-center shadow-sm">
-            <div className="text-2xl font-bold text-purple-600 mb-1">6</div>
+            <div className="text-2xl font-bold text-purple-600 mb-1">{stats.total_categories}</div>
             <div className="text-sm text-gray-600 font-sans">Categories</div>
           </div>
           <div className="bg-white rounded-sm p-6 text-center shadow-sm">
-            <div className="text-2xl font-bold text-orange-600 mb-1">4.7</div>
+            <div className="text-2xl font-bold text-orange-600 mb-1">{stats.average_rating}</div>
             <div className="text-sm text-gray-600 font-sans">Average Rating</div>
           </div>
         </div>
@@ -194,7 +90,7 @@ export default function TemplatesPage() {
                 <div>
                   <div className="text-sm font-medium text-gray-700 mb-2 font-sans">Compatible Tech Stacks:</div>
                   <div className="flex flex-wrap gap-1">
-                    {template.techStacks.map((stack, index) => (
+                    {template.tech_stacks.map((stack, index) => (
                       <Badge key={index} variant="outline" className="text-xs font-sans">
                         {stack}
                       </Badge>
@@ -228,7 +124,7 @@ export default function TemplatesPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    5 documents
+                    {template.document_count} documents
                   </div>
                 </div>
 

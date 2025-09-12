@@ -5,6 +5,7 @@ import { GeistMono } from 'geist/font/mono';
 import Navbar from "@/components/Navbar";
 import { GenerationProvider } from "@/lib/context/GenerationContext";
 import { AuthProvider } from "@/lib/context/AuthContext";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
           <GenerationProvider>
             <Navbar />
             {children}
+            <Toaster />
           </GenerationProvider>
         </AuthProvider>
       </body>

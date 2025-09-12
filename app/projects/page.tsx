@@ -4,10 +4,18 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { useRealtimeProjects } from "@/lib/hooks/useRealtimeProjects";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/lib/hooks/use-toast";
 import { 
   FileText, 
   Users, 
@@ -22,10 +30,14 @@ import {
   Folder,
   Search,
   Filter,
-  Loader2
+  Loader2,
+  Trash2,
+  Edit3,
+  Copy
 } from "lucide-react";
 import Link from "next/link";
 import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
+import { deleteProject } from "@/lib/actions/project.actions";
 
 const documentIcons = {
   "PRD": FileText,
@@ -47,6 +59,7 @@ export default function ProjectsPage() {
   const { projects, loading: projectsLoading, error } = useRealtimeProjects();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [viewerDocument, setViewerDocument] = useState<{
@@ -57,6 +70,7 @@ export default function ProjectsPage() {
     downloadUrl: string;
   } | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -84,6 +98,48 @@ export default function ProjectsPage() {
   const handleCloseViewer = () => {
     setIsViewerOpen(false);
     setViewerDocument(null);
+  };
+
+  const handleDeleteProject = async (projectId: string, projectName: string) => {
+    if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingProjectId(projectId);
+    
+    try {
+      await deleteProject(projectId);
+      toast({
+        title: "Project deleted",
+        description: `"${projectName}" has been successfully deleted.`,
+        variant: "default",
+      });
+      
+      // Clear selection if deleted project was selected
+      if (selectedProject === projectId) {
+        setSelectedProject(null);
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast({
+        title: "Error deleting project",
+        description: error instanceof Error ? error.message : "Failed to delete project. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingProjectId(null);
+    }
+  };
+
+  const handleCopyProject = (project: ProjectWithDocuments) => {
+    // For now, just copy the project details to clipboard
+    const projectDetails = `Project: ${project.name}\nDescription: ${project.description}\nTech Stack: ${project.tech_stack}\nTarget Platform: ${project.target_platform}\nComplexity: ${project.complexity}`;
+    navigator.clipboard.writeText(projectDetails);
+    toast({
+      title: "Project details copied",
+      description: "Project information has been copied to your clipboard.",
+      variant: "default",
+    });
   };
 
   // Show loading state while checking authentication or loading projects
@@ -241,9 +297,59 @@ export default function ProjectsPage() {
                         </div>
                       </div>
                       
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            disabled={deletingProjectId === project.id}
+                            onClick={(e) => e.stopPropagation()} // Prevent card selection
+                          >
+                            {deletingProjectId === project.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <MoreVertical className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopyProject(project);
+                            }}
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // TODO: Implement edit functionality
+                              toast({
+                                title: "Edit feature",
+                                description: "Project editing will be available soon.",
+                                variant: "default",
+                              });
+                            }}
+                          >
+                            <Edit3 className="w-4 h-4 mr-2" />
+                            Edit Project
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProject(project.id, project.name);
+                            }}
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            disabled={deletingProjectId === project.id}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Project
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </CardHeader>
                   

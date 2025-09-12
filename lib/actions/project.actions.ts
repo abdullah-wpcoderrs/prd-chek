@@ -208,6 +208,44 @@ export async function updateProjectStatus(
   revalidatePath('/projects');
 }
 
+export async function deleteProject(projectId: string): Promise<{ success: boolean }> {
+  const userId = await getAuthenticatedUser();
+  const supabase = await createSupabaseServerClient();
+
+  console.log('🗑️ Deleting project:', projectId, 'for user:', userId);
+
+  // First, delete all documents associated with the project
+  const { error: documentsError } = await supabase
+    .from('documents')
+    .delete()
+    .eq('project_id', projectId)
+    .eq('user_id', userId); // Ensure user can only delete their own documents
+
+  if (documentsError) {
+    console.error('❌ Error deleting project documents:', documentsError);
+    throw new Error(`Failed to delete project documents: ${documentsError.message}`);
+  }
+
+  console.log('✅ Project documents deleted');
+
+  // Then delete the project itself
+  const { error: projectError } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId)
+    .eq('user_id', userId); // Ensure user can only delete their own projects
+
+  if (projectError) {
+    console.error('❌ Error deleting project:', projectError);
+    throw new Error(`Failed to delete project: ${projectError.message}`);
+  }
+
+  console.log('✅ Project deleted successfully');
+
+  revalidatePath('/projects');
+  return { success: true };
+}
+
 export async function updateDocumentStatus(
   documentId: string,
   status: string,
