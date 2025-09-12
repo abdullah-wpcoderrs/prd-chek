@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectSpecModal, ProjectSpec } from "@/components/ProjectSpecModal";
 import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
-import { Sparkles, Rocket, FileText, Users, Map, Code, Layout, Loader2, Settings, Plus } from "lucide-react";
+import { Sparkles, Rocket, FileText, Users, Map, Code, Layout, Loader2, Settings, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/use-toast";
@@ -46,6 +46,50 @@ export default function DashboardPage() {
   const [projectName, setProjectName] = useState("");
   const [showProjectSpec, setShowProjectSpec] = useState(false);
   const [projectSpec, setProjectSpec] = useState<ProjectSpec | undefined>(undefined);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+
+  // Handle template selection from URL params and sessionStorage
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const templateId = searchParams.get('template');
+    
+    if (templateId) {
+      const templateData = sessionStorage.getItem('selectedTemplate');
+      if (templateData) {
+        try {
+          const template = JSON.parse(templateData);
+          setSelectedTemplate(template);
+          
+          // Pre-populate form with template data
+          setProjectName(template.name + ' Project');
+          setPrompt(`Create a ${template.category.toLowerCase()} application based on the ${template.name} template.\n\nKey features to include:\n${template.features.map((f: string) => `• ${f}`).join('\n')}\n\nThe application should be suitable for ${template.description.toLowerCase()}.`);
+          
+          // Try to match tech stack
+          const matchingTechStack = techStackOptions.find(opt => 
+            template.tech_stacks.some((stack: string) => 
+              opt.label.toLowerCase().includes(stack.toLowerCase()) ||
+              stack.toLowerCase().includes(opt.value.replace('-', ' '))
+            )
+          );
+          if (matchingTechStack) {
+            setTechStack(matchingTechStack.value);
+          }
+          
+          // Show a toast notification
+          toast({
+            variant: "success",
+            title: "Template Selected",
+            description: `${template.name} template has been loaded. You can customize the details below.`,
+          });
+          
+          // Clean up URL
+          window.history.replaceState({}, '', '/dashboard');
+        } catch (error) {
+          console.error('Failed to parse template data:', error);
+        }
+      }
+    }
+  }, [toast]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -152,6 +196,40 @@ export default function DashboardPage() {
             </CardHeader>
             
             <CardContent className="p-8 space-y-6">
+              {/* Template Selection Info */}
+              {selectedTemplate && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-sm p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-sm flex items-center justify-center">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 font-sans">Template Selected: {selectedTemplate.name}</h3>
+                        <p className="text-sm text-gray-600 font-sans">{selectedTemplate.description}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTemplate(null);
+                        setProjectName('');
+                        setPrompt('');
+                        setTechStack('');
+                        sessionStorage.removeItem('selectedTemplate');
+                      }}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-3 text-sm text-gray-600 font-sans">
+                    <span className="font-medium">Included features:</span> {selectedTemplate.features.slice(0, 3).join(', ')}
+                    {selectedTemplate.features.length > 3 && ` and ${selectedTemplate.features.length - 3} more...`}
+                  </div>
+                </div>
+              )}
               {/* Project Name */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 font-sans">
