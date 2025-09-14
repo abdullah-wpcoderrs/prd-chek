@@ -23,6 +23,7 @@ A comprehensive web application that helps vibe coders (developers who build wit
 ## 🛠️ Technology Stack
 
 - **Frontend**: Next.js 15.4.1 with App Router
+- **Backend**: Supabase PostgreSQL with Row Level Security and n8n webhook engine
 - **UI Components**: Shadcn/ui + Radix UI primitives
 - **Styling**: Tailwind CSS with custom design system
 - **Authentication**: Native Supabase Auth with SSR support
@@ -45,6 +46,7 @@ A comprehensive web application that helps vibe coders (developers who build wit
 - Node.js 18+ 
 - npm or yarn
 - Modern web browser
+- n8n
 
 ### Installation
 
@@ -180,6 +182,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for the vibe coder community**
+**Built with ❤️ for the vibe coders community**
 
-Transform your ideas into production-ready documentation with PRD Generator.
+Transform your ideas into production-ready documentation with PRD Generator. Abdullah Ajibowu - wpcoderrs © 2025.
