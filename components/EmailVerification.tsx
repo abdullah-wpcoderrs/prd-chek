@@ -41,20 +41,9 @@ export default function EmailVerification({ user }: EmailVerificationProps) {
     }
   }
 
+  // Don't show anything if email is verified
   if (isVerified) {
-    return (
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <div>
-              <p className="text-sm font-medium text-green-900">Email Verified</p>
-              <p className="text-xs text-green-700">Your email address has been confirmed</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (

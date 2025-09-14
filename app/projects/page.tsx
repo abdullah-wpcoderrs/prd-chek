@@ -68,6 +68,8 @@ export default function ProjectsPage() {
     type: string;
     size: string;
     downloadUrl: string;
+    createdAt?: string;
+    documentId?: string;
   } | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
@@ -89,8 +91,10 @@ export default function ProjectsPage() {
       id: `${selectedProject}-${document.type}`,
       name: document.name,
       type: document.type,
-      size: document.file_size ? `${(document.file_size / 1024 / 1024).toFixed(1)} MB` : "Processing...",
-      downloadUrl: document.download_url || `#download-${document.type}`
+      size: document.file_size ? `${(document.file_size / 1024).toFixed(1)} KB` : "Processing...",
+      downloadUrl: document.download_url || `#download-${document.type}`,
+      createdAt: document.created_at,
+      documentId: document.id // Pass the actual document ID for content fetching
     });
     setIsViewerOpen(true);
   };
