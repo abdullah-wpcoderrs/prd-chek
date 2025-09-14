@@ -184,4 +184,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for the vibe coders community**
 
-Transform your ideas into production-ready documentation with PRD Generator. Abdullah Ajibowu - wpcoderrs © 2025.
+Transform your ideas into production-ready documentation with PRD Generator. [Abdullah Ajibowu] (www.linkedin.com/in/ajibowu-abdullah) - wpcoderrs © 2025.
