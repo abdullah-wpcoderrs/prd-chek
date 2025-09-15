@@ -11,6 +11,24 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { useRealtimeProjects } from "@/lib/hooks/useRealtimeProjects";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -33,11 +51,12 @@ import {
   Loader2,
   Trash2,
   Edit3,
-  Copy
+  Copy,
+  Save
 } from "lucide-react";
 import Link from "next/link";
 import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
-import { deleteProject } from "@/lib/actions/project.actions";
+import { deleteProject, updateProject } from "@/lib/actions/project.actions";
 
 const documentIcons = {
   "PRD": FileText,
@@ -73,6 +92,18 @@ export default function ProjectsPage() {
   } | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState<ProjectWithDocuments | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    tech_stack: '',
+    target_platform: '',
+    complexity: ''
+  });
+  const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -104,23 +135,21 @@ export default function ProjectsPage() {
     setViewerDocument(null);
   };
 
-  const handleDeleteProject = async (projectId: string, projectName: string) => {
-    if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
 
-    setDeletingProjectId(projectId);
+    setDeletingProjectId(projectToDelete.id);
     
     try {
-      await deleteProject(projectId);
+      await deleteProject(projectToDelete.id);
       toast({
         title: "Project deleted",
-        description: `"${projectName}" has been successfully deleted.`,
+        description: `"${projectToDelete.name}" has been successfully deleted.`,
         variant: "default",
       });
       
       // Clear selection if deleted project was selected
-      if (selectedProject === projectId) {
+      if (selectedProject === projectToDelete.id) {
         setSelectedProject(null);
       }
     } catch (error) {
@@ -132,12 +161,62 @@ export default function ProjectsPage() {
       });
     } finally {
       setDeletingProjectId(null);
+      setDeleteDialogOpen(false);
+      setProjectToDelete(null);
+    }
+  };
+
+  const openDeleteDialog = (projectId: string, projectName: string) => {
+    setProjectToDelete({ id: projectId, name: projectName });
+    setDeleteDialogOpen(true);
+  };
+
+  const openEditDialog = (project: ProjectWithDocuments) => {
+    setProjectToEdit(project);
+    setEditForm({
+      name: project.name,
+      description: project.description || '',
+      tech_stack: project.tech_stack,
+      target_platform: project.target_platform,
+      complexity: project.complexity
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateProject = async () => {
+    if (!projectToEdit) return;
+
+    setUpdatingProjectId(projectToEdit.id);
+    
+    try {
+      await updateProject(projectToEdit.id, editForm);
+      toast({
+        title: "Project updated",
+        description: `"${editForm.name}" has been successfully updated.`,
+        variant: "default",
+      });
+      
+      setEditDialogOpen(false);
+      setProjectToEdit(null);
+    } catch (error) {
+      console.error('Error updating project:', error);
+      toast({
+        title: "Error updating project",
+        description: error instanceof Error ? error.message : "Failed to update project. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingProjectId(null);
     }
   };
 
   const handleCopyProject = (project: ProjectWithDocuments) => {
     // For now, just copy the project details to clipboard
-    const projectDetails = `Project: ${project.name}\nDescription: ${project.description}\nTech Stack: ${project.tech_stack}\nTarget Platform: ${project.target_platform}\nComplexity: ${project.complexity}`;
+    const projectDetails = `Project: ${project.name}
+Description: ${project.description}
+Tech Stack: ${project.tech_stack}
+Target Platform: ${project.target_platform}
+Complexity: ${project.complexity}`;
     navigator.clipboard.writeText(projectDetails);
     toast({
       title: "Project details copied",
@@ -329,12 +408,7 @@ export default function ProjectsPage() {
                           <DropdownMenuItem 
                             onClick={(e) => {
                               e.stopPropagation();
-                              // TODO: Implement edit functionality
-                              toast({
-                                title: "Edit feature",
-                                description: "Project editing will be available soon.",
-                                variant: "default",
-                              });
+                              openEditDialog(project);
                             }}
                           >
                             <Edit3 className="w-4 h-4 mr-2" />
@@ -344,7 +418,7 @@ export default function ProjectsPage() {
                           <DropdownMenuItem 
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteProject(project.id, project.name);
+                              openDeleteDialog(project.id, project.name);
                             }}
                             className="text-red-600 focus:text-red-600 focus:bg-red-50"
                             disabled={deletingProjectId === project.id}
@@ -513,6 +587,212 @@ export default function ProjectsPage() {
           onClose={handleCloseViewer}
         />
       )}
+
+      {/* Edit Project Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-sans">Edit Project</DialogTitle>
+            <DialogDescription className="font-sans">
+              Update your project details. Note: This will not regenerate documents.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Project Name */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-name" className="font-sans font-medium">
+                Project Name *
+              </Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter project name"
+                className="font-sans"
+                disabled={!!updatingProjectId}
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-description" className="font-sans font-medium">
+                Description *
+              </Label>
+              <Textarea
+                id="edit-description"
+                value={editForm.description}
+                onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe your project..."
+                className="min-h-[100px] font-sans"
+                disabled={!!updatingProjectId}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Tech Stack */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-tech-stack" className="font-sans font-medium">
+                  Tech Stack *
+                </Label>
+                <Select
+                  value={editForm.tech_stack}
+                  onValueChange={(value) => setEditForm(prev => ({ ...prev, tech_stack: value }))}
+                  disabled={!!updatingProjectId}
+                >
+                  <SelectTrigger className="font-sans">
+                    <SelectValue placeholder="Select tech stack" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="React + Node.js" className="font-sans">React + Node.js</SelectItem>
+                    <SelectItem value="Next.js" className="font-sans">Next.js</SelectItem>
+                    <SelectItem value="Vue.js" className="font-sans">Vue.js</SelectItem>
+                    <SelectItem value="Angular" className="font-sans">Angular</SelectItem>
+                    <SelectItem value="Flutter" className="font-sans">Flutter</SelectItem>
+                    <SelectItem value="React Native" className="font-sans">React Native</SelectItem>
+                    <SelectItem value="Python + Django" className="font-sans">Python + Django</SelectItem>
+                    <SelectItem value="Laravel" className="font-sans">Laravel</SelectItem>
+                    <SelectItem value="Ruby on Rails" className="font-sans">Ruby on Rails</SelectItem>
+                    <SelectItem value="ASP.NET" className="font-sans">ASP.NET</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Target Platform */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-platform" className="font-sans font-medium">
+                  Target Platform *
+                </Label>
+                <Select
+                  value={editForm.target_platform}
+                  onValueChange={(value) => setEditForm(prev => ({ ...prev, target_platform: value }))}
+                  disabled={!!updatingProjectId}
+                >
+                  <SelectTrigger className="font-sans">
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Web Application" className="font-sans">Web Application</SelectItem>
+                    <SelectItem value="Mobile App (iOS/Android)" className="font-sans">Mobile App (iOS/Android)</SelectItem>
+                    <SelectItem value="Desktop Application" className="font-sans">Desktop Application</SelectItem>
+                    <SelectItem value="Progressive Web App (PWA)" className="font-sans">Progressive Web App (PWA)</SelectItem>
+                    <SelectItem value="API/Backend Service" className="font-sans">API/Backend Service</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Complexity */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-complexity" className="font-sans font-medium">
+                Project Complexity *
+              </Label>
+              <Select
+                value={editForm.complexity}
+                onValueChange={(value) => setEditForm(prev => ({ ...prev, complexity: value }))}
+                disabled={!!updatingProjectId}
+              >
+                <SelectTrigger className="font-sans">
+                  <SelectValue placeholder="Select complexity" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Simple" className="font-sans">
+                    Simple - Basic functionality, few features
+                  </SelectItem>
+                  <SelectItem value="Medium" className="font-sans">
+                    Medium - Moderate complexity, multiple features
+                  </SelectItem>
+                  <SelectItem value="Complex" className="font-sans">
+                    Complex - Advanced features, integrations
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEditDialogOpen(false);
+                setProjectToEdit(null);
+              }}
+              disabled={!!updatingProjectId}
+              className="font-sans"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleUpdateProject}
+              disabled={!!updatingProjectId || !editForm.name.trim() || !editForm.description.trim()}
+              className="font-sans"
+              style={{backgroundColor: 'var(--steel-blue-600)'}} 
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} 
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}
+            >
+              {updatingProjectId ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Update Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-sans">Delete Project</DialogTitle>
+            <DialogDescription className="font-sans">
+              Are you sure you want to delete <span className="font-semibold">"{projectToDelete?.name}"</span>? 
+              This action cannot be undone and will permanently remove all associated documents.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setProjectToDelete(null);
+              }}
+              disabled={!!deletingProjectId}
+              className="font-sans"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteProject}
+              disabled={!!deletingProjectId}
+              className="font-sans"
+            >
+              {deletingProjectId ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

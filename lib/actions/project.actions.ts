@@ -208,6 +208,38 @@ export async function updateProjectStatus(
   revalidatePath('/projects');
 }
 
+export async function updateProject(
+  projectId: string,
+  data: {
+    name?: string;
+    description?: string;
+    tech_stack?: string;
+    target_platform?: string;
+    complexity?: string;
+  }
+): Promise<{ success: boolean }> {
+  const userId = await getAuthenticatedUser();
+  const supabase = await createSupabaseServerClient();
+
+  console.log('🔄 Updating project:', projectId, 'for user:', userId);
+
+  const { error } = await supabase
+    .from('projects')
+    .update(data)
+    .eq('id', projectId)
+    .eq('user_id', userId); // Ensure user can only update their own projects
+
+  if (error) {
+    console.error('❌ Error updating project:', error);
+    throw new Error(`Failed to update project: ${error.message}`);
+  }
+
+  console.log('✅ Project updated successfully');
+
+  revalidatePath('/projects');
+  return { success: true };
+}
+
 export async function deleteProject(projectId: string): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();

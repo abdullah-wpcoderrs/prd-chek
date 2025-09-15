@@ -1,0 +1,23 @@
+{
+  "name": "PRD-CHEK - AI Documentation Generator",
+  "short_name": "PRD-CHEK",
+  "description": "Generate comprehensive PRDs, user stories, sitemaps, and technical documentation instantly with AI-powered tools designed for modern developers",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
