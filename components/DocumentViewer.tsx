@@ -81,7 +81,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     setContentError(null);
     
     try {
-      // First, get the document record to verify ownership and get file path
+      // Get the document record to verify ownership and get file path
       console.log('📊 Querying documents table...');
       const { data: docData, error: docError } = await supabase
         .from('documents')
@@ -122,58 +122,31 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         return;
       }
 
-      // Handle the file path based on the format from N8N
-      let actualFilePath = docData.file_path;
+      // Use the file_path directly as the public URL without any modifications
+      const fileUrl = docData.file_path;
+      console.log('🔗 Using file_path directly as URL:', fileUrl);
       
-      console.log('📂 Original file_path from database:', actualFilePath);
-      
-      // The N8N workflow stores paths like: "project-documents/Social Poster PRD Document"
-      // For Supabase storage.from('project-documents'), we need just the filename part
-      if (actualFilePath.startsWith('project-documents/')) {
-        actualFilePath = actualFilePath.replace('project-documents/', '');
-        console.log('📂 Removed bucket prefix, using path:', actualFilePath);
-      }
-      
-      // Handle full URLs (if any legacy records exist)
-      if (actualFilePath.includes('/storage/v1/object/public/project-documents/')) {
-        actualFilePath = actualFilePath.split('/storage/v1/object/public/project-documents/')[1];
-        console.log('📂 Extracted from full URL:', actualFilePath);
-      }
-      
-      // Decode any URL encoding in the file path
-      actualFilePath = decodeURIComponent(actualFilePath);
-      
-      console.log('🔗 Final path for signed URL creation:', actualFilePath);
-      const { data: signedUrlData, error: urlError } = await supabase.storage
-        .from('project-documents')
-        .createSignedUrl(actualFilePath, 3600); // 1 hour expiry
-
-      console.log('🔗 Signed URL result:', { signedUrlData, urlError });
-
-      if (urlError) {
-        console.error('❌ Error creating signed URL:', urlError);
-        
-        // Type-safe access using extended interface
-        const errorDetails = urlError as ExtendedStorageError;
-        console.error('❌ Error details:', {
-          message: errorDetails.message,
-          statusCode: errorDetails.statusCode || 'unknown',
-          error: errorDetails.error || 'unknown'
+      // Test if the URL is accessible
+      try {
+        const testResponse = await fetch(fileUrl, { method: 'HEAD' });
+        console.log('🔍 URL accessibility test:', {
+          url: fileUrl,
+          status: testResponse.status,
+          statusText: testResponse.statusText,
+          contentType: testResponse.headers.get('content-type')
         });
         
-        setContentError(`Failed to access document content: ${urlError.message}`);
-        return;
+        if (testResponse.ok) {
+          console.log('✅ File URL is accessible, setting as PDF URL');
+          setPdfUrl(fileUrl);
+        } else {
+          console.error('❌ File URL not accessible:', testResponse.status, testResponse.statusText);
+          setContentError(`Document file is not accessible (${testResponse.status}: ${testResponse.statusText})`);
+        }
+      } catch (fetchError) {
+        console.error('❌ Error testing file URL:', fetchError);
+        setContentError(`Failed to access document file: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       }
-
-      if (!signedUrlData?.signedUrl) {
-        console.error('❌ No signed URL returned');
-        setContentError('Failed to generate document access URL.');
-        return;
-      }
-
-      console.log('✅ Successfully created signed URL');
-      // Set the PDF URL for embedding
-      setPdfUrl(signedUrlData.signedUrl);
       
     } catch (error) {
       console.error('❌ Unexpected error accessing document:', error);
@@ -188,8 +161,17 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   if (!isOpen) return null;
 
   const handleDownload = () => {
-    if (document.downloadUrl && !document.downloadUrl.startsWith('#')) {
-      // Download actual document from the URL
+    if (pdfUrl) {
+      // Use the same PDF URL that's being displayed
+      const link = window.document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `${document.name}.pdf`;
+      link.target = '_blank';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+    } else if (document.downloadUrl && !document.downloadUrl.startsWith('#')) {
+      // Fallback to original download URL if available
       const link = window.document.createElement('a');
       link.href = document.downloadUrl;
       link.download = `${document.name}.pdf`;
