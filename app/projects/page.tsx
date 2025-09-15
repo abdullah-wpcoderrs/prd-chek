@@ -433,11 +433,28 @@ Complexity: ${project.complexity}`;
                   
                   <CardContent>
                     <div className="grid grid-cols-5 gap-2">
-                      {project.documents.map((doc, index) => {
-                        const IconComponent = documentIcons[doc.type as keyof typeof documentIcons];
+                      {['PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens'].map((docType) => {
+                        const doc = project.documents.find(d => d.type === docType);
+                        const IconComponent = documentIcons[docType as keyof typeof documentIcons];
+                        
+                        // If document doesn't exist, show placeholder
+                        if (!doc) {
+                          return (
+                            <div 
+                              key={docType}
+                              className="p-3 rounded-sm border-2 text-center border-gray-200 bg-gray-50"
+                            >
+                              <IconComponent className="w-6 h-6 mx-auto mb-1 text-gray-400" />
+                              <div className="text-xs font-medium text-gray-700 font-sans">
+                                {docType}
+                              </div>
+                            </div>
+                          );
+                        }
+                        
                         return (
                           <div 
-                            key={index}
+                            key={docType}
                             className={`p-3 rounded-sm border-2 text-center relative ${
                               doc.status === 'ready' || doc.status === 'completed' ? 'border-green-200 bg-green-50' :
                               doc.status === 'processing' ? 'border-yellow-200 bg-yellow-50' :
@@ -479,10 +496,29 @@ Complexity: ${project.complexity}`;
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    {projects.find(p => p.id === selectedProject)?.documents.map((doc, index) => {
-                      const IconComponent = documentIcons[doc.type as keyof typeof documentIcons];
+                    {['PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens'].map((docType) => {
+                      const selectedProjectData = projects.find(p => p.id === selectedProject);
+                      const doc = selectedProjectData?.documents.find(d => d.type === docType);
+                      const IconComponent = documentIcons[docType as keyof typeof documentIcons];
+                      
+                      // If document doesn't exist, show placeholder
+                      if (!doc) {
+                        return (
+                          <div key={docType} className="flex items-center justify-between p-3 border rounded-sm bg-gray-50">
+                            <div className="flex items-center gap-3">
+                              <IconComponent className="w-5 h-5 text-gray-400" />
+                              <div>
+                                <div className="font-medium text-sm font-sans text-gray-500">{docType}</div>
+                                <div className="text-xs text-gray-400 font-sans">Not available</div>
+                              </div>
+                            </div>
+                            <span className="text-xs text-gray-400 font-sans">Pending</span>
+                          </div>
+                        );
+                      }
+                      
                       return (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-sm">
+                        <div key={docType} className="flex items-center justify-between p-3 border rounded-sm">
                           <div className="flex items-center gap-3">
                             <IconComponent className="w-5 h-5 text-gray-600" />
                             <div>
