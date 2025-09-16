@@ -16,7 +16,8 @@ import {
   Maximize,
   X,
   Loader2,
-  FileCode
+  FileCode,
+  FileType
 } from "lucide-react";
 import { useSupabase } from "@/lib/hooks/useSupabase";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -52,6 +53,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   const [contentError, setContentError] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [converting, setConverting] = useState(false);
+  const [convertingToWord, setConvertingToWord] = useState(false);
   const supabase = useSupabase();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -332,6 +334,196 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       /^\d+\.\s/.test(text) ||
       /^[a-zA-Z]\.\s/.test(text) ||
       /^[ivxlcdm]+\.\s/i.test(text);
+  };
+
+  const handleConvertToWord = async () => {
+    if (!user) {
+      alert('You must be logged in to convert documents.');
+      return;
+    }
+
+    if (!document.documentId) {
+      alert('Document ID is required for conversion.');
+      return;
+    }
+
+    setConvertingToWord(true);
+
+    try {
+      // First, extract text from the PDF using the same logic as markdown conversion
+      let conversionUrl = null;
+
+      // Get the PDF URL (same logic as markdown conversion)
+      if (document.downloadUrl && !document.downloadUrl.startsWith('#') && document.downloadUrl !== '') {
+        conversionUrl = document.downloadUrl;
+      } else if (document.documentId && user) {
+        const { data: docData, error: docError } = await supabase
+          .from('documents')
+          .select('download_url, file_path, status')
+          .eq('id', document.documentId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (docError) {
+          throw new Error(`Failed to fetch document: ${docError.message}`);
+        }
+
+        if (docData?.download_url) {
+          conversionUrl = docData.download_url;
+        } else if (docData?.file_path) {
+          conversionUrl = docData.file_path;
+        }
+      } else if (pdfUrl) {
+        conversionUrl = pdfUrl;
+      }
+
+      if (!conversionUrl) {
+        alert('No PDF document available to convert. Please ensure the document has been generated and try again.');
+        return;
+      }
+
+      // Extract text using PDF.js (client-side)
+      let pdfjsLib;
+      try {
+        let pdfjsLibModule;
+        try {
+          pdfjsLibModule = await import('pdfjs-dist');
+        } catch {
+          pdfjsLibModule = await import('pdfjs-dist/build/pdf.mjs');
+        }
+
+        pdfjsLib = pdfjsLibModule.default || pdfjsLibModule;
+      } catch (importError) {
+        throw new Error(`Failed to load PDF processing library: ${importError instanceof Error ? importError.message : 'Unknown error'}`);
+      }
+
+      // Set the worker path for PDF.js
+      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+        try {
+          const workerModule = await import('pdfjs-dist/build/pdf.worker.mjs');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default || workerModule;
+        } catch (workerError) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js';
+        }
+      }
+
+      // Fetch PDF via API endpoint
+      const apiUrl = `/api/documents/download?documentId=${document.documentId}`;
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf,*/*',
+        },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('PDF file is empty or could not be downloaded');
+      }
+
+      // Load the PDF document
+      const loadingTask = pdfjsLib.getDocument({
+        data: arrayBuffer,
+        verbosity: 0,
+        isEvalSupported: false,
+        disableFontFace: false,
+      });
+
+      const pdf = await loadingTask.promise;
+      if (!pdf || pdf.numPages === 0) {
+        throw new Error('PDF document is empty or invalid');
+      }
+
+      // Extract text from all pages
+      let extractedText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+
+        // Combine text items
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+
+        extractedText += pageText + '\n\n';
+      }
+
+      if (!extractedText.trim()) {
+        throw new Error('No text could be extracted from the PDF');
+      }
+
+      // Send extracted text to Word conversion API
+      const wordResponse = await fetch('/api/documents/convert-to-word', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentId: document.documentId,
+          extractedText: extractedText,
+          documentName: document.name,
+        }),
+      });
+
+      if (!wordResponse.ok) {
+        const errorData = await wordResponse.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `Conversion failed: ${wordResponse.status}`);
+      }
+
+      // Get the Word document as a blob
+      const blob = await wordResponse.blob();
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.name.replace(/\.pdf$/i, '')}.docx`;
+      link.style.display = 'none';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Show success toast
+      toast({
+        variant: "success",
+        title: "✅ Conversion Complete!",
+        description: `Successfully converted "${document.name}" to Word document and downloaded.`,
+      });
+
+    } catch (error) {
+      console.error('❌ Error converting to Word:', error);
+
+      let errorMessage = 'Unknown error occurred';
+      let suggestions = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Provide helpful suggestions based on error type
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network error')) {
+          errorMessage = 'Network error - Unable to download the PDF file.';
+          suggestions = '\n\nPossible solutions:\n• Check your internet connection\n• Try again in a few moments\n• The document might still be processing';
+        } else if (errorMessage.includes('Invalid PDF') || errorMessage.includes('corrupted')) {
+          errorMessage = 'The PDF file appears to be invalid or corrupted.';
+          suggestions = '\n\nPossible solutions:\n• Try regenerating the document\n• Contact support if the issue persists';
+        } else if (errorMessage.includes('empty')) {
+          errorMessage = 'The PDF file is empty or could not be downloaded.';
+          suggestions = '\n\nThe document might still be generating. Please wait and try again.';
+        }
+      }
+
+      const fullMessage = `Failed to convert to Word document:\n\n${errorMessage}${suggestions}`;
+      alert(fullMessage);
+    } finally {
+      setConvertingToWord(false);
+    }
   };
 
   const handleConvertToMarkdown = async () => {
@@ -805,6 +997,25 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                     <>
                       <FileCode className="w-4 h-4 mr-2" />
                       To Markdown
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full font-sans"
+                  onClick={handleConvertToWord}
+                  disabled={convertingToWord || !document.documentId}
+                >
+                  {convertingToWord ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <FileType className="w-4 h-4 mr-2" />
+                      To Word
                     </>
                   )}
                 </Button>
