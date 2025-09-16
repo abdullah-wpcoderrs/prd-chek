@@ -40,3 +40,18 @@ export async function getAuthenticatedUser() {
   
   return user.id // Return the UUID directly
 }
+
+// Helper function to get authenticated user with email from server components
+export async function getAuthenticatedUserWithEmail() {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  if (error || !user) {
+    throw new Error('User not authenticated')
+  }
+  
+  return {
+    id: user.id,
+    email: user.email || null
+  }
+}

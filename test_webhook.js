@@ -6,6 +6,7 @@ const WEBHOOK_URL = 'https://smart-nocode.app.n8n.cloud/webhook-test/prd-generat
 const testPayload = {
   projectId: 'test-project-123',
   userId: 'test-user-456',
+  userEmail: 'test.user@example.com',
   projectName: 'SocialHub Creator',
   description: 'A comprehensive social media platform creator that allows users to build, customize, and deploy their own social networking applications.',
   techStack: 'Next.js + Supabase + TypeScript',

@@ -175,6 +175,165 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     }
   };
 
+  // Enhanced text processing function for better markdown formatting
+  const processTextItemsToMarkdown = async (textItems: any[]): Promise<string> => {
+    if (!textItems || textItems.length === 0) return '';
+
+    // Group text items by line position with detailed formatting info
+    const lineGroups: {
+      [key: number]: Array<{
+        text: string;
+        fontSize: number;
+        fontName: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      }>
+    } = {};
+
+    textItems.forEach((item) => {
+      if (item.str && item.str.trim()) {
+        const lineKey = Math.round(item.transform[5] / 3) * 3; // More precise Y grouping
+        if (!lineGroups[lineKey]) lineGroups[lineKey] = [];
+
+        lineGroups[lineKey].push({
+          text: item.str,
+          fontSize: item.transform[0] || 12, // Font size from transform matrix
+          fontName: item.fontName || '',
+          x: item.transform[4] || 0,
+          y: item.transform[5] || 0,
+          width: item.width || 0,
+          height: item.height || 0
+        });
+      }
+    });
+
+    // Sort lines by Y position (top to bottom)
+    const sortedLineKeys = Object.keys(lineGroups)
+      .map(Number)
+      .sort((a, b) => b - a); // PDF coordinates are bottom-up
+
+    let result = '';
+    let previousFontSize = 0;
+    let averageFontSize = 0;
+
+    // Calculate average font size for baseline
+    const allFontSizes = sortedLineKeys.flatMap(key =>
+      lineGroups[key].map(item => item.fontSize)
+    );
+    averageFontSize = allFontSizes.reduce((sum, size) => sum + size, 0) / allFontSizes.length;
+
+    sortedLineKeys.forEach((lineKey, index) => {
+      const lineItems = lineGroups[lineKey];
+
+      // Sort items in line by X position (left to right)
+      lineItems.sort((a, b) => a.x - b.x);
+
+      // Combine text items in the line
+      const lineText = lineItems.map(item => item.text).join('').trim();
+
+      if (!lineText) return;
+
+      // Get dominant font size for this line
+      const lineFontSize = lineItems.reduce((sum, item) => sum + item.fontSize, 0) / lineItems.length;
+
+      // Determine if this line is a heading based on various criteria
+      const isHeading = detectHeading(lineText, lineFontSize, averageFontSize, lineItems);
+
+      if (isHeading.isHeading) {
+        // Add appropriate markdown heading syntax
+        const headingLevel = Math.min(isHeading.level, 6);
+        const headingPrefix = '#'.repeat(headingLevel);
+        result += `${headingPrefix} ${lineText}\n\n`;
+      } else {
+        // Regular text - check if it should be a list item or paragraph
+        if (isListItem(lineText)) {
+          result += `- ${lineText.replace(/^[-•*]\s*/, '')}\n`;
+        } else if (lineText.includes(':') && lineText.length < 150 && !lineText.endsWith('.')) {
+          // Likely a definition or key-value pair
+          const [key, ...valueParts] = lineText.split(':');
+          if (valueParts.length > 0) {
+            const value = valueParts.join(':').trim();
+            result += `**${key.trim()}**: ${value}\n\n`;
+          } else {
+            result += `${lineText}\n\n`;
+          }
+        } else {
+          // Regular paragraph
+          result += `${lineText}\n\n`;
+        }
+      }
+    });
+
+    // Clean up excessive line breaks and return
+    return result
+      .replace(/\n{3,}/g, '\n\n') // Replace 3+ line breaks with 2
+      .trim();
+  };
+
+  // Function to detect if a line should be formatted as a heading
+  const detectHeading = (text: string, fontSize: number, avgFontSize: number, items: any[]) => {
+    let level = 2; // Default to h2
+    let isHeading = false;
+
+    // Criteria for heading detection:
+
+    // 1. Font size significantly larger than average
+    if (fontSize > avgFontSize * 1.2) {
+      isHeading = true;
+      if (fontSize > avgFontSize * 1.5) level = 1;
+      else if (fontSize > avgFontSize * 1.3) level = 2;
+      else level = 3;
+    }
+
+    // 2. Text characteristics that suggest headings
+    const headingPatterns = [
+      /^(Overview|Introduction|Summary|Conclusion|Abstract)$/i,
+      /^(Frontend|Backend|Database|API|Architecture)(\s*\([^)]+\))?$/i,
+      /^(Requirements?|Specifications?|Features?)$/i,
+      /^(Technology|Tech|Technical)\s+(Stack|Requirements?|Specifications?)$/i,
+      /^(Mobile|Web|Desktop|Server)\s+(App|Application|Development)$/i,
+      /^(Framework|Library|Navigation|State Management|Forms|Offline Support|Animations|File Attachments|Accessibility)$/i,
+      /^(UI Library|State Management|Forms & Validation|File Attachments)$/i,
+      /^(Chapter|Section|Part)\s+\d+/i,
+      /^[A-Z][A-Za-z\s&()]+$/,
+    ];
+
+    const isShortAndCapitalized = text.length < 50 && /^[A-Z]/.test(text) && !/[.!?]$/.test(text);
+    const matchesPattern = headingPatterns.some(pattern => pattern.test(text));
+
+    if (matchesPattern || isShortAndCapitalized) {
+      isHeading = true;
+
+      // Determine level based on text content and structure
+      if (/^(Overview|Introduction|Summary|Abstract|Conclusion)$/i.test(text)) level = 2;
+      else if (/^(Frontend|Backend|Database|API|Architecture)(\s*\([^)]+\))?$/i.test(text)) level = 2;
+      else if (/^(Technology|Tech|Technical)\s+(Stack|Requirements?|Specifications?)$/i.test(text)) level = 1;
+      else if (/^(Framework|Library|Navigation|State Management|Forms|Offline Support|Animations|File Attachments|Accessibility)$/i.test(text)) level = 3;
+      else if (text.includes(':') && text.length < 100 && !text.endsWith('.')) level = 4;
+      else if (isShortAndCapitalized && text.length < 30) level = 2;
+      else if (isShortAndCapitalized && text.length < 60) level = 3;
+      else level = 3;
+    }
+
+    // 3. Standalone lines (not part of a paragraph)
+    if (text.length < 80 && !text.endsWith('.') && !text.includes(',') && /^[A-Z]/.test(text)) {
+      isHeading = true;
+      level = Math.max(level, 3);
+    }
+
+    return { isHeading, level };
+  };
+
+  // Function to detect list items
+  const isListItem = (text: string): boolean => {
+    return /^[-•*]\s/.test(text) ||
+      /^\d+\.\s/.test(text) ||
+      /^[a-zA-Z]\.\s/.test(text) ||
+      /^[ivxlcdm]+\.\s/i.test(text);
+  };
+
   const handleConvertToMarkdown = async () => {
     console.log('🔍 Debug: Starting PDF to Markdown conversion');
     // Debug information logging removed for security
@@ -340,7 +499,9 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         throw new Error('PDF document is empty or invalid');
       }
 
-      let markdownContent = `# ${document.name}\n\n`;
+      // Create a clean document title
+      const cleanTitle = document.name.replace(/\.(pdf|PDF)$/, '').replace(/[_-]/g, ' ');
+      let markdownContent = `# ${cleanTitle}\n\n`;
       markdownContent += `*Generated from PDF on ${new Date().toLocaleDateString()}*\n\n`;
 
       // Extract text from each page with better error handling
@@ -350,36 +511,23 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
 
-          // Convert text items to markdown with better formatting
+          // Convert text items to markdown with intelligent formatting
           const textItems = textContent.items as any[];
-          let pageText = '';
 
-          // Group text items by approximate line position
-          const lines: { [key: number]: string[] } = {};
-          textItems.forEach((item) => {
-            if (item.str && item.str.trim()) {
-              const lineKey = Math.round(item.transform[5] / 5) * 5; // Group by Y position
-              if (!lines[lineKey]) lines[lineKey] = [];
-              lines[lineKey].push(item.str);
+          // Enhanced text processing with formatting detection
+          const processedLines = await processTextItemsToMarkdown(textItems);
+
+          if (processedLines.trim()) {
+            // Only add page header if there's actual content and it's not the first page
+            if (i > 1) {
+              markdownContent += `\n---\n\n`;
             }
-          });
-
-          // Sort lines by Y position (top to bottom) and join
-          const sortedLines = Object.keys(lines)
-            .map(Number)
-            .sort((a, b) => b - a) // PDF coordinates are bottom-up
-            .map(lineKey => lines[lineKey].join(' ').trim())
-            .filter(line => line.length > 0);
-
-          pageText = sortedLines.join('\n');
-
-          if (pageText.trim()) {
-            markdownContent += `## Page ${i}\n\n${pageText}\n\n`;
+            markdownContent += `${processedLines}\n\n`;
           } else {
             markdownContent += `## Page ${i}\n\n*[No readable text content]*\n\n`;
           }
 
-          console.log(`✅ Debug: Page ${i} processed (${pageText.length} characters)`);
+          console.log(`✅ Debug: Page ${i} processed (${processedLines.length} characters)`);
         } catch (pageError) {
           console.error(`❌ Debug: Error processing page ${i}:`, pageError);
           markdownContent += `## Page ${i}\n\n*[Error extracting text from this page]*\n\n`;
@@ -399,7 +547,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       window.document.body.removeChild(link);
       URL.revokeObjectURL(url);
       // Markdown download success logging removed for security
-      
+
       // Show success toast notification
       toast({
         variant: "success",
@@ -466,7 +614,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   };
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 ${isFullscreen ? 'p-0' : ''}`}
       onClick={(e) => {
         // Close modal when clicking on backdrop

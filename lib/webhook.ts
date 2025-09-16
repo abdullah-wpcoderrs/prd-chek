@@ -9,6 +9,7 @@ export interface ProjectGenerationRequest {
   targetPlatform: string;
   complexity: string;
   userId?: string;
+  userEmail?: string;
   projectSpec?: ProjectSpec;
 }
 

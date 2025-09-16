@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServerClient, getAuthenticatedUser } from "@/lib/supabase-server";
+import { createSupabaseServerClient, getAuthenticatedUser, getAuthenticatedUserWithEmail } from "@/lib/supabase-server";
 import { submitProjectGeneration } from "@/lib/webhook";
 import { revalidatePath } from "next/cache";
 import { ProjectSpec } from "@/types";
@@ -45,7 +45,7 @@ export interface DocumentRecord {
 }
 
 export async function createProjectAndStartGeneration(data: CreateProjectData): Promise<{ projectId: string }> {
-  const userId = await getAuthenticatedUser();
+  const { id: userId, email: userEmail } = await getAuthenticatedUserWithEmail();
   
   console.log('🚀 Starting project creation and generation...');
   // Project data logging removed for security
@@ -55,10 +55,11 @@ export async function createProjectAndStartGeneration(data: CreateProjectData): 
   
   try {
     // Webhook submission logging removed for security
-    // Submit to N8N webhook with project ID, user ID, and project spec
+    // Submit to N8N webhook with project ID, user ID, user email, and project spec
     await submitProjectGeneration({
       projectId,
       userId,
+      userEmail: userEmail || undefined,
       projectName: data.name,
       description: data.description,
       techStack: data.techStack,
