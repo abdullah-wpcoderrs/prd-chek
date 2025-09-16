@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useSupabase } from "@/lib/hooks/useSupabase";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useToast } from "@/lib/hooks/use-toast";
 
 // Extended StorageError interface to include runtime properties
 interface ExtendedStorageError {
@@ -53,6 +54,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   const [converting, setConverting] = useState(false);
   const supabase = useSupabase();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Fetch document content when viewer opens
   useEffect(() => {
@@ -397,6 +399,13 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       window.document.body.removeChild(link);
       URL.revokeObjectURL(url);
       // Markdown download success logging removed for security
+      
+      // Show success toast notification
+      toast({
+        variant: "success",
+        title: "✅ Conversion Complete!",
+        description: `Successfully converted "${document.name}" to Markdown and downloaded.`,
+      });
 
     } catch (error) {
       console.error('❌ Error converting PDF to Markdown:', error);
