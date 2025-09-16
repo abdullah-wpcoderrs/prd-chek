@@ -48,13 +48,13 @@ export async function createProjectAndStartGeneration(data: CreateProjectData): 
   const userId = await getAuthenticatedUser();
   
   console.log('🚀 Starting project creation and generation...');
-  console.log('📄 Project data:', JSON.stringify(data, null, 2));
+  // Project data logging removed for security
   
   // Create project in Supabase first
   const { projectId } = await createProject(data);
   
   try {
-    console.log('🚀 Submitting to webhook with projectId:', projectId);
+    // Webhook submission logging removed for security
     // Submit to N8N webhook with project ID, user ID, and project spec
     await submitProjectGeneration({
       projectId,
@@ -66,7 +66,7 @@ export async function createProjectAndStartGeneration(data: CreateProjectData): 
       complexity: data.complexity,
       projectSpec: data.projectSpec,
     });
-    console.log('✅ Webhook submission successful');
+    // Webhook success logging removed for security
   } catch (error) {
     console.error('❌ Failed to submit to webhook, but project was created:', error);
     // Project is still created in database even if webhook fails
@@ -80,7 +80,7 @@ export async function createProject(data: CreateProjectData): Promise<{ projectI
   const userId = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
 
-  console.log('🗄 Creating project for user:', userId);
+  // User ID logging removed for security
 
   // Create project record
   const { data: project, error: projectError } = await supabase
@@ -104,7 +104,7 @@ export async function createProject(data: CreateProjectData): Promise<{ projectI
     throw new Error(`Failed to create project: ${projectError.message}`);
   }
 
-  console.log('✅ Project created with ID:', project.id);
+  // Project ID logging removed for security
 
   // Create document placeholders
   const documentTypes = [
@@ -221,7 +221,7 @@ export async function updateProject(
   const userId = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
 
-  console.log('🔄 Updating project:', projectId, 'for user:', userId);
+  // Project update logging removed for security
 
   const { error } = await supabase
     .from('projects')
@@ -244,7 +244,7 @@ export async function deleteProject(projectId: string): Promise<{ success: boole
   const userId = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
 
-  console.log('🗑️ Deleting project:', projectId, 'for user:', userId);
+  // Project deletion logging removed for security
 
   // First, delete all documents associated with the project
   const { error: documentsError } = await supabase

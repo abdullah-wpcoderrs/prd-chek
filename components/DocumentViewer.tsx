@@ -68,16 +68,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
   const fetchDocumentContent = async () => {
     if (!document.documentId || !user) {
-      console.log('🚫 Missing documentId or user:', { documentId: document.documentId, userId: user?.id });
+      // Missing document or user logging removed for security
       return;
     }
 
-    console.log('🔍 Starting document fetch for:', {
-      documentId: document.documentId,
-      userId: user.id,
-      documentName: document.name,
-      documentType: document.type
-    });
+    // Document fetch details logging removed for security
 
     setLoadingContent(true);
     setContentError(null);
@@ -92,7 +87,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         .eq('user_id', user.id) // Ensure user can only access their own documents
         .single();
 
-      console.log('📊 Document query result:', { docData, docError });
+      // Document query result logging removed for security
 
       if (docError) {
         console.error('❌ Error fetching document:', docError);
@@ -106,11 +101,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         return;
       }
 
-      console.log('📄 Document status check:', {
-        status: docData.status,
-        file_path: docData.file_path,
-        hasFilePath: !!docData.file_path
-      });
+      // Document status logging removed for security
 
       if (!docData.file_path) {
         console.warn('⚠️ No file path found for document');
@@ -126,20 +117,15 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
       // Use the file_path for viewing the document in the viewer
       const fileUrl = docData.file_path;
-      console.log('🔗 Using file_path for document viewing:', fileUrl);
+      // File path logging removed for security
 
       // Test if the URL is accessible
       try {
         const testResponse = await fetch(fileUrl, { method: 'HEAD' });
-        console.log('🔍 URL accessibility test:', {
-          url: fileUrl,
-          status: testResponse.status,
-          statusText: testResponse.statusText,
-          contentType: testResponse.headers.get('content-type')
-        });
+        // URL accessibility test logging removed for security
 
         if (testResponse.ok) {
-          console.log('✅ File URL is accessible, setting as PDF URL');
+          // File URL accessibility logging removed for security
           setPdfUrl(fileUrl);
         } else {
           console.error('❌ File URL not accessible:', testResponse.status, testResponse.statusText);
@@ -189,10 +175,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
   const handleConvertToMarkdown = async () => {
     console.log('🔍 Debug: Starting PDF to Markdown conversion');
-    console.log('🔍 Debug: document.downloadUrl =', document.downloadUrl);
-    console.log('🔍 Debug: pdfUrl =', pdfUrl || 'null');
-    console.log('🔍 Debug: document.documentId =', document.documentId);
-    console.log('🔍 Debug: user =', user?.id || 'null');
+    // Debug information logging removed for security
 
     // Validate prerequisites
     if (!user) {
@@ -209,11 +192,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Priority 1: Use download_url from database if available and valid
       if (document.downloadUrl && !document.downloadUrl.startsWith('#') && document.downloadUrl !== '') {
         conversionUrl = document.downloadUrl;
-        console.log('✅ Debug: Using document.downloadUrl:', conversionUrl);
+        // Download URL logging removed for security
       }
       // Priority 2: Fetch fresh download_url from database
       else if (document.documentId && user) {
-        console.log('🔍 Debug: Fetching fresh download_url from database...');
+        // Database fetch logging removed for security
         const { data: docData, error: docError } = await supabase
           .from('documents')
           .select('download_url, file_path, status')
@@ -228,19 +211,19 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
         if (docData?.download_url) {
           conversionUrl = docData.download_url;
-          console.log('✅ Debug: Using fresh download_url from database:', conversionUrl);
+          // Fresh download URL logging removed for security
         } else if (docData?.file_path) {
           conversionUrl = docData.file_path;
-          console.log('✅ Debug: Using file_path as fallback:', conversionUrl);
+          // File path fallback logging removed for security
         } else {
           console.warn('⚠️ Debug: No download_url or file_path found in database');
-          console.log('🔍 Debug: Document data from database:', docData);
+          // Document data logging removed for security
         }
       }
       // Priority 3: Use pdfUrl as last resort
       else if (pdfUrl) {
         conversionUrl = pdfUrl;
-        console.log('✅ Debug: Using pdfUrl as fallback:', conversionUrl);
+        // PDF URL fallback logging removed for security
       }
 
       if (!conversionUrl) {
@@ -291,7 +274,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       try {
         // Use our server-side API to fetch the PDF and avoid CORS issues
         const apiUrl = `/api/documents/download?documentId=${document.documentId}`;
-        console.log('🔍 Debug: Using API URL:', apiUrl);
+        // API URL logging removed for security
 
         response = await fetch(apiUrl, {
           method: 'GET',
@@ -301,8 +284,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           credentials: 'same-origin', // Safe to use credentials for same-origin requests
         });
 
-        console.log('🔍 Debug: API response status:', response.status);
-        console.log('🔍 Debug: API response ok:', response.ok);
+        // API response logging removed for security
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -315,7 +297,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
       // Validate content type from API response
       const contentType = response.headers.get('content-type');
-      console.log('🔍 Debug: API response content type:', contentType);
+      // Content type logging removed for security
 
       if (contentType && !contentType.includes('application/pdf')) {
         console.warn('⚠️ Debug: API returned unexpected content type:', contentType);
@@ -414,7 +396,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       link.click();
       window.document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      console.log('✅ Debug: Markdown file downloaded successfully');
+      // Markdown download success logging removed for security
 
     } catch (error) {
       console.error('❌ Error converting PDF to Markdown:', error);
@@ -450,13 +432,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       alert(fullMessage);
 
       // Also log detailed error for debugging
-      console.error('🔍 Debug: Full error details:', {
-        error,
-        message: errorMessage,
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        conversionUrl: document.downloadUrl || pdfUrl,
-        documentId: document.documentId
-      });
+      // Detailed error logging removed for security
     } finally {
       setConverting(false);
     }

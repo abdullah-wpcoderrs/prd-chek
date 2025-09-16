@@ -26,8 +26,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
       throw new Error('Project ID is required for webhook submission');
     }
 
-    console.log('🚀 Submitting to webhook:', N8N_WEBHOOK_URL);
-    console.log('📦 Payload:', JSON.stringify(request, null, 2));
+    // Webhook submission (URL and payload logging removed for security)
 
     // Send to N8N with the provided project ID (fire and forget)
     const response = await fetch(N8N_WEBHOOK_URL, {
@@ -42,7 +41,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
       }),
     });
 
-    console.log('📡 Response status:', response.status);
+    // Response status logging removed for security
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -50,7 +49,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
       throw new Error(`Webhook request failed: ${response.status} ${response.statusText}`);
     }
 
-    console.log('✅ Webhook submission successful');
+    // Webhook success logging removed for security
     return { projectId: request.projectId };
   } catch (error) {
     console.error('❌ Failed to submit project generation:', error);

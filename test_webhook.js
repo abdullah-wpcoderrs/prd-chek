@@ -25,8 +25,7 @@ const testPayload = {
 
 async function testWebhook() {
   console.log('🚀 Testing webhook connection...');
-  console.log('📡 URL:', WEBHOOK_URL);
-  console.log('📦 Payload:', JSON.stringify(testPayload, null, 2));
+  // URL and payload logging removed for security
   
   try {
     const response = await fetch(WEBHOOK_URL, {
@@ -37,8 +36,7 @@ async function testWebhook() {
       body: JSON.stringify(testPayload),
     });
     
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+    // Response details logging removed for security
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -47,7 +45,7 @@ async function testWebhook() {
     }
     
     const result = await response.json();
-    console.log('✅ Success response:', JSON.stringify(result, null, 2));
+    console.log('✅ Success response received');
     
   } catch (error) {
     console.error('❌ Network/Fetch error:', error.message);

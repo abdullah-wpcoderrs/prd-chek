@@ -19,9 +19,7 @@ const testWebhookConnectivity = async () => {
   }
 
   // Test 2: Check environment variables
-  console.log('🔍 Checking environment variables...');
-  console.log('CLERK_WEBHOOK_SECRET exists:', !!process.env.CLERK_WEBHOOK_SECRET);
-  console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  // Environment variable logging removed for security
   
   // Test 3: Manual user sync
   try {
