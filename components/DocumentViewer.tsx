@@ -4,18 +4,19 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Download, 
-  Eye, 
-  FileText, 
-  Share2, 
+import {
+  Download,
+  Eye,
+  FileText,
+  Share2,
   Printer,
   ZoomIn,
   ZoomOut,
   RotateCw,
   Maximize,
   X,
-  Loader2
+  Loader2,
+  FileCode
 } from "lucide-react";
 import { useSupabase } from "@/lib/hooks/useSupabase";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -49,6 +50,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   const [loadingContent, setLoadingContent] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [converting, setConverting] = useState(false);
   const supabase = useSupabase();
   const { user } = useAuth();
 
@@ -69,25 +71,25 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       console.log('🚫 Missing documentId or user:', { documentId: document.documentId, userId: user?.id });
       return;
     }
-    
+
     console.log('🔍 Starting document fetch for:', {
       documentId: document.documentId,
       userId: user.id,
       documentName: document.name,
       documentType: document.type
     });
-    
+
     setLoadingContent(true);
     setContentError(null);
-    
+
     try {
-      // Get the document record to verify ownership and get file path
+      // Get the document record to verify ownership and get file path for viewing
       console.log('📊 Querying documents table...');
       const { data: docData, error: docError } = await supabase
         .from('documents')
-        .select('file_path, status, id, project_id, type, name')
+        .select('file_path, download_url, status, id, project_id, type, name')
         .eq('id', document.documentId)
-        .eq('user_id', user.id)
+        .eq('user_id', user.id) // Ensure user can only access their own documents
         .single();
 
       console.log('📊 Document query result:', { docData, docError });
@@ -122,10 +124,10 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         return;
       }
 
-      // Use the file_path directly as the public URL without any modifications
+      // Use the file_path for viewing the document in the viewer
       const fileUrl = docData.file_path;
-      console.log('🔗 Using file_path directly as URL:', fileUrl);
-      
+      console.log('🔗 Using file_path for document viewing:', fileUrl);
+
       // Test if the URL is accessible
       try {
         const testResponse = await fetch(fileUrl, { method: 'HEAD' });
@@ -135,7 +137,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           statusText: testResponse.statusText,
           contentType: testResponse.headers.get('content-type')
         });
-        
+
         if (testResponse.ok) {
           console.log('✅ File URL is accessible, setting as PDF URL');
           setPdfUrl(fileUrl);
@@ -147,7 +149,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         console.error('❌ Error testing file URL:', fetchError);
         setContentError(`Failed to access document file: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       }
-      
+
     } catch (error) {
       console.error('❌ Unexpected error accessing document:', error);
       setContentError(`Failed to load document: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -156,22 +158,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     }
   };
 
-
-  
   if (!isOpen) return null;
 
   const handleDownload = () => {
-    if (pdfUrl) {
-      // Use the same PDF URL that's being displayed
-      const link = window.document.createElement('a');
-      link.href = pdfUrl;
-      link.download = `${document.name}.pdf`;
-      link.target = '_blank';
-      window.document.body.appendChild(link);
-      link.click();
-      window.document.body.removeChild(link);
-    } else if (document.downloadUrl && !document.downloadUrl.startsWith('#')) {
-      // Fallback to original download URL if available
+    // Use the download_url that was passed in the document prop for downloading
+    if (document.downloadUrl && !document.downloadUrl.startsWith('#')) {
       const link = window.document.createElement('a');
       link.href = document.downloadUrl;
       link.download = `${document.name}.pdf`;
@@ -180,8 +171,294 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       link.click();
       window.document.body.removeChild(link);
     } else {
-      // Fallback for when document is not ready
-      alert('Document is still being generated. Please wait for completion.');
+      // Fallback to pdfUrl if no download URL is available
+      if (pdfUrl) {
+        const link = window.document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `${document.name}.pdf`;
+        link.target = '_blank';
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
+      } else {
+        // Fallback for when document is not ready
+        alert('Document is still being generated. Please wait for completion.');
+      }
+    }
+  };
+
+  const handleConvertToMarkdown = async () => {
+    console.log('🔍 Debug: Starting PDF to Markdown conversion');
+    console.log('🔍 Debug: document.downloadUrl =', document.downloadUrl);
+    console.log('🔍 Debug: pdfUrl =', pdfUrl || 'null');
+    console.log('🔍 Debug: document.documentId =', document.documentId);
+    console.log('🔍 Debug: user =', user?.id || 'null');
+
+    // Validate prerequisites
+    if (!user) {
+      alert('You must be logged in to convert documents.');
+      return;
+    }
+
+    setConverting(true);
+
+    try {
+      // First, ensure we have a valid document URL
+      let conversionUrl = null;
+
+      // Priority 1: Use download_url from database if available and valid
+      if (document.downloadUrl && !document.downloadUrl.startsWith('#') && document.downloadUrl !== '') {
+        conversionUrl = document.downloadUrl;
+        console.log('✅ Debug: Using document.downloadUrl:', conversionUrl);
+      }
+      // Priority 2: Fetch fresh download_url from database
+      else if (document.documentId && user) {
+        console.log('🔍 Debug: Fetching fresh download_url from database...');
+        const { data: docData, error: docError } = await supabase
+          .from('documents')
+          .select('download_url, file_path, status')
+          .eq('id', document.documentId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (docError) {
+          console.error('❌ Debug: Error fetching document:', docError);
+          throw new Error(`Failed to fetch document: ${docError.message}`);
+        }
+
+        if (docData?.download_url) {
+          conversionUrl = docData.download_url;
+          console.log('✅ Debug: Using fresh download_url from database:', conversionUrl);
+        } else if (docData?.file_path) {
+          conversionUrl = docData.file_path;
+          console.log('✅ Debug: Using file_path as fallback:', conversionUrl);
+        } else {
+          console.warn('⚠️ Debug: No download_url or file_path found in database');
+          console.log('🔍 Debug: Document data from database:', docData);
+        }
+      }
+      // Priority 3: Use pdfUrl as last resort
+      else if (pdfUrl) {
+        conversionUrl = pdfUrl;
+        console.log('✅ Debug: Using pdfUrl as fallback:', conversionUrl);
+      }
+
+      if (!conversionUrl) {
+        console.error('❌ Debug: No conversion URL available');
+        alert('No PDF document available to convert. Please ensure the document has been generated and try again.');
+        return;
+      }
+
+      // Dynamically import PDF.js to avoid SSR issues
+      console.log('🔍 Debug: Loading PDF.js libraries');
+      let pdfjsLib;
+
+      try {
+        // Try different import paths for better compatibility
+        let pdfjsLibModule;
+        try {
+          pdfjsLibModule = await import('pdfjs-dist');
+        } catch {
+          pdfjsLibModule = await import('pdfjs-dist/build/pdf.mjs');
+        }
+
+        pdfjsLib = pdfjsLibModule.default || pdfjsLibModule;
+        console.log('✅ Debug: PDF.js library loaded successfully');
+      } catch (importError) {
+        console.error('❌ Debug: Failed to load PDF.js library:', importError);
+        throw new Error(`Failed to load PDF processing library: ${importError instanceof Error ? importError.message : 'Unknown error'}`);
+      }
+
+      // Set the worker path for PDF.js
+      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+        try {
+          // Try to use the bundled worker first
+          const workerModule = await import('pdfjs-dist/build/pdf.worker.mjs');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default || workerModule;
+          console.log('✅ Debug: PDF.js worker configured with bundled worker');
+        } catch (workerError) {
+          console.warn('⚠️ Debug: Bundled worker failed, using CDN fallback:', workerError);
+          // Fallback to CDN worker with correct version
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js';
+          console.log('✅ Debug: PDF.js worker configured with CDN fallback');
+        }
+      }
+
+      // Use our API endpoint to avoid CORS issues
+      console.log('🔍 Debug: Fetching PDF via API endpoint');
+
+      let response;
+      try {
+        // Use our server-side API to fetch the PDF and avoid CORS issues
+        const apiUrl = `/api/documents/download?documentId=${document.documentId}`;
+        console.log('🔍 Debug: Using API URL:', apiUrl);
+
+        response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/pdf,*/*',
+          },
+          credentials: 'same-origin', // Safe to use credentials for same-origin requests
+        });
+
+        console.log('🔍 Debug: API response status:', response.status);
+        console.log('🔍 Debug: API response ok:', response.ok);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
+        }
+      } catch (fetchError) {
+        console.error('❌ Debug: API fetch error:', fetchError);
+        throw new Error(`Failed to download PDF via API: ${fetchError instanceof Error ? fetchError.message : 'Unknown network error'}`);
+      }
+
+      // Validate content type from API response
+      const contentType = response.headers.get('content-type');
+      console.log('🔍 Debug: API response content type:', contentType);
+
+      if (contentType && !contentType.includes('application/pdf')) {
+        console.warn('⚠️ Debug: API returned unexpected content type:', contentType);
+        // This might be an error response, let's check
+        if (contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(`API returned error: ${errorData.error || 'Unknown error'}`);
+        }
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('✅ Debug: PDF fetched successfully, size:', arrayBuffer.byteLength);
+
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('PDF file is empty or could not be downloaded');
+      }
+
+      // Load the PDF document with proper error handling
+      console.log('🔍 Debug: Loading PDF document with PDF.js');
+      let pdf;
+      try {
+        const loadingTask = pdfjsLib.getDocument({
+          data: arrayBuffer,
+          // Add additional options for better compatibility
+          verbosity: 0, // Reduce console noise
+          isEvalSupported: false, // Disable eval for security
+          disableFontFace: false, // Allow font loading
+        });
+
+        pdf = await loadingTask.promise;
+        console.log('✅ Debug: PDF loaded successfully, numPages:', pdf.numPages);
+      } catch (pdfError) {
+        console.error('❌ Debug: PDF loading error:', pdfError);
+        throw new Error(`Invalid PDF format or corrupted file: ${pdfError instanceof Error ? pdfError.message : 'Unknown PDF error'}`);
+      }
+
+      if (!pdf || pdf.numPages === 0) {
+        throw new Error('PDF document is empty or invalid');
+      }
+
+      let markdownContent = `# ${document.name}\n\n`;
+      markdownContent += `*Generated from PDF on ${new Date().toLocaleDateString()}*\n\n`;
+
+      // Extract text from each page with better error handling
+      for (let i = 1; i <= pdf.numPages; i++) {
+        try {
+          console.log(`🔍 Debug: Processing page ${i}/${pdf.numPages}`);
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+
+          // Convert text items to markdown with better formatting
+          const textItems = textContent.items as any[];
+          let pageText = '';
+
+          // Group text items by approximate line position
+          const lines: { [key: number]: string[] } = {};
+          textItems.forEach((item) => {
+            if (item.str && item.str.trim()) {
+              const lineKey = Math.round(item.transform[5] / 5) * 5; // Group by Y position
+              if (!lines[lineKey]) lines[lineKey] = [];
+              lines[lineKey].push(item.str);
+            }
+          });
+
+          // Sort lines by Y position (top to bottom) and join
+          const sortedLines = Object.keys(lines)
+            .map(Number)
+            .sort((a, b) => b - a) // PDF coordinates are bottom-up
+            .map(lineKey => lines[lineKey].join(' ').trim())
+            .filter(line => line.length > 0);
+
+          pageText = sortedLines.join('\n');
+
+          if (pageText.trim()) {
+            markdownContent += `## Page ${i}\n\n${pageText}\n\n`;
+          } else {
+            markdownContent += `## Page ${i}\n\n*[No readable text content]*\n\n`;
+          }
+
+          console.log(`✅ Debug: Page ${i} processed (${pageText.length} characters)`);
+        } catch (pageError) {
+          console.error(`❌ Debug: Error processing page ${i}:`, pageError);
+          markdownContent += `## Page ${i}\n\n*[Error extracting text from this page]*\n\n`;
+        }
+      }
+
+      // Create and download the markdown file
+      console.log('🔍 Debug: Creating markdown file');
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.name.replace(/[^a-zA-Z0-9\s-]/g, '')}.md`;
+      link.style.display = 'none';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      console.log('✅ Debug: Markdown file downloaded successfully');
+
+    } catch (error) {
+      console.error('❌ Error converting PDF to Markdown:', error);
+
+      // Provide more specific and helpful error messages
+      let errorMessage = 'Unknown error occurred';
+      let suggestions = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Categorize errors and provide helpful suggestions
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network error')) {
+          errorMessage = 'Network error - Unable to download the PDF file.';
+          suggestions = '\n\nPossible solutions:\n• Check your internet connection\n• Try again in a few moments\n• The document might still be processing';
+        } else if (errorMessage.includes('Invalid PDF') || errorMessage.includes('corrupted')) {
+          errorMessage = 'The PDF file appears to be invalid or corrupted.';
+          suggestions = '\n\nPossible solutions:\n• Try regenerating the document\n• Contact support if the issue persists';
+        } else if (errorMessage.includes('workerSrc') || errorMessage.includes('worker')) {
+          errorMessage = 'PDF processing library configuration error.';
+          suggestions = '\n\nThis is a technical issue. Please try refreshing the page.';
+        } else if (errorMessage.includes('empty')) {
+          errorMessage = 'The PDF file is empty or could not be downloaded.';
+          suggestions = '\n\nThe document might still be generating. Please wait and try again.';
+        } else if (errorMessage.includes('Failed to load PDF processing')) {
+          errorMessage = 'Could not load PDF processing libraries.';
+          suggestions = '\n\nPlease refresh the page and try again.';
+        }
+      }
+
+      // Show user-friendly error dialog
+      const fullMessage = `Failed to convert PDF to Markdown:\n\n${errorMessage}${suggestions}`;
+      alert(fullMessage);
+
+      // Also log detailed error for debugging
+      console.error('🔍 Debug: Full error details:', {
+        error,
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        conversionUrl: document.downloadUrl || pdfUrl,
+        documentId: document.documentId
+      });
+    } finally {
+      setConverting(false);
     }
   };
 
@@ -204,16 +481,14 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   };
 
   return (
-    <div className={`fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 ${
-      isFullscreen ? 'p-0' : ''
-    }`}>
-      <div className={`bg-white rounded-md shadow-sm flex flex-col ${
-        isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-6xl h-[90vh]'
+    <div className={`fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 ${isFullscreen ? 'p-0' : ''
       }`}>
+      <div className={`bg-white rounded-md shadow-sm flex flex-col ${isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-6xl h-[90vh]'
+        }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gray-50 rounded-t-md">
           <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5" style={{color: 'var(--steel-blue-600)'}} />
+            <FileText className="w-5 h-5" style={{ color: 'var(--steel-blue-600)' }} />
             <div>
               <h2 className="font-semibold text-gray-900 font-sans">{document.name}</h2>
               <p className="text-sm text-gray-600 font-sans">
@@ -221,7 +496,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -231,9 +506,9 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             >
               <ZoomOut className="w-4 h-4" />
             </Button>
-            
+
             <span className="text-sm text-gray-600 px-2 font-sans">{zoom}%</span>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -242,7 +517,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             >
               <ZoomIn className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -251,7 +526,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             >
               <Maximize className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -260,7 +535,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             >
               <Share2 className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -269,7 +544,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             >
               <Download className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -280,7 +555,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             </Button>
           </div>
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Main PDF Viewer Area */}
@@ -299,7 +574,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">PDF Document Unavailable</h3>
                   <p className="text-gray-600 mb-4">{contentError}</p>
                   <div className="flex gap-2 justify-center">
-                    <Button 
+                    <Button
                       onClick={fetchDocumentContent}
                       variant="outline"
                       className="font-sans"
@@ -314,7 +589,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                 <iframe
                   src={pdfUrl}
                   className="w-full h-full border-0 rounded-md"
-                  style={{ 
+                  style={{
                     transform: `scale(${zoom / 100})`,
                     transformOrigin: 'top left',
                     width: `${100 / (zoom / 100)}%`,
@@ -335,7 +610,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
               </div>
             )}
           </div>
-          
+
           {/* Sidebar */}
           <div className="w-64 border-l bg-white p-4 space-y-4 overflow-y-auto">
             <Card>
@@ -359,33 +634,52 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-sans">Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="w-full font-sans"
                   onClick={handleDownload}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full font-sans"
+                  onClick={handleConvertToMarkdown}
+                  disabled={converting || !document.documentId}
+                >
+                  {converting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <FileCode className="w-4 h-4 mr-2" />
+                      To Markdown
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="w-full font-sans"
                   onClick={() => window.print()}
                 >
                   <Printer className="w-4 h-4 mr-2" />
                   Print
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="w-full font-sans"
                   onClick={handleShare}
                 >
@@ -396,7 +690,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             </Card>
           </div>
         </div>
-        
+
         {/* Footer */}
         <div className="flex items-center justify-center p-4 border-t bg-gray-50">
           <div className="text-sm text-gray-500 font-sans">
