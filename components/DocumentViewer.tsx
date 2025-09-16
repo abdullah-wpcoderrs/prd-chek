@@ -83,7 +83,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
     try {
       // Get the document record to verify ownership and get file path for viewing
-      console.log('📊 Querying documents table...');
       const { data: docData, error: docError } = await supabase
         .from('documents')
         .select('file_path, download_url, status, id, project_id, type, name')
@@ -94,13 +93,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Document query result logging removed for security
 
       if (docError) {
-        console.error('❌ Error fetching document:', docError);
         setContentError(`Failed to fetch document information: ${docError.message}`);
         return;
       }
 
       if (!docData) {
-        console.error('❌ No document data found');
         setContentError('Document not found in database.');
         return;
       }
@@ -108,13 +105,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Document status logging removed for security
 
       if (!docData.file_path) {
-        console.warn('⚠️ No file path found for document');
         setContentError('Document file path not set. The document may not have been uploaded yet.');
         return;
       }
 
       if (docData.status !== 'completed') {
-        console.warn('⚠️ Document not completed:', docData.status);
         setContentError(`Document is not ready yet. Status: ${docData.status}`);
         return;
       }
@@ -129,19 +124,15 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         // URL accessibility test logging removed for security
 
         if (testResponse.ok) {
-          // File URL accessibility logging removed for security
           setPdfUrl(fileUrl);
         } else {
-          console.error('❌ File URL not accessible:', testResponse.status, testResponse.statusText);
           setContentError(`Document file is not accessible (${testResponse.status}: ${testResponse.statusText})`);
         }
       } catch (fetchError) {
-        console.error('❌ Error testing file URL:', fetchError);
         setContentError(`Failed to access document file: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       }
 
     } catch (error) {
-      console.error('❌ Unexpected error accessing document:', error);
       setContentError(`Failed to load document: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoadingContent(false);
@@ -336,6 +327,164 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       /^[ivxlcdm]+\.\s/i.test(text);
   };
 
+  // Function to process positioned text and maintain structure
+  const processPositionedTextToStructured = async (extractedContent: any[]): Promise<string> => {
+    let result = '';
+
+    for (const page of extractedContent) {
+      // Group text items by line position with detailed formatting info
+      const lineGroups: {
+        [key: number]: Array<{
+          text: string;
+          fontSize: number;
+          fontName: string;
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        }>
+      } = {};
+
+      page.items.forEach((item: any) => {
+        if (item.text && item.text.trim()) {
+          const lineKey = Math.round(item.y / 3) * 3; // Group by Y position
+          if (!lineGroups[lineKey]) lineGroups[lineKey] = [];
+
+          lineGroups[lineKey].push({
+            text: item.text,
+            fontSize: item.fontSize,
+            fontName: item.fontName,
+            x: item.x,
+            y: item.y,
+            width: item.width,
+            height: item.height
+          });
+        }
+      });
+
+      // Sort lines by Y position (top to bottom)
+      const sortedLineKeys = Object.keys(lineGroups)
+        .map(Number)
+        .sort((a, b) => b - a); // PDF coordinates are bottom-up
+
+      // Detect document type and structure
+      const hasTreeStructure = sortedLineKeys.some(lineKey => {
+        const lineItems = lineGroups[lineKey];
+        const lineText = lineItems.map(item => item.text).join('').trim();
+        return /[├└│─┌┐┘┴┬┤┼]/.test(lineText);
+      });
+
+      if (hasTreeStructure) {
+        // Process as tree structure document (like sitemap)
+        for (const lineKey of sortedLineKeys) {
+          const lineItems = lineGroups[lineKey];
+          lineItems.sort((a, b) => a.x - b.x);
+
+          const minX = Math.min(...lineItems.map(item => item.x));
+          const lineText = lineItems.map(item => item.text).join('').trim();
+          
+          if (!lineText) continue;
+
+          const isTreeItem = /[├└│─┌┐┘┴┬┤┼]/.test(lineText);
+          
+          if (isTreeItem) {
+            const baseIndent = Math.floor(minX / 15);
+            const treeIndent = '  '.repeat(Math.max(0, baseIndent));
+            result += `${treeIndent}${lineText}\n`;
+          } else {
+            const indent = '  '.repeat(Math.max(0, Math.floor(minX / 20)));
+            result += `${indent}${lineText}\n`;
+          }
+        }
+      } else {
+        // Process as regular document with paragraphs
+        let currentParagraph = '';
+        let lastY = null;
+        let lastFontSize = null;
+        let lastIndent = null;
+
+        for (const lineKey of sortedLineKeys) {
+          const lineItems = lineGroups[lineKey];
+          lineItems.sort((a, b) => a.x - b.x);
+
+          const minX = Math.min(...lineItems.map(item => item.x));
+          const avgFontSize = lineItems.reduce((sum, item) => sum + item.fontSize, 0) / lineItems.length;
+          const lineText = lineItems.map(item => item.text).join('').trim();
+          
+          if (!lineText) {
+            // Empty line - end current paragraph
+            if (currentParagraph.trim()) {
+              result += currentParagraph.trim() + '\n\n';
+              currentParagraph = '';
+            }
+            continue;
+          }
+
+          const currentIndent = Math.floor(minX / 20);
+          const isHeading = detectHeadingFromText(lineText, avgFontSize);
+          const isListItem = /^[-•*]\s/.test(lineText) || /^\d+\.\s/.test(lineText);
+
+          // Check if this should start a new paragraph
+          const shouldStartNewParagraph = 
+            isHeading ||
+            isListItem ||
+            (lastIndent !== null && currentIndent !== lastIndent) ||
+            (lastFontSize !== null && Math.abs(avgFontSize - lastFontSize) > 2) ||
+            (lastY !== null && Math.abs(lineKey - lastY) > 20); // Large gap between lines
+
+          if (shouldStartNewParagraph && currentParagraph.trim()) {
+            result += currentParagraph.trim() + '\n\n';
+            currentParagraph = '';
+          }
+
+          // Add indentation for the line
+          const indent = '  '.repeat(Math.max(0, currentIndent));
+          
+          if (isHeading || isListItem || shouldStartNewParagraph) {
+            result += `${indent}${lineText}\n`;
+            if (!isListItem) result += '\n'; // Add extra space after headings
+          } else {
+            // Continue current paragraph
+            if (currentParagraph) {
+              currentParagraph += ' ' + lineText;
+            } else {
+              currentParagraph = `${indent}${lineText}`;
+            }
+          }
+
+          lastY = lineKey;
+          lastFontSize = avgFontSize;
+          lastIndent = currentIndent;
+        }
+
+        // Add any remaining paragraph
+        if (currentParagraph.trim()) {
+          result += currentParagraph.trim() + '\n\n';
+        }
+      }
+      
+      result += '\n'; // Add page break
+    }
+
+    return result;
+  };
+
+  // Helper function to detect headings
+  const detectHeadingFromText = (text: string, fontSize: number): boolean => {
+    // Check if text looks like a heading
+    const headingPatterns = [
+      /^(Overview|Introduction|Summary|Conclusion|Abstract|Background|Context|Objective|Goal|Scope|Features?|Requirements?|Specifications?)$/i,
+      /^(Document Control|Version History|In-Scope|Out-of-Scope)$/i,
+      /^[A-Z][A-Za-z\s&()]+$/,
+    ];
+
+    const isShortAndCapitalized = text.length < 80 && /^[A-Z]/.test(text) && !text.endsWith('.');
+    const matchesPattern = headingPatterns.some(pattern => pattern.test(text));
+    const isLargerFont = fontSize > 12; // Assuming base font is 12pt
+
+    return (matchesPattern || isShortAndCapitalized) && (isLargerFont || text.length < 50);
+  };
+
   const handleConvertToWord = async () => {
     if (!user) {
       alert('You must be logged in to convert documents.');
@@ -440,21 +589,33 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         throw new Error('PDF document is empty or invalid');
       }
 
-      // Extract text from all pages
-      let extractedText = '';
+      // Extract text from all pages with positioning information
+      let extractedContent = [];
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
 
-        // Combine text items
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
+        // Process text items with positioning information
+        const pageItems = textContent.items.map((item: any) => ({
+          text: item.str,
+          x: item.transform[4] || 0,
+          y: item.transform[5] || 0,
+          fontSize: item.transform[0] || 12,
+          fontName: item.fontName || '',
+          width: item.width || 0,
+          height: item.height || 0
+        }));
 
-        extractedText += pageText + '\n\n';
+        extractedContent.push({
+          pageNumber: i,
+          items: pageItems
+        });
       }
 
-      if (!extractedText.trim()) {
+      // Convert positioned text to structured format
+      const structuredText = await processPositionedTextToStructured(extractedContent);
+
+      if (!structuredText.trim()) {
         throw new Error('No text could be extracted from the PDF');
       }
 
@@ -466,7 +627,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         },
         body: JSON.stringify({
           documentId: document.documentId,
-          extractedText: extractedText,
+          extractedText: structuredText,
           documentName: document.name,
         }),
       });
@@ -498,8 +659,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       });
 
     } catch (error) {
-      console.error('❌ Error converting to Word:', error);
-
       let errorMessage = 'Unknown error occurred';
       let suggestions = '';
 
@@ -527,8 +686,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   };
 
   const handleConvertToMarkdown = async () => {
-    console.log('🔍 Debug: Starting PDF to Markdown conversion');
-    // Debug information logging removed for security
 
     // Validate prerequisites
     if (!user) {
@@ -558,7 +715,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           .single();
 
         if (docError) {
-          console.error('❌ Debug: Error fetching document:', docError);
           throw new Error(`Failed to fetch document: ${docError.message}`);
         }
 
@@ -568,9 +724,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         } else if (docData?.file_path) {
           conversionUrl = docData.file_path;
           // File path fallback logging removed for security
-        } else {
-          console.warn('⚠️ Debug: No download_url or file_path found in database');
-          // Document data logging removed for security
         }
       }
       // Priority 3: Use pdfUrl as last resort
@@ -580,13 +733,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       }
 
       if (!conversionUrl) {
-        console.error('❌ Debug: No conversion URL available');
         alert('No PDF document available to convert. Please ensure the document has been generated and try again.');
         return;
       }
 
       // Dynamically import PDF.js to avoid SSR issues
-      console.log('🔍 Debug: Loading PDF.js libraries');
       let pdfjsLib;
 
       try {
@@ -599,9 +750,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         }
 
         pdfjsLib = pdfjsLibModule.default || pdfjsLibModule;
-        console.log('✅ Debug: PDF.js library loaded successfully');
       } catch (importError) {
-        console.error('❌ Debug: Failed to load PDF.js library:', importError);
         throw new Error(`Failed to load PDF processing library: ${importError instanceof Error ? importError.message : 'Unknown error'}`);
       }
 
@@ -621,7 +770,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       }
 
       // Use our API endpoint to avoid CORS issues
-      console.log('🔍 Debug: Fetching PDF via API endpoint');
 
       let response;
       try {
@@ -662,14 +810,12 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      console.log('✅ Debug: PDF fetched successfully, size:', arrayBuffer.byteLength);
 
       if (arrayBuffer.byteLength === 0) {
         throw new Error('PDF file is empty or could not be downloaded');
       }
 
       // Load the PDF document with proper error handling
-      console.log('🔍 Debug: Loading PDF document with PDF.js');
       let pdf;
       try {
         const loadingTask = pdfjsLib.getDocument({
@@ -681,9 +827,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         });
 
         pdf = await loadingTask.promise;
-        console.log('✅ Debug: PDF loaded successfully, numPages:', pdf.numPages);
       } catch (pdfError) {
-        console.error('❌ Debug: PDF loading error:', pdfError);
         throw new Error(`Invalid PDF format or corrupted file: ${pdfError instanceof Error ? pdfError.message : 'Unknown PDF error'}`);
       }
 
@@ -699,7 +843,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Extract text from each page with better error handling
       for (let i = 1; i <= pdf.numPages; i++) {
         try {
-          console.log(`🔍 Debug: Processing page ${i}/${pdf.numPages}`);
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
 
@@ -719,15 +862,12 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
             markdownContent += `## Page ${i}\n\n*[No readable text content]*\n\n`;
           }
 
-          console.log(`✅ Debug: Page ${i} processed (${processedLines.length} characters)`);
         } catch (pageError) {
-          console.error(`❌ Debug: Error processing page ${i}:`, pageError);
           markdownContent += `## Page ${i}\n\n*[Error extracting text from this page]*\n\n`;
         }
       }
 
       // Create and download the markdown file
-      console.log('🔍 Debug: Creating markdown file');
       const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = window.document.createElement('a');
@@ -748,7 +888,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       });
 
     } catch (error) {
-      console.error('❌ Error converting PDF to Markdown:', error);
 
       // Provide more specific and helpful error messages
       let errorMessage = 'Unknown error occurred';
@@ -796,7 +935,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Share cancelled');
+        // Share cancelled
       }
     } else {
       // Fallback to clipboard

@@ -3,28 +3,37 @@
 
 const testWordConversion = async () => {
   console.log('🚀 Testing Word conversion API...');
-  
+
   const testPayload = {
     documentId: 'test-doc-123',
-    extractedText: `Product Requirements Document
+    extractedText: `Application Sitemap
 
-Overview
-This is a test document for Word conversion functionality.
+Onboarding & Authentication
+  ├─ Welcome Screen
+  ├─ Sign Up / Login
+  │  ├─ Email & Password
+  │  ├─ Social Login (Google, Apple)
+  │  └─ Forgot Password
+  └─ Walkthrough / Tutorial
 
-Features
-• User authentication
-• Document management
-• PDF to Word conversion
-• Real-time collaboration
+Home Dashboard
+  ├─ My Tasks Overview
+  │  ├─ Today
+  │  ├─ Upcoming
+  │  ├─ Overdue
+  │  └─ Completed
+  ├─ Recent Lists
+  └─ Quick Add Task
 
-Technical Requirements
-The system should support:
-1. Multiple file formats
-2. Secure user access
-3. Fast conversion processing
-
-Conclusion
-This test document demonstrates the Word conversion feature.`,
+Project Management
+  ├─ Project Lists
+  │  ├─ Active Projects
+  │  ├─ Archived Projects
+  │  └─ Templates
+  └─ Project Detail View
+     ├─ Task Board (List/Kanban)
+     ├─ Calendar View
+     └─ Team Members`,
     documentName: 'Test Document'
   };
 
@@ -51,7 +60,7 @@ This test document demonstrates the Word conversion feature.`,
     if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
       console.log('✅ Success: Received Word document');
       console.log('Content-Type:', contentType);
-      
+
       const blob = await response.blob();
       console.log('Document size:', blob.size, 'bytes');
     } else {
