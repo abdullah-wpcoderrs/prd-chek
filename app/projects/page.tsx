@@ -57,6 +57,7 @@ import {
 import Link from "next/link";
 import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
 import { deleteProject, updateProject } from "@/lib/actions/project.actions";
+import { formatFileSize } from "@/lib/utils/file-size";
 
 const documentIcons = {
   "PRD": FileText,
@@ -122,7 +123,7 @@ export default function ProjectsPage() {
       id: `${selectedProject}-${document.type}`,
       name: document.name,
       type: document.type,
-      size: document.file_size ? `${(document.file_size / 1024).toFixed(1)} KB` : "Processing...",
+      size: formatFileSize(document.file_size),
       downloadUrl: document.download_url || `#download-${document.type}`,
       createdAt: document.created_at,
       documentId: document.id // Pass the actual document ID for content fetching
@@ -524,7 +525,7 @@ Complexity: ${project.complexity}`;
                             <div>
                               <div className="font-medium text-sm font-sans">{doc.name}</div>
                               <div className="text-xs text-gray-500 font-sans">
-                                {doc.file_size ? `${(doc.file_size / 1024 / 1024).toFixed(1)} MB` : 'Processing...'}
+                                {formatFileSize(doc.file_size)}
                               </div>
                             </div>
                           </div>

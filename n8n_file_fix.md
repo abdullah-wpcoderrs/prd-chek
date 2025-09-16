@@ -13,6 +13,15 @@ Based on your storage URL: `https://qiviknxunhsatdhwmzdz.supabase.co/storage/v1/
 
 ## 🛠️ **Required N8N Workflow Updates**
 
+### **0. API Endpoint Configuration**
+Add the document status update API endpoint to your N8N workflow:
+```
+POST {APP_BASE_URL}/api/documents/update-status
+```
+
+**Required Environment Variables:**
+- `APP_BASE_URL` - Your application's base URL (e.g., `https://your-app.com`)
+
 ### **1. File Naming Convention**
 Update your N8N workflow to use this naming pattern:
 ```
@@ -44,17 +53,46 @@ supabase.storage
 ```
 
 ### **3. Database Update Process**
-After successful upload, update the documents table:
+After successful upload, call the document status update API:
 
 ```javascript
-// Update document record in database
+// Update document record via API endpoint
+const updatePayload = {
+  projectId: projectId,
+  userId: userId,
+  documentType: documentType,
+  status: 'completed',
+  filePath: fileName, // Just the filename, not full path
+  fileSize: fileSize, // File size in bytes
+  downloadUrl: null // Let the app generate signed URLs
+};
+
+const response = await fetch(`${APP_BASE_URL}/api/documents/update-status`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(updatePayload)
+});
+
+if (!response.ok) {
+  console.error('Failed to update document status:', await response.text());
+  throw new Error('Document status update failed');
+}
+
+console.log('Document status updated successfully');
+```
+
+**Alternative: Direct Database Update (if using Supabase service role)**
+```javascript
+// Direct database update (requires service role key)
 await supabase
   .from('documents')
   .update({
     status: 'completed',
-    file_path: fileName, // Just the filename, not full path
+    file_path: fileName,
     file_size: fileSize,
-    download_url: null // Let the app generate signed URLs
+    download_url: null
   })
   .eq('project_id', projectId)
   .eq('type', documentType)
