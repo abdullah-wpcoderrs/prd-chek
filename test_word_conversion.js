@@ -33,7 +33,9 @@ Project Management
   └─ Project Detail View
      ├─ Task Board (List/Kanban)
      ├─ Calendar View
-     └─ Team Members`,
+     └─ Team Members
+
+This document will now include PRDChek watermarks in headers and footers.`,
     documentName: 'Test Document'
   };
 

@@ -9,7 +9,6 @@ import {
   Eye,
   FileText,
   Share2,
-  Printer,
   ZoomIn,
   ZoomOut,
   RotateCw,
@@ -792,7 +791,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
         }
       } catch (fetchError) {
-        console.error('❌ Debug: API fetch error:', fetchError);
         throw new Error(`Failed to download PDF via API: ${fetchError instanceof Error ? fetchError.message : 'Unknown network error'}`);
       }
 
@@ -801,7 +799,6 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Content type logging removed for security
 
       if (contentType && !contentType.includes('application/pdf')) {
-        console.warn('⚠️ Debug: API returned unexpected content type:', contentType);
         // This might be an error response, let's check
         if (contentType.includes('application/json')) {
           const errorData = await response.json();
@@ -838,7 +835,8 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Create a clean document title
       const cleanTitle = document.name.replace(/\.(pdf|PDF)$/, '').replace(/[_-]/g, ' ');
       let markdownContent = `# ${cleanTitle}\n\n`;
-      markdownContent += `*Generated from PDF on ${new Date().toLocaleDateString()}*\n\n`;
+      markdownContent += `**PRDChek** - *Generated from PDF on ${new Date().toLocaleDateString()}*\n\n`;
+      markdownContent += `---\n\n`;
 
       // Extract text from each page with better error handling
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -1158,15 +1156,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                     </>
                   )}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full font-sans"
-                  onClick={() => window.print()}
-                >
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print
-                </Button>
+
                 <Button
                   variant="outline"
                   size="sm"
