@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useGeneration } from "@/lib/context/GenerationContext";
-import { 
-  FileText, 
-  Users, 
-  Map, 
-  Code, 
-  Layout, 
+import {
+  FileText,
+  Users,
+  Map,
+  Code,
+  Layout,
   Clock,
   CheckCircle2,
   Loader2,
@@ -70,30 +70,32 @@ const statusConfig: Record<string, {
   }
 };
 
-export function GenerationProgressComponent({ 
-  projectId, 
-  onComplete, 
+export function GenerationProgressComponent({
+  projectId,
+  onComplete,
   onCancel,
-  onClickOutside 
+  onClickOutside
 }: GenerationProgressComponentProps) {
-  const { getGenerationStatus, startGeneration } = useGeneration();
+  const { getGenerationStatus, addGeneration } = useGeneration();
   const modalRef = useRef<HTMLDivElement>(null);
-  
+
   // Get status from context
   const progress = getGenerationStatus(projectId);
-  
+
   // Initialize generation polling when component mounts
   useEffect(() => {
-    startGeneration(projectId);
-  }, [projectId, startGeneration]);
-  
+    if (!progress) {
+      addGeneration(projectId);
+    }
+  }, [projectId, addGeneration, progress]);
+
   // Handle completion
   useEffect(() => {
     if (progress?.status === 'completed') {
       setTimeout(() => onComplete(projectId), 2000);
     }
   }, [progress?.status, projectId, onComplete]);
-  
+
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -101,20 +103,20 @@ export function GenerationProgressComponent({
         onClickOutside?.();
       }
     };
-    
+
     if (onClickOutside) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [onClickOutside]);
-  
+
   // Fallback if no progress data
   if (!progress) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <Card className="w-full max-w-2xl shadow-sm" ref={modalRef}>
           <CardContent className="p-8 text-center">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{color: 'var(--steel-blue-600)'}} />
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: 'var(--steel-blue-600)' }} />
             <p className="text-gray-600 font-sans">Initializing generation...</p>
           </CardContent>
         </Card>
@@ -136,25 +138,25 @@ export function GenerationProgressComponent({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 font-sans">
-                {progress.status === 'processing' && <Loader2 className="w-5 h-5 animate-spin" style={{color: 'var(--steel-blue-600)'}} />}
+                {progress.status === 'processing' && <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--steel-blue-600)' }} />}
                 {progress.status === 'completed' && <CheckCircle2 className="w-5 h-5 text-green-600" />}
                 {progress.status === 'failed' && <XCircle className="w-5 h-5 text-red-600" />}
                 {progress.status === 'pending' && <Clock className="w-5 h-5 text-gray-400" />}
-                
+
                 {progress.status === 'pending' && "Preparing Generation..."}
                 {progress.status === 'processing' && "Generating Documentation"}
                 {progress.status === 'completed' && "Generation Complete!"}
                 {progress.status === 'failed' && "Generation Failed"}
               </CardTitle>
-              
+
               <p className="text-sm text-gray-600 mt-1 font-sans">
                 {progress.currentStep}
               </p>
             </div>
-            
+
             {progress.status !== 'completed' && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={onCancel}
                 className="font-sans"
               >
@@ -163,7 +165,7 @@ export function GenerationProgressComponent({
             )}
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {/* Overall Progress */}
           <div className="space-y-2">
@@ -189,17 +191,17 @@ export function GenerationProgressComponent({
                 const StatusIcon = config.icon;
 
                 return (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-center justify-between p-3 border rounded-sm"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-sm flex items-center justify-center ${config.bgColor}`}
-                           style={doc.status === 'processing' ? {backgroundColor: 'var(--steel-blue-100)'} : {}}>
-                        <IconComponent className="w-5 h-5 text-gray-600" 
-                                     style={doc.status === 'processing' ? {color: 'var(--steel-blue-600)'} : {}} />
+                        style={doc.status === 'processing' ? { backgroundColor: 'var(--steel-blue-100)' } : {}}>
+                        <IconComponent className="w-5 h-5 text-gray-600"
+                          style={doc.status === 'processing' ? { color: 'var(--steel-blue-600)' } : {}} />
                       </div>
-                      
+
                       <div>
                         <div className="font-medium text-sm text-gray-900 font-sans">
                           {doc.name}
@@ -211,10 +213,10 @@ export function GenerationProgressComponent({
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={`${config.color} border-current font-sans`}
                       >
                         <StatusIcon className={`w-3 h-3 mr-1 ${config.animate === true ? 'animate-spin' : ''}`} />
@@ -235,7 +237,7 @@ export function GenerationProgressComponent({
                 <span className="font-semibold font-sans">Success!</span>
               </div>
               <p className="text-sm text-green-700 font-sans">
-                Your documentation suite has been generated successfully. 
+                Your documentation suite has been generated successfully.
                 You'll be redirected to your projects dashboard in a moment.
               </p>
             </div>
@@ -252,15 +254,15 @@ export function GenerationProgressComponent({
                 Something went wrong during the generation process. Please try again.
               </p>
               <div className="flex gap-2">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={onCancel}
                   className="font-sans"
                 >
                   Close
                 </Button>
-                <Button 
+                <Button
                   size="sm"
                   className="bg-red-600 hover:bg-red-700 text-white font-sans"
                 >

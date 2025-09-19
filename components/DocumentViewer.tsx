@@ -9,17 +9,18 @@ import {
   Eye,
   FileText,
   Share2,
-  Printer,
   ZoomIn,
   ZoomOut,
   RotateCw,
   Maximize,
   X,
   Loader2,
-  FileCode
+  FileCode,
+  FileType
 } from "lucide-react";
 import { useSupabase } from "@/lib/hooks/useSupabase";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useToast } from "@/lib/hooks/use-toast";
 
 // Extended StorageError interface to include runtime properties
 interface ExtendedStorageError {
@@ -51,8 +52,10 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   const [contentError, setContentError] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [converting, setConverting] = useState(false);
+  const [convertingToWord, setConvertingToWord] = useState(false);
   const supabase = useSupabase();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Fetch document content when viewer opens
   useEffect(() => {
@@ -68,23 +71,17 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
   const fetchDocumentContent = async () => {
     if (!document.documentId || !user) {
-      console.log('🚫 Missing documentId or user:', { documentId: document.documentId, userId: user?.id });
+      // Missing document or user logging removed for security
       return;
     }
 
-    console.log('🔍 Starting document fetch for:', {
-      documentId: document.documentId,
-      userId: user.id,
-      documentName: document.name,
-      documentType: document.type
-    });
+    // Document fetch details logging removed for security
 
     setLoadingContent(true);
     setContentError(null);
 
     try {
       // Get the document record to verify ownership and get file path for viewing
-      console.log('📊 Querying documents table...');
       const { data: docData, error: docError } = await supabase
         .from('documents')
         .select('file_path, download_url, status, id, project_id, type, name')
@@ -92,66 +89,49 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         .eq('user_id', user.id) // Ensure user can only access their own documents
         .single();
 
-      console.log('📊 Document query result:', { docData, docError });
+      // Document query result logging removed for security
 
       if (docError) {
-        console.error('❌ Error fetching document:', docError);
         setContentError(`Failed to fetch document information: ${docError.message}`);
         return;
       }
 
       if (!docData) {
-        console.error('❌ No document data found');
         setContentError('Document not found in database.');
         return;
       }
 
-      console.log('📄 Document status check:', {
-        status: docData.status,
-        file_path: docData.file_path,
-        hasFilePath: !!docData.file_path
-      });
+      // Document status logging removed for security
 
       if (!docData.file_path) {
-        console.warn('⚠️ No file path found for document');
         setContentError('Document file path not set. The document may not have been uploaded yet.');
         return;
       }
 
       if (docData.status !== 'completed') {
-        console.warn('⚠️ Document not completed:', docData.status);
         setContentError(`Document is not ready yet. Status: ${docData.status}`);
         return;
       }
 
       // Use the file_path for viewing the document in the viewer
       const fileUrl = docData.file_path;
-      console.log('🔗 Using file_path for document viewing:', fileUrl);
+      // File path logging removed for security
 
       // Test if the URL is accessible
       try {
         const testResponse = await fetch(fileUrl, { method: 'HEAD' });
-        console.log('🔍 URL accessibility test:', {
-          url: fileUrl,
-          status: testResponse.status,
-          statusText: testResponse.statusText,
-          contentType: testResponse.headers.get('content-type')
-        });
+        // URL accessibility test logging removed for security
 
         if (testResponse.ok) {
-          console.log('✅ File URL is accessible, setting as PDF URL');
           setPdfUrl(fileUrl);
         } else {
-          console.error('❌ File URL not accessible:', testResponse.status, testResponse.statusText);
           setContentError(`Document file is not accessible (${testResponse.status}: ${testResponse.statusText})`);
         }
       } catch (fetchError) {
-        console.error('❌ Error testing file URL:', fetchError);
         setContentError(`Failed to access document file: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       }
 
     } catch (error) {
-      console.error('❌ Unexpected error accessing document:', error);
       setContentError(`Failed to load document: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoadingContent(false);
@@ -187,12 +167,524 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     }
   };
 
+  // Enhanced text processing function for better markdown formatting
+  const processTextItemsToMarkdown = async (textItems: any[]): Promise<string> => {
+    if (!textItems || textItems.length === 0) return '';
+
+    // Group text items by line position with detailed formatting info
+    const lineGroups: {
+      [key: number]: Array<{
+        text: string;
+        fontSize: number;
+        fontName: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      }>
+    } = {};
+
+    textItems.forEach((item) => {
+      if (item.str && item.str.trim()) {
+        const lineKey = Math.round(item.transform[5] / 3) * 3; // More precise Y grouping
+        if (!lineGroups[lineKey]) lineGroups[lineKey] = [];
+
+        lineGroups[lineKey].push({
+          text: item.str,
+          fontSize: item.transform[0] || 12, // Font size from transform matrix
+          fontName: item.fontName || '',
+          x: item.transform[4] || 0,
+          y: item.transform[5] || 0,
+          width: item.width || 0,
+          height: item.height || 0
+        });
+      }
+    });
+
+    // Sort lines by Y position (top to bottom)
+    const sortedLineKeys = Object.keys(lineGroups)
+      .map(Number)
+      .sort((a, b) => b - a); // PDF coordinates are bottom-up
+
+    let result = '';
+    let previousFontSize = 0;
+    let averageFontSize = 0;
+
+    // Calculate average font size for baseline
+    const allFontSizes = sortedLineKeys.flatMap(key =>
+      lineGroups[key].map(item => item.fontSize)
+    );
+    averageFontSize = allFontSizes.reduce((sum, size) => sum + size, 0) / allFontSizes.length;
+
+    sortedLineKeys.forEach((lineKey, index) => {
+      const lineItems = lineGroups[lineKey];
+
+      // Sort items in line by X position (left to right)
+      lineItems.sort((a, b) => a.x - b.x);
+
+      // Combine text items in the line
+      const lineText = lineItems.map(item => item.text).join('').trim();
+
+      if (!lineText) return;
+
+      // Get dominant font size for this line
+      const lineFontSize = lineItems.reduce((sum, item) => sum + item.fontSize, 0) / lineItems.length;
+
+      // Determine if this line is a heading based on various criteria
+      const isHeading = detectHeading(lineText, lineFontSize, averageFontSize, lineItems);
+
+      if (isHeading.isHeading) {
+        // Add appropriate markdown heading syntax
+        const headingLevel = Math.min(isHeading.level, 6);
+        const headingPrefix = '#'.repeat(headingLevel);
+        result += `${headingPrefix} ${lineText}\n\n`;
+      } else {
+        // Regular text - check if it should be a list item or paragraph
+        if (isListItem(lineText)) {
+          result += `- ${lineText.replace(/^[-•*]\s*/, '')}\n`;
+        } else if (lineText.includes(':') && lineText.length < 150 && !lineText.endsWith('.')) {
+          // Likely a definition or key-value pair
+          const [key, ...valueParts] = lineText.split(':');
+          if (valueParts.length > 0) {
+            const value = valueParts.join(':').trim();
+            result += `**${key.trim()}**: ${value}\n\n`;
+          } else {
+            result += `${lineText}\n\n`;
+          }
+        } else {
+          // Regular paragraph
+          result += `${lineText}\n\n`;
+        }
+      }
+    });
+
+    // Clean up excessive line breaks and return
+    return result
+      .replace(/\n{3,}/g, '\n\n') // Replace 3+ line breaks with 2
+      .trim();
+  };
+
+  // Function to detect if a line should be formatted as a heading
+  const detectHeading = (text: string, fontSize: number, avgFontSize: number, items: any[]) => {
+    let level = 2; // Default to h2
+    let isHeading = false;
+
+    // Criteria for heading detection:
+
+    // 1. Font size significantly larger than average
+    if (fontSize > avgFontSize * 1.2) {
+      isHeading = true;
+      if (fontSize > avgFontSize * 1.5) level = 1;
+      else if (fontSize > avgFontSize * 1.3) level = 2;
+      else level = 3;
+    }
+
+    // 2. Text characteristics that suggest headings
+    const headingPatterns = [
+      /^(Overview|Introduction|Summary|Conclusion|Abstract)$/i,
+      /^(Frontend|Backend|Database|API|Architecture)(\s*\([^)]+\))?$/i,
+      /^(Requirements?|Specifications?|Features?)$/i,
+      /^(Technology|Tech|Technical)\s+(Stack|Requirements?|Specifications?)$/i,
+      /^(Mobile|Web|Desktop|Server)\s+(App|Application|Development)$/i,
+      /^(Framework|Library|Navigation|State Management|Forms|Offline Support|Animations|File Attachments|Accessibility)$/i,
+      /^(UI Library|State Management|Forms & Validation|File Attachments)$/i,
+      /^(Chapter|Section|Part)\s+\d+/i,
+      /^[A-Z][A-Za-z\s&()]+$/,
+    ];
+
+    const isShortAndCapitalized = text.length < 50 && /^[A-Z]/.test(text) && !/[.!?]$/.test(text);
+    const matchesPattern = headingPatterns.some(pattern => pattern.test(text));
+
+    if (matchesPattern || isShortAndCapitalized) {
+      isHeading = true;
+
+      // Determine level based on text content and structure
+      if (/^(Overview|Introduction|Summary|Abstract|Conclusion)$/i.test(text)) level = 2;
+      else if (/^(Frontend|Backend|Database|API|Architecture)(\s*\([^)]+\))?$/i.test(text)) level = 2;
+      else if (/^(Technology|Tech|Technical)\s+(Stack|Requirements?|Specifications?)$/i.test(text)) level = 1;
+      else if (/^(Framework|Library|Navigation|State Management|Forms|Offline Support|Animations|File Attachments|Accessibility)$/i.test(text)) level = 3;
+      else if (text.includes(':') && text.length < 100 && !text.endsWith('.')) level = 4;
+      else if (isShortAndCapitalized && text.length < 30) level = 2;
+      else if (isShortAndCapitalized && text.length < 60) level = 3;
+      else level = 3;
+    }
+
+    // 3. Standalone lines (not part of a paragraph)
+    if (text.length < 80 && !text.endsWith('.') && !text.includes(',') && /^[A-Z]/.test(text)) {
+      isHeading = true;
+      level = Math.max(level, 3);
+    }
+
+    return { isHeading, level };
+  };
+
+  // Function to detect list items
+  const isListItem = (text: string): boolean => {
+    return /^[-•*]\s/.test(text) ||
+      /^\d+\.\s/.test(text) ||
+      /^[a-zA-Z]\.\s/.test(text) ||
+      /^[ivxlcdm]+\.\s/i.test(text);
+  };
+
+  // Function to process positioned text and maintain structure
+  const processPositionedTextToStructured = async (extractedContent: any[]): Promise<string> => {
+    let result = '';
+
+    for (const page of extractedContent) {
+      // Group text items by line position with detailed formatting info
+      const lineGroups: {
+        [key: number]: Array<{
+          text: string;
+          fontSize: number;
+          fontName: string;
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        }>
+      } = {};
+
+      page.items.forEach((item: any) => {
+        if (item.text && item.text.trim()) {
+          const lineKey = Math.round(item.y / 3) * 3; // Group by Y position
+          if (!lineGroups[lineKey]) lineGroups[lineKey] = [];
+
+          lineGroups[lineKey].push({
+            text: item.text,
+            fontSize: item.fontSize,
+            fontName: item.fontName,
+            x: item.x,
+            y: item.y,
+            width: item.width,
+            height: item.height
+          });
+        }
+      });
+
+      // Sort lines by Y position (top to bottom)
+      const sortedLineKeys = Object.keys(lineGroups)
+        .map(Number)
+        .sort((a, b) => b - a); // PDF coordinates are bottom-up
+
+      // Detect document type and structure
+      const hasTreeStructure = sortedLineKeys.some(lineKey => {
+        const lineItems = lineGroups[lineKey];
+        const lineText = lineItems.map(item => item.text).join('').trim();
+        return /[├└│─┌┐┘┴┬┤┼]/.test(lineText);
+      });
+
+      if (hasTreeStructure) {
+        // Process as tree structure document (like sitemap)
+        for (const lineKey of sortedLineKeys) {
+          const lineItems = lineGroups[lineKey];
+          lineItems.sort((a, b) => a.x - b.x);
+
+          const minX = Math.min(...lineItems.map(item => item.x));
+          const lineText = lineItems.map(item => item.text).join('').trim();
+          
+          if (!lineText) continue;
+
+          const isTreeItem = /[├└│─┌┐┘┴┬┤┼]/.test(lineText);
+          
+          if (isTreeItem) {
+            const baseIndent = Math.floor(minX / 15);
+            const treeIndent = '  '.repeat(Math.max(0, baseIndent));
+            result += `${treeIndent}${lineText}\n`;
+          } else {
+            const indent = '  '.repeat(Math.max(0, Math.floor(minX / 20)));
+            result += `${indent}${lineText}\n`;
+          }
+        }
+      } else {
+        // Process as regular document with paragraphs
+        let currentParagraph = '';
+        let lastY = null;
+        let lastFontSize = null;
+        let lastIndent = null;
+
+        for (const lineKey of sortedLineKeys) {
+          const lineItems = lineGroups[lineKey];
+          lineItems.sort((a, b) => a.x - b.x);
+
+          const minX = Math.min(...lineItems.map(item => item.x));
+          const avgFontSize = lineItems.reduce((sum, item) => sum + item.fontSize, 0) / lineItems.length;
+          const lineText = lineItems.map(item => item.text).join('').trim();
+          
+          if (!lineText) {
+            // Empty line - end current paragraph
+            if (currentParagraph.trim()) {
+              result += currentParagraph.trim() + '\n\n';
+              currentParagraph = '';
+            }
+            continue;
+          }
+
+          const currentIndent = Math.floor(minX / 20);
+          const isHeading = detectHeadingFromText(lineText, avgFontSize);
+          const isListItem = /^[-•*]\s/.test(lineText) || /^\d+\.\s/.test(lineText);
+
+          // Check if this should start a new paragraph
+          const shouldStartNewParagraph = 
+            isHeading ||
+            isListItem ||
+            (lastIndent !== null && currentIndent !== lastIndent) ||
+            (lastFontSize !== null && Math.abs(avgFontSize - lastFontSize) > 2) ||
+            (lastY !== null && Math.abs(lineKey - lastY) > 20); // Large gap between lines
+
+          if (shouldStartNewParagraph && currentParagraph.trim()) {
+            result += currentParagraph.trim() + '\n\n';
+            currentParagraph = '';
+          }
+
+          // Add indentation for the line
+          const indent = '  '.repeat(Math.max(0, currentIndent));
+          
+          if (isHeading || isListItem || shouldStartNewParagraph) {
+            result += `${indent}${lineText}\n`;
+            if (!isListItem) result += '\n'; // Add extra space after headings
+          } else {
+            // Continue current paragraph
+            if (currentParagraph) {
+              currentParagraph += ' ' + lineText;
+            } else {
+              currentParagraph = `${indent}${lineText}`;
+            }
+          }
+
+          lastY = lineKey;
+          lastFontSize = avgFontSize;
+          lastIndent = currentIndent;
+        }
+
+        // Add any remaining paragraph
+        if (currentParagraph.trim()) {
+          result += currentParagraph.trim() + '\n\n';
+        }
+      }
+      
+      result += '\n'; // Add page break
+    }
+
+    return result;
+  };
+
+  // Helper function to detect headings
+  const detectHeadingFromText = (text: string, fontSize: number): boolean => {
+    // Check if text looks like a heading
+    const headingPatterns = [
+      /^(Overview|Introduction|Summary|Conclusion|Abstract|Background|Context|Objective|Goal|Scope|Features?|Requirements?|Specifications?)$/i,
+      /^(Document Control|Version History|In-Scope|Out-of-Scope)$/i,
+      /^[A-Z][A-Za-z\s&()]+$/,
+    ];
+
+    const isShortAndCapitalized = text.length < 80 && /^[A-Z]/.test(text) && !text.endsWith('.');
+    const matchesPattern = headingPatterns.some(pattern => pattern.test(text));
+    const isLargerFont = fontSize > 12; // Assuming base font is 12pt
+
+    return (matchesPattern || isShortAndCapitalized) && (isLargerFont || text.length < 50);
+  };
+
+  const handleConvertToWord = async () => {
+    if (!user) {
+      alert('You must be logged in to convert documents.');
+      return;
+    }
+
+    if (!document.documentId) {
+      alert('Document ID is required for conversion.');
+      return;
+    }
+
+    setConvertingToWord(true);
+
+    try {
+      // First, extract text from the PDF using the same logic as markdown conversion
+      let conversionUrl = null;
+
+      // Get the PDF URL (same logic as markdown conversion)
+      if (document.downloadUrl && !document.downloadUrl.startsWith('#') && document.downloadUrl !== '') {
+        conversionUrl = document.downloadUrl;
+      } else if (document.documentId && user) {
+        const { data: docData, error: docError } = await supabase
+          .from('documents')
+          .select('download_url, file_path, status')
+          .eq('id', document.documentId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (docError) {
+          throw new Error(`Failed to fetch document: ${docError.message}`);
+        }
+
+        if (docData?.download_url) {
+          conversionUrl = docData.download_url;
+        } else if (docData?.file_path) {
+          conversionUrl = docData.file_path;
+        }
+      } else if (pdfUrl) {
+        conversionUrl = pdfUrl;
+      }
+
+      if (!conversionUrl) {
+        alert('No PDF document available to convert. Please ensure the document has been generated and try again.');
+        return;
+      }
+
+      // Extract text using PDF.js (client-side)
+      let pdfjsLib;
+      try {
+        let pdfjsLibModule;
+        try {
+          pdfjsLibModule = await import('pdfjs-dist');
+        } catch {
+          pdfjsLibModule = await import('pdfjs-dist/build/pdf.mjs');
+        }
+
+        pdfjsLib = pdfjsLibModule.default || pdfjsLibModule;
+      } catch (importError) {
+        throw new Error(`Failed to load PDF processing library: ${importError instanceof Error ? importError.message : 'Unknown error'}`);
+      }
+
+      // Set the worker path for PDF.js
+      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+        try {
+          const workerModule = await import('pdfjs-dist/build/pdf.worker.mjs');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default || workerModule;
+        } catch (workerError) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js';
+        }
+      }
+
+      // Fetch PDF via API endpoint
+      const apiUrl = `/api/documents/download?documentId=${document.documentId}`;
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf,*/*',
+        },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('PDF file is empty or could not be downloaded');
+      }
+
+      // Load the PDF document
+      const loadingTask = pdfjsLib.getDocument({
+        data: arrayBuffer,
+        verbosity: 0,
+        isEvalSupported: false,
+        disableFontFace: false,
+      });
+
+      const pdf = await loadingTask.promise;
+      if (!pdf || pdf.numPages === 0) {
+        throw new Error('PDF document is empty or invalid');
+      }
+
+      // Extract text from all pages with positioning information
+      let extractedContent = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+
+        // Process text items with positioning information
+        const pageItems = textContent.items.map((item: any) => ({
+          text: item.str,
+          x: item.transform[4] || 0,
+          y: item.transform[5] || 0,
+          fontSize: item.transform[0] || 12,
+          fontName: item.fontName || '',
+          width: item.width || 0,
+          height: item.height || 0
+        }));
+
+        extractedContent.push({
+          pageNumber: i,
+          items: pageItems
+        });
+      }
+
+      // Convert positioned text to structured format
+      const structuredText = await processPositionedTextToStructured(extractedContent);
+
+      if (!structuredText.trim()) {
+        throw new Error('No text could be extracted from the PDF');
+      }
+
+      // Send extracted text to Word conversion API
+      const wordResponse = await fetch('/api/documents/convert-to-word', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentId: document.documentId,
+          extractedText: structuredText,
+          documentName: document.name,
+        }),
+      });
+
+      if (!wordResponse.ok) {
+        const errorData = await wordResponse.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `Conversion failed: ${wordResponse.status}`);
+      }
+
+      // Get the Word document as a blob
+      const blob = await wordResponse.blob();
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.name.replace(/\.pdf$/i, '')}.docx`;
+      link.style.display = 'none';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Show success toast
+      toast({
+        variant: "success",
+        title: "✅ Conversion Complete!",
+        description: `Successfully converted "${document.name}" to Word document and downloaded.`,
+      });
+
+    } catch (error) {
+      let errorMessage = 'Unknown error occurred';
+      let suggestions = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Provide helpful suggestions based on error type
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network error')) {
+          errorMessage = 'Network error - Unable to download the PDF file.';
+          suggestions = '\n\nPossible solutions:\n• Check your internet connection\n• Try again in a few moments\n• The document might still be processing';
+        } else if (errorMessage.includes('Invalid PDF') || errorMessage.includes('corrupted')) {
+          errorMessage = 'The PDF file appears to be invalid or corrupted.';
+          suggestions = '\n\nPossible solutions:\n• Try regenerating the document\n• Contact support if the issue persists';
+        } else if (errorMessage.includes('empty')) {
+          errorMessage = 'The PDF file is empty or could not be downloaded.';
+          suggestions = '\n\nThe document might still be generating. Please wait and try again.';
+        }
+      }
+
+      const fullMessage = `Failed to convert to Word document:\n\n${errorMessage}${suggestions}`;
+      alert(fullMessage);
+    } finally {
+      setConvertingToWord(false);
+    }
+  };
+
   const handleConvertToMarkdown = async () => {
-    console.log('🔍 Debug: Starting PDF to Markdown conversion');
-    console.log('🔍 Debug: document.downloadUrl =', document.downloadUrl);
-    console.log('🔍 Debug: pdfUrl =', pdfUrl || 'null');
-    console.log('🔍 Debug: document.documentId =', document.documentId);
-    console.log('🔍 Debug: user =', user?.id || 'null');
 
     // Validate prerequisites
     if (!user) {
@@ -209,11 +701,11 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       // Priority 1: Use download_url from database if available and valid
       if (document.downloadUrl && !document.downloadUrl.startsWith('#') && document.downloadUrl !== '') {
         conversionUrl = document.downloadUrl;
-        console.log('✅ Debug: Using document.downloadUrl:', conversionUrl);
+        // Download URL logging removed for security
       }
       // Priority 2: Fetch fresh download_url from database
       else if (document.documentId && user) {
-        console.log('🔍 Debug: Fetching fresh download_url from database...');
+        // Database fetch logging removed for security
         const { data: docData, error: docError } = await supabase
           .from('documents')
           .select('download_url, file_path, status')
@@ -222,35 +714,29 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           .single();
 
         if (docError) {
-          console.error('❌ Debug: Error fetching document:', docError);
           throw new Error(`Failed to fetch document: ${docError.message}`);
         }
 
         if (docData?.download_url) {
           conversionUrl = docData.download_url;
-          console.log('✅ Debug: Using fresh download_url from database:', conversionUrl);
+          // Fresh download URL logging removed for security
         } else if (docData?.file_path) {
           conversionUrl = docData.file_path;
-          console.log('✅ Debug: Using file_path as fallback:', conversionUrl);
-        } else {
-          console.warn('⚠️ Debug: No download_url or file_path found in database');
-          console.log('🔍 Debug: Document data from database:', docData);
+          // File path fallback logging removed for security
         }
       }
       // Priority 3: Use pdfUrl as last resort
       else if (pdfUrl) {
         conversionUrl = pdfUrl;
-        console.log('✅ Debug: Using pdfUrl as fallback:', conversionUrl);
+        // PDF URL fallback logging removed for security
       }
 
       if (!conversionUrl) {
-        console.error('❌ Debug: No conversion URL available');
         alert('No PDF document available to convert. Please ensure the document has been generated and try again.');
         return;
       }
 
       // Dynamically import PDF.js to avoid SSR issues
-      console.log('🔍 Debug: Loading PDF.js libraries');
       let pdfjsLib;
 
       try {
@@ -263,9 +749,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         }
 
         pdfjsLib = pdfjsLibModule.default || pdfjsLibModule;
-        console.log('✅ Debug: PDF.js library loaded successfully');
       } catch (importError) {
-        console.error('❌ Debug: Failed to load PDF.js library:', importError);
         throw new Error(`Failed to load PDF processing library: ${importError instanceof Error ? importError.message : 'Unknown error'}`);
       }
 
@@ -285,13 +769,12 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       }
 
       // Use our API endpoint to avoid CORS issues
-      console.log('🔍 Debug: Fetching PDF via API endpoint');
 
       let response;
       try {
         // Use our server-side API to fetch the PDF and avoid CORS issues
         const apiUrl = `/api/documents/download?documentId=${document.documentId}`;
-        console.log('🔍 Debug: Using API URL:', apiUrl);
+        // API URL logging removed for security
 
         response = await fetch(apiUrl, {
           method: 'GET',
@@ -301,24 +784,21 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           credentials: 'same-origin', // Safe to use credentials for same-origin requests
         });
 
-        console.log('🔍 Debug: API response status:', response.status);
-        console.log('🔍 Debug: API response ok:', response.ok);
+        // API response logging removed for security
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
           throw new Error(`API Error: ${response.status} - ${errorData.error || response.statusText}`);
         }
       } catch (fetchError) {
-        console.error('❌ Debug: API fetch error:', fetchError);
         throw new Error(`Failed to download PDF via API: ${fetchError instanceof Error ? fetchError.message : 'Unknown network error'}`);
       }
 
       // Validate content type from API response
       const contentType = response.headers.get('content-type');
-      console.log('🔍 Debug: API response content type:', contentType);
+      // Content type logging removed for security
 
       if (contentType && !contentType.includes('application/pdf')) {
-        console.warn('⚠️ Debug: API returned unexpected content type:', contentType);
         // This might be an error response, let's check
         if (contentType.includes('application/json')) {
           const errorData = await response.json();
@@ -327,14 +807,12 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      console.log('✅ Debug: PDF fetched successfully, size:', arrayBuffer.byteLength);
 
       if (arrayBuffer.byteLength === 0) {
         throw new Error('PDF file is empty or could not be downloaded');
       }
 
       // Load the PDF document with proper error handling
-      console.log('🔍 Debug: Loading PDF document with PDF.js');
       let pdf;
       try {
         const loadingTask = pdfjsLib.getDocument({
@@ -346,9 +824,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         });
 
         pdf = await loadingTask.promise;
-        console.log('✅ Debug: PDF loaded successfully, numPages:', pdf.numPages);
       } catch (pdfError) {
-        console.error('❌ Debug: PDF loading error:', pdfError);
         throw new Error(`Invalid PDF format or corrupted file: ${pdfError instanceof Error ? pdfError.message : 'Unknown PDF error'}`);
       }
 
@@ -356,54 +832,40 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         throw new Error('PDF document is empty or invalid');
       }
 
-      let markdownContent = `# ${document.name}\n\n`;
-      markdownContent += `*Generated from PDF on ${new Date().toLocaleDateString()}*\n\n`;
+      // Create a clean document title
+      const cleanTitle = document.name.replace(/\.(pdf|PDF)$/, '').replace(/[_-]/g, ' ');
+      let markdownContent = `# ${cleanTitle}\n\n`;
+      markdownContent += `**PRDChek** - *Generated from PDF on ${new Date().toLocaleDateString()}*\n\n`;
+      markdownContent += `---\n\n`;
 
       // Extract text from each page with better error handling
       for (let i = 1; i <= pdf.numPages; i++) {
         try {
-          console.log(`🔍 Debug: Processing page ${i}/${pdf.numPages}`);
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
 
-          // Convert text items to markdown with better formatting
+          // Convert text items to markdown with intelligent formatting
           const textItems = textContent.items as any[];
-          let pageText = '';
 
-          // Group text items by approximate line position
-          const lines: { [key: number]: string[] } = {};
-          textItems.forEach((item) => {
-            if (item.str && item.str.trim()) {
-              const lineKey = Math.round(item.transform[5] / 5) * 5; // Group by Y position
-              if (!lines[lineKey]) lines[lineKey] = [];
-              lines[lineKey].push(item.str);
+          // Enhanced text processing with formatting detection
+          const processedLines = await processTextItemsToMarkdown(textItems);
+
+          if (processedLines.trim()) {
+            // Only add page header if there's actual content and it's not the first page
+            if (i > 1) {
+              markdownContent += `\n---\n\n`;
             }
-          });
-
-          // Sort lines by Y position (top to bottom) and join
-          const sortedLines = Object.keys(lines)
-            .map(Number)
-            .sort((a, b) => b - a) // PDF coordinates are bottom-up
-            .map(lineKey => lines[lineKey].join(' ').trim())
-            .filter(line => line.length > 0);
-
-          pageText = sortedLines.join('\n');
-
-          if (pageText.trim()) {
-            markdownContent += `## Page ${i}\n\n${pageText}\n\n`;
+            markdownContent += `${processedLines}\n\n`;
           } else {
             markdownContent += `## Page ${i}\n\n*[No readable text content]*\n\n`;
           }
 
-          console.log(`✅ Debug: Page ${i} processed (${pageText.length} characters)`);
         } catch (pageError) {
-          console.error(`❌ Debug: Error processing page ${i}:`, pageError);
           markdownContent += `## Page ${i}\n\n*[Error extracting text from this page]*\n\n`;
         }
       }
 
       // Create and download the markdown file
-      console.log('🔍 Debug: Creating markdown file');
       const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = window.document.createElement('a');
@@ -414,10 +876,16 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       link.click();
       window.document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      console.log('✅ Debug: Markdown file downloaded successfully');
+      // Markdown download success logging removed for security
+
+      // Show success toast notification
+      toast({
+        variant: "success",
+        title: "✅ Conversion Complete!",
+        description: `Successfully converted "${document.name}" to Markdown and downloaded.`,
+      });
 
     } catch (error) {
-      console.error('❌ Error converting PDF to Markdown:', error);
 
       // Provide more specific and helpful error messages
       let errorMessage = 'Unknown error occurred';
@@ -450,13 +918,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       alert(fullMessage);
 
       // Also log detailed error for debugging
-      console.error('🔍 Debug: Full error details:', {
-        error,
-        message: errorMessage,
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        conversionUrl: document.downloadUrl || pdfUrl,
-        documentId: document.documentId
-      });
+      // Detailed error logging removed for security
     } finally {
       setConverting(false);
     }
@@ -471,7 +933,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Share cancelled');
+        // Share cancelled
       }
     } else {
       // Fallback to clipboard
@@ -481,8 +943,15 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
   };
 
   return (
-    <div className={`fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 ${isFullscreen ? 'p-0' : ''
-      }`}>
+    <div
+      className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 ${isFullscreen ? 'p-0' : ''}`}
+      onClick={(e) => {
+        // Close modal when clicking on backdrop
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div className={`bg-white rounded-md shadow-sm flex flex-col ${isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-6xl h-[90vh]'
         }`}>
         {/* Header */}
@@ -672,11 +1141,22 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                   variant="outline"
                   size="sm"
                   className="w-full font-sans"
-                  onClick={() => window.print()}
+                  onClick={handleConvertToWord}
+                  disabled={convertingToWord || !document.documentId}
                 >
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print
+                  {convertingToWord ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <FileType className="w-4 h-4 mr-2" />
+                      To Word
+                    </>
+                  )}
                 </Button>
+
                 <Button
                   variant="outline"
                   size="sm"

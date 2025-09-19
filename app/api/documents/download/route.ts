@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        console.log('📥 Fetching document from:', fetchUrl);
+        // Document fetch URL logging removed for security
 
         // Fetch the PDF file
         const response = await fetch(fetchUrl, {

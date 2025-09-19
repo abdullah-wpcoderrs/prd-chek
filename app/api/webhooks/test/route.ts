@@ -4,8 +4,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     console.log('🔔 TEST WEBHOOK RECEIVED');
-    console.log('📝 Headers:', Object.fromEntries(req.headers.entries()));
-    console.log('📄 Body:', JSON.stringify(body, null, 2));
+    // Headers and body logging removed for security
     
     return NextResponse.json({ 
       message: 'Test webhook received successfully',

@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         console.log('🔔 DOCUMENT STATUS UPDATE RECEIVED');
-        console.log('📄 Body:', JSON.stringify(body, null, 2));
+        // Request body logging removed for security
 
         const {
             documentId,
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
             }, { status: 404 });
         }
 
-        console.log('✅ Document status updated successfully:', data[0]);
+        console.log('✅ Document status updated successfully');
 
         return NextResponse.json({
             success: true,
