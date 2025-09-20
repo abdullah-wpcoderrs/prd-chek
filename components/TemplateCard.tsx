@@ -11,10 +11,13 @@ import {
   Clock,
   Download,
   Eye,
-  X
+  X,
+  CheckCircle,
+  FileText
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Template, incrementTemplateDownloads } from "@/lib/actions/template.actions";
+import { getTemplatePreviewData } from "@/lib/utils/template-mapping";
 
 const categoryColors = {
   "Social": "bg-purple-100 text-purple-700",
@@ -113,6 +116,20 @@ export function TemplateCard({ template }: TemplateCardProps) {
                 </li>
               )}
             </ul>
+          </div>
+
+          {/* Form Field Population Info */}
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-2 font-sans">Form Pre-population:</div>
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span className="text-gray-600 font-sans">
+                {(() => {
+                  const previewData = getTemplatePreviewData(template);
+                  return `${previewData.formFieldsPopulated}/${previewData.totalFormFields} fields populated`;
+                })()}
+              </span>
+            </div>
           </div>
 
           {/* Stats */}
@@ -233,34 +250,100 @@ export function TemplateCard({ template }: TemplateCardProps) {
               </ul>
             </div>
 
+            {/* Form Field Pre-population */}
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans">Form Pre-population</h3>
+              {(() => {
+                const previewData = getTemplatePreviewData(template);
+                const completionPercentage = Math.round((previewData.formFieldsPopulated / previewData.totalFormFields) * 100);
+                
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 font-sans">
+                        {previewData.formFieldsPopulated} of {previewData.totalFormFields} form fields will be pre-populated
+                      </span>
+                      <span className="text-sm font-medium text-green-600 font-sans">
+                        {completionPercentage}% complete
+                      </span>
+                    </div>
+                    
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${completionPercentage}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      {previewData.populatedFields.slice(0, 8).map((field, index) => (
+                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600 font-sans">
+                          <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                          <span className="truncate">{field}</span>
+                        </div>
+                      ))}
+                      {previewData.populatedFields.length > 8 && (
+                        <div className="text-xs text-gray-500 font-sans col-span-2">
+                          +{previewData.populatedFields.length - 8} more fields...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Documents */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-2 font-sans">Generated Documents</h3>
               <p className="text-sm text-gray-600 font-sans mb-3">
-                This template will generate {template.document_count} comprehensive documents:
+                This template will generate 6 comprehensive documents through our 3-stage pipeline:
               </p>
-              <ul className="text-sm text-gray-600 space-y-1 font-sans">
-                <li className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  Product Requirements Document (PRD)
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  User Stories & Journey Document
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                  Application Sitemap
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                  Tech Stack Requirements
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                  Screen Specifications
-                </li>
-              </ul>
+              
+              {/* Stage 1: Discovery & Research */}
+              <div className="mb-3">
+                <h4 className="text-xs font-semibold text-blue-600 mb-1 font-sans">Stage 1: Discovery & Research</h4>
+                <ul className="text-sm text-gray-600 space-y-1 font-sans ml-2">
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    Research & Insights Report
+                  </li>
+                </ul>
+              </div>
+
+              {/* Stage 2: Vision & Strategy */}
+              <div className="mb-3">
+                <h4 className="text-xs font-semibold text-purple-600 mb-1 font-sans">Stage 2: Vision & Strategy</h4>
+                <ul className="text-sm text-gray-600 space-y-1 font-sans ml-2">
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                    Vision & Strategy Document
+                  </li>
+                </ul>
+              </div>
+
+              {/* Stage 3: Requirements & Planning */}
+              <div>
+                <h4 className="text-xs font-semibold text-green-600 mb-1 font-sans">Stage 3: Requirements & Planning</h4>
+                <ul className="text-sm text-gray-600 space-y-1 font-sans ml-2">
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    Product Requirements Document (PRD)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-600"></div>
+                    Business Requirements Document (BRD)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-700"></div>
+                    Technical Requirements Document (TRD)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-800"></div>
+                    Planning Toolkit
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Action Button */}

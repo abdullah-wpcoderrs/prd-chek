@@ -3,7 +3,7 @@
 import { createSupabaseServerClient, getAuthenticatedUser, getAuthenticatedUserWithEmail } from "@/lib/supabase-server";
 import { submitProjectGeneration } from "@/lib/webhook";
 import { revalidatePath } from "next/cache";
-import { ProjectSpec } from "@/types";
+import { ProjectSpec, ProductManagerFormData } from "@/types";
 
 export interface CreateProjectData {
   name: string;
@@ -12,6 +12,14 @@ export interface CreateProjectData {
   targetPlatform: string;
   complexity: string;
   projectSpec?: ProjectSpec;
+}
+
+// New interface for multi-step form data
+export interface CreateProjectDataV2 {
+  formData: ProductManagerFormData;
+  techStack?: string;
+  targetPlatform?: string;
+  complexity?: string;
 }
 
 export interface ProjectWithDocuments {
@@ -42,6 +50,37 @@ export interface DocumentRecord {
   download_url: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// New function for multi-step form data
+export async function createProjectAndStartGenerationV2(data: CreateProjectDataV2): Promise<{ projectId: string }> {
+  const { id: userId, email: userEmail } = await getAuthenticatedUserWithEmail();
+  
+  console.log('🚀 Starting project creation with multi-step form data...');
+  
+  // Create project in Supabase first
+  const { projectId } = await createProjectV2(data);
+  
+  try {
+    // Submit to N8N webhook with enhanced project data
+    await submitProjectGeneration({
+      projectId,
+      userId,
+      userEmail: userEmail || undefined,
+      projectName: data.formData.step1.productName,
+      description: `${data.formData.step1.productPitch}\n\nTarget Users: ${data.formData.step2.targetUsers}\n\nValue Proposition: ${data.formData.step4.valueProposition}`,
+      techStack: data.techStack || 'To be determined',
+      targetPlatform: data.targetPlatform || 'web',
+      complexity: data.complexity || 'medium',
+      // Enhanced project data
+      formData: data.formData,
+    });
+  } catch (error) {
+    console.error('❌ Failed to submit to webhook, but project was created:', error);
+    throw error;
+  }
+  
+  return { projectId };
 }
 
 export async function createProjectAndStartGeneration(data: CreateProjectData): Promise<{ projectId: string }> {
@@ -75,6 +114,75 @@ export async function createProjectAndStartGeneration(data: CreateProjectData): 
   }
   
   return { projectId };
+}
+
+export async function createProjectV2(data: CreateProjectDataV2): Promise<{ projectId: string }> {
+  const userId = await getAuthenticatedUser();
+  const supabase = await createSupabaseServerClient();
+
+  // Create project record with enhanced data
+  const { data: project, error: projectError } = await supabase
+    .from('projects')
+    .insert([{
+      user_id: userId,
+      name: data.formData.step1.productName,
+      description: data.formData.step1.productPitch,
+      tech_stack: data.techStack || 'To be determined',
+      target_platform: data.targetPlatform || 'web',
+      complexity: data.complexity || 'medium',
+      status: 'pending',
+      progress: 0,
+      current_step: 'Initializing project',
+      // Store the complete form data as JSON
+      form_data: data.formData,
+      // Mark as v2 project
+      project_version: 'v2'
+    }])
+    .select()
+    .single();
+
+  if (projectError) {
+    console.error('❌ Error creating project:', projectError);
+    throw new Error(`Failed to create project: ${projectError.message}`);
+  }
+
+  // Create enhanced document placeholders
+  const documentTypesV2 = [
+    // Stage 1: Discovery & Research
+    { type: 'Research_Insights', name: 'Research & Insights Report', stage: 'discovery' },
+    
+    // Stage 2: Vision & Strategy  
+    { type: 'Vision_Strategy', name: 'Vision & Strategy Document', stage: 'strategy' },
+    
+    // Stage 3: Requirements & Planning
+    { type: 'PRD', name: 'Product Requirements Document', stage: 'planning' },
+    { type: 'BRD', name: 'Business Requirements Document', stage: 'planning' },
+    { type: 'TRD', name: 'Technical Requirements Document', stage: 'planning' },
+    { type: 'Planning_Toolkit', name: 'Planning Toolkit', stage: 'planning' }
+  ];
+
+  const { error: documentsError } = await supabase
+    .from('documents')
+    .insert(
+      documentTypesV2.map(doc => ({
+        project_id: project.id,
+        user_id: userId,
+        type: doc.type,
+        name: doc.name,
+        status: 'pending',
+        document_stage: doc.stage
+      }))
+    );
+
+  if (documentsError) {
+    console.error('❌ Error creating document records:', documentsError);
+    throw new Error(`Failed to create document records: ${documentsError.message}`);
+  }
+
+  console.log('✅ Enhanced document placeholders created');
+
+  revalidatePath('/projects');
+  return { projectId: project.id };
 }
 
 export async function createProject(data: CreateProjectData): Promise<{ projectId: string }> {
@@ -114,6 +222,21 @@ export async function createProject(data: CreateProjectData): Promise<{ projectI
     { type: 'Sitemap', name: 'Application Sitemap' },
     { type: 'Tech Stack', name: 'Technology Requirements' },
     { type: 'Screens', name: 'Screen Specifications' }
+  ];
+
+  // New document types for enhanced pipeline
+  const documentTypesV2 = [
+    // Stage 1: Discovery & Research
+    { type: 'Research_Insights', name: 'Research & Insights Report', stage: 'discovery' },
+    
+    // Stage 2: Vision & Strategy  
+    { type: 'Vision_Strategy', name: 'Vision & Strategy Document', stage: 'strategy' },
+    
+    // Stage 3: Requirements & Planning
+    { type: 'PRD', name: 'Product Requirements Document', stage: 'planning' },
+    { type: 'BRD', name: 'Business Requirements Document', stage: 'planning' },
+    { type: 'TRD', name: 'Technical Requirements Document', stage: 'planning' },
+    { type: 'Planning_Toolkit', name: 'Planning Toolkit', stage: 'planning' }
   ];
 
   const { error: documentsError } = await supabase

@@ -13,6 +13,7 @@ export type Comment = {
   recipe_id: string;
 };
 
+// Legacy ProjectSpec - keeping for backward compatibility
 export interface ProjectSpec {
   coreFeatures: string;
   targetUsers: string;
@@ -21,6 +22,59 @@ export interface ProjectSpec {
   brandGuidelines: string;
   multiUserRoles: boolean;
   roleDefinitions?: string;
+}
+
+// New Multi-Step Form Types
+export interface ProductBasics {
+  productName: string;
+  productPitch: string;
+  industry: string;
+  currentStage: 'idea' | 'mvp' | 'growth' | 'scaling';
+}
+
+export interface UsersProblems {
+  targetUsers: string;
+  painPoints: string[];
+  primaryJobToBeDone: string;
+}
+
+export interface Competitor {
+  name: string;
+  note: string;
+}
+
+export interface MarketContext {
+  competitors: Competitor[];
+  differentiation: string;
+  marketTrend?: string;
+}
+
+export interface ValueVision {
+  valueProposition: string;
+  productVision: string;
+  successMetric?: string;
+}
+
+export interface RequirementsPlanning {
+  mustHaveFeatures: string[];
+  niceToHaveFeatures: string[];
+  constraints?: string;
+  prioritizationMethod: 'RICE' | 'MoSCoW' | 'Kano';
+}
+
+export interface ProductManagerFormData {
+  step1: ProductBasics;
+  step2: UsersProblems;
+  step3: MarketContext;
+  step4: ValueVision;
+  step5: RequirementsPlanning;
+}
+
+export interface CreateProjectDataV2 {
+  formData: ProductManagerFormData;
+  techStack?: string;
+  targetPlatform?: string;
+  complexity?: string;
 }
 
 // Add type declarations for PDF.js

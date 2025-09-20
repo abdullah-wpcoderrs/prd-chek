@@ -52,19 +52,49 @@ import {
   Trash2,
   Edit3,
   Copy,
-  Save
+  Save,
+  BarChart3,
+  Target
 } from "lucide-react";
 import Link from "next/link";
 import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
 import { deleteProject, updateProject } from "@/lib/actions/project.actions";
 import { formatFileSize } from "@/lib/utils/file-size";
 
+// Updated document icons for new pipeline
 const documentIcons = {
+  // Legacy documents (for backward compatibility)
   "PRD": FileText,
   "User Stories": Users,
   "Sitemap": Map,
   "Tech Stack": Code,
-  "Screens": Layout
+  "Screens": Layout,
+  
+  // New document pipeline
+  "Research_Insights": Search,
+  "Vision_Strategy": Eye,
+  "BRD": Users,
+  "TRD": Code,
+  "Planning_Toolkit": Layout
+};
+
+// Document stages for new pipeline
+const documentStages = {
+  discovery: {
+    title: "Discovery & Research",
+    color: "blue",
+    documents: ["Research_Insights"]
+  },
+  strategy: {
+    title: "Vision & Strategy", 
+    color: "purple",
+    documents: ["Vision_Strategy"]
+  },
+  planning: {
+    title: "Requirements & Planning",
+    color: "green", 
+    documents: ["PRD", "BRD", "TRD", "Planning_Toolkit"]
+  }
 };
 
 const statusColors = {
@@ -73,6 +103,43 @@ const statusColors = {
   processing: "bg-yellow-100 text-yellow-700",
   pending: "bg-gray-100 text-gray-700",
   failed: "bg-red-100 text-red-700"
+};
+
+// Helper function to get document types for a project
+const getProjectDocumentTypes = (project: ProjectWithDocuments) => {
+  // Check if project has new document types (created with V2 flow)
+  const hasNewDocTypes = project.documents.some(doc => 
+    ['Research_Insights', 'Vision_Strategy', 'BRD', 'TRD', 'Planning_Toolkit'].includes(doc.type)
+  );
+  
+  if (hasNewDocTypes) {
+    // New 6-document pipeline
+    return ['Research_Insights', 'Vision_Strategy', 'PRD', 'BRD', 'TRD', 'Planning_Toolkit'];
+  } else {
+    // Legacy 5-document pipeline
+    return ['PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens'];
+  }
+};
+
+// Helper function to get document display info
+const getDocumentDisplayInfo = (docType: string) => {
+  const displayNames: Record<string, string> = {
+    'Research_Insights': 'Research & Insights',
+    'Vision_Strategy': 'Vision & Strategy',
+    'BRD': 'Business Requirements',
+    'TRD': 'Technical Requirements',
+    'Planning_Toolkit': 'Planning Toolkit',
+    'PRD': 'PRD',
+    'User Stories': 'User Stories',
+    'Sitemap': 'Sitemap',
+    'Tech Stack': 'Tech Stack',
+    'Screens': 'Screens'
+  };
+  
+  return {
+    name: displayNames[docType] || docType,
+    icon: documentIcons[docType as keyof typeof documentIcons] || FileText
+  };
 };
 
 export default function ProjectsPage() {
@@ -433,10 +500,11 @@ Complexity: ${project.complexity}`;
                   </CardHeader>
                   
                   <CardContent>
-                    <div className="grid grid-cols-5 gap-2">
-                      {['PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens'].map((docType) => {
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                      {getProjectDocumentTypes(project).map((docType) => {
                         const doc = project.documents.find(d => d.type === docType);
-                        const IconComponent = documentIcons[docType as keyof typeof documentIcons];
+                        const displayInfo = getDocumentDisplayInfo(docType);
+                        const IconComponent = displayInfo.icon;
                         
                         // If document doesn't exist, show placeholder
                         if (!doc) {
@@ -447,7 +515,7 @@ Complexity: ${project.complexity}`;
                             >
                               <IconComponent className="w-6 h-6 mx-auto mb-1 text-gray-400" />
                               <div className="text-xs font-medium text-gray-700 font-sans">
-                                {docType}
+                                {displayInfo.name}
                               </div>
                             </div>
                           );
@@ -473,7 +541,7 @@ Complexity: ${project.complexity}`;
                               'text-gray-400'
                             }`} />
                             <div className="text-xs font-medium text-gray-700 font-sans">
-                              {doc.type}
+                              {displayInfo.name}
                             </div>
                           </div>
                         );
@@ -497,10 +565,14 @@ Complexity: ${project.complexity}`;
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    {['PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens'].map((docType) => {
+                    {(() => {
                       const selectedProjectData = projects.find(p => p.id === selectedProject);
-                      const doc = selectedProjectData?.documents.find(d => d.type === docType);
-                      const IconComponent = documentIcons[docType as keyof typeof documentIcons];
+                      if (!selectedProjectData) return null;
+                      
+                      return getProjectDocumentTypes(selectedProjectData).map((docType) => {
+                        const doc = selectedProjectData.documents.find(d => d.type === docType);
+                        const displayInfo = getDocumentDisplayInfo(docType);
+                        const IconComponent = displayInfo.icon;
                       
                       // If document doesn't exist, show placeholder
                       if (!doc) {
@@ -509,7 +581,7 @@ Complexity: ${project.complexity}`;
                             <div className="flex items-center gap-3">
                               <IconComponent className="w-5 h-5 text-gray-400" />
                               <div>
-                                <div className="font-medium text-sm font-sans text-gray-500">{docType}</div>
+                                <div className="font-medium text-sm font-sans text-gray-500">{displayInfo.name}</div>
                                 <div className="text-xs text-gray-400 font-sans">Not available</div>
                               </div>
                             </div>
@@ -558,7 +630,8 @@ Complexity: ${project.complexity}`;
                           </div>
                         </div>
                       );
-                    })}
+                    });
+                    })()}
                     
                     <div className="pt-4">
                       <Button 
