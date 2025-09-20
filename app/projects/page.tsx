@@ -55,7 +55,9 @@ import {
   Copy,
   Save,
   BarChart3,
-  Target
+  Target,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import Link from "next/link";
 import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
@@ -134,7 +136,7 @@ const getDocumentDisplayInfo = (docType: string) => {
 };
 
 export default function ProjectsPage() {
-  const { projects, loading: projectsLoading, error } = useRealtimeProjects();
+  const { projects, loading: projectsLoading, error, optimisticUpdate, optimisticDelete, refetch } = useRealtimeProjects();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -164,6 +166,8 @@ export default function ProjectsPage() {
   });
   const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
   const [showProgressModal, setShowProgressModal] = useState<string | null>(null);
+  // State to track which projects have expanded documents on mobile
+  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -213,22 +217,25 @@ export default function ProjectsPage() {
   };
 
   const handleDeleteProject = async () => {
-    if (!projectToDelete) return;
+    if (!projectToDelete || deletingProjectId) return;
 
-    setDeletingProjectId(projectToDelete.id);
+    const projectIdToDelete = projectToDelete.id;
+    const projectNameToDelete = projectToDelete.name;
+    
+    setDeletingProjectId(projectIdToDelete);
     
     try {
-      await deleteProject(projectToDelete.id);
-      toast({
-        title: "Project deleted",
-        description: `"${projectToDelete.name}" has been successfully deleted.`,
-        variant: "default",
-      });
+      console.log('Starting project deletion:', projectIdToDelete);
       
-      // Clear selection if deleted project was selected
-      if (selectedProject === projectToDelete.id) {
-        setSelectedProject(null);
-      }
+      // Perform the actual deletion
+      await deleteProject(projectIdToDelete);
+      
+      console.log('Project deletion completed, refreshing page...');
+      
+      // Simple approach: just refresh the page after successful deletion
+      // This ensures no state conflicts or UI freezing
+      window.location.reload();
+      
     } catch (error) {
       console.error('Error deleting project:', error);
       toast({
@@ -236,7 +243,7 @@ export default function ProjectsPage() {
         description: error instanceof Error ? error.message : "Failed to delete project. Please try again.",
         variant: "destructive",
       });
-    } finally {
+      
       setDeletingProjectId(null);
       setDeleteDialogOpen(false);
       setProjectToDelete(null);
@@ -300,6 +307,14 @@ Complexity: ${project.complexity}`;
       description: "Project information has been copied to your clipboard.",
       variant: "default",
     });
+  };
+
+  // Toggle document expansion for a project on mobile
+  const toggleProjectDocuments = (projectId: string) => {
+    setExpandedProjects(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
   };
 
   // Show loading state while checking authentication or loading projects
@@ -388,10 +403,11 @@ Complexity: ${project.complexity}`;
 
           {/* Projects Grid */}
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Projects List */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Projects List - Full width on mobile, 2/3 on desktop */}
+            <div className="lg:col-span-3 xl:col-span-2 space-y-6">
             {filteredProjects.map((project) => {
               const isProcessing = project.status === 'processing';
+              const isExpanded = expandedProjects[project.id];
               
               return (
                 <Card 
@@ -492,6 +508,7 @@ Complexity: ${project.complexity}`;
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem 
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               handleCopyProject(project);
                             }}
@@ -501,6 +518,7 @@ Complexity: ${project.complexity}`;
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               openEditDialog(project);
                             }}
@@ -511,6 +529,7 @@ Complexity: ${project.complexity}`;
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               openDeleteDialog(project.id, project.name);
                             }}
@@ -573,14 +592,135 @@ Complexity: ${project.complexity}`;
                         );
                       })}
                     </div>
+                    
+                    {/* Mobile document details section - hidden on desktop, shown on mobile when expanded */}
+                    <div className="lg:hidden mt-4 border-t pt-4">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full flex items-center justify-between p-0 h-auto font-sans hover:bg-orange-100 text-orange-600 hover:text-orange-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleProjectDocuments(project.id);
+                        }}
+                      >
+                        <span className="font-medium">
+                          {isExpanded ? "Hide Documents" : "Show Documents"}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 ml-2 text-orange-600" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 ml-2 text-orange-600" />
+                        )}
+                      </Button>
+                      
+                      {isExpanded && (
+                        <div className="mt-4 space-y-3">
+                          {(() => {
+                            const selectedProjectData = projects.find(p => p.id === project.id);
+                            if (!selectedProjectData) return null;
+                            
+                            return getProjectDocumentTypes(selectedProjectData).map((docType) => {
+                              const doc = selectedProjectData.documents.find(d => d.type === docType);
+                              const displayInfo = getDocumentDisplayInfo(docType);
+                              const IconComponent = displayInfo.icon;
+                            
+                            // If document doesn't exist, show placeholder
+                            if (!doc) {
+                              return (
+                                <div key={docType} className="flex items-center justify-between p-3 border rounded-sm bg-gray-50">
+                                  <div className="flex items-center gap-3">
+                                    <IconComponent className="w-5 h-5 text-gray-400" />
+                                    <div>
+                                      <div className="font-medium text-sm font-sans text-gray-500">{displayInfo.name}</div>
+                                      <div className="text-xs text-gray-400 font-sans">Not available</div>
+                                    </div>
+                                  </div>
+                                  <span className="text-xs text-gray-400 font-sans">Pending</span>
+                                </div>
+                              );
+                            }
+                            
+                            return (
+                              <div key={docType} className="flex items-center justify-between p-3 border rounded-sm">
+                                <div className="flex items-center gap-3">
+                                  <IconComponent className="w-5 h-5 text-gray-600" />
+                                  <div>
+                                    <div className="font-medium text-sm font-sans">{doc.name}</div>
+                                    <div className="text-xs text-gray-500 font-sans">
+                                      {formatFileSize(doc.file_size)}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex gap-1">
+                                  {(doc.status === 'ready' || doc.status === 'completed') && (
+                                    <>
+                                      <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="p-1 h-auto"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleViewDocument(doc);
+                                        }}
+                                      >
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="p-1 h-auto"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          // Handle download
+                                        }}
+                                      >
+                                        <Download className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                  {doc.status === 'processing' && (
+                                    <div className="flex items-center gap-2">
+                                      <Loader2 className="w-4 h-4 animate-spin text-yellow-600" />
+                                      <span className="text-xs text-yellow-600 font-sans">Processing</span>
+                                    </div>
+                                  )}
+                                  {doc.status === 'pending' && (
+                                    <span className="text-xs text-gray-500 font-sans">Waiting</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          });
+                          })()}
+                          
+                          <div className="pt-2">
+                            <Button 
+                              className="w-full text-white font-sans" 
+                              disabled={project.status !== 'completed'}
+                              style={{backgroundColor: 'var(--steel-blue-600)'}} 
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'} 
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Handle download all
+                              }}
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download All Documents
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               );
             })}
             </div>
 
-            {/* Project Details Panel */}
-            <div className="lg:col-span-1">
+            {/* Project Details Panel - Hidden on mobile, shown on desktop */}
+            <div className="hidden lg:block lg:col-span-1">
               {selectedProject ? (
                 <Card className="sticky top-24">
                   <CardHeader>

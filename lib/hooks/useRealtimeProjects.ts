@@ -15,6 +15,8 @@ export function useRealtimeProjects() {
   const [error, setError] = useState<string | null>(null);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
+  const [optimisticDeletes, setOptimisticDeletes] = useState<Set<string>>(new Set());
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
 
   useEffect(() => {
     if (!user?.id) {
@@ -73,118 +75,28 @@ export function useRealtimeProjects() {
 
     fetchProjects();
 
-    // Enhanced real-time subscriptions with error handling
-    const projectSubscription = supabase
-      .channel('projects_channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'projects',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('Project change:', payload);
+    // TEMPORARILY DISABLED: Real-time subscriptions to debug UI freezing issue
+    // Using polling approach instead for more reliable updates
+    
+    // Polling for project updates every 5 seconds for processing projects
+    const pollInterval = setInterval(() => {
+      const hasProcessingProjects = projects.some(p => p.status === 'processing' || p.status === 'pending');
+      if (hasProcessingProjects && !isDeletingProject) {
+        console.log('Polling for project updates...');
+        fetchProjects();
+      }
+    }, 5000);
 
-          // Optimistic updates for better UX
-          if (payload.eventType === 'INSERT') {
-            const newProject = payload.new as ProjectWithDocuments;
-            setProjects(prev => [newProject, ...prev]);
-
-            // Add to generation context if it's being processed
-            if (newProject.status === 'processing' || newProject.status === 'pending') {
-              updateGenerationFromProject(newProject);
-            }
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedProject = payload.new as ProjectWithDocuments;
-            setProjects(prev => prev.map(project =>
-              project.id === updatedProject.id
-                ? { ...project, ...updatedProject }
-                : project
-            ));
-
-            // Update generation context based on status
-            if (updatedProject.status === 'completed' || updatedProject.status === 'failed') {
-              removeGeneration(updatedProject.id);
-            } else if (updatedProject.status === 'processing' || updatedProject.status === 'pending') {
-              updateGenerationFromProject(updatedProject);
-            }
-          } else if (payload.eventType === 'DELETE') {
-            const deletedProject = payload.old as ProjectWithDocuments;
-            setProjects(prev => prev.filter(project => project.id !== deletedProject.id));
-            removeGeneration(deletedProject.id);
-          }
-
-          // Also fetch to ensure data consistency
-          setTimeout(() => fetchProjects(), 1000);
-        }
-      )
-      .on('system', { event: 'postgres_changes_disconnected' }, () => {
-        console.log('Real-time connection lost, attempting to reconnect...');
-        setError('Connection lost. Reconnecting...');
-      })
-      .on('system', { event: 'postgres_changes_connected' }, () => {
-        console.log('Real-time connection restored');
-        setError(null);
-        fetchProjects(); // Refresh data on reconnect
-      })
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to project changes');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Failed to subscribe to project changes');
-          setError('Real-time updates unavailable');
-        }
-      });
-
-    // Subscribe to real-time changes for documents
-    const documentSubscription = supabase
-      .channel('documents_channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'documents',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('Document change:', payload);
-
-          // Update documents within projects
-          if (payload.eventType === 'UPDATE') {
-            setProjects(prev => prev.map(project => {
-              const updatedProject = {
-                ...project,
-                documents: project.documents.map(doc =>
-                  doc.id === payload.new.id
-                    ? { ...doc, ...payload.new }
-                    : doc
-                )
-              };
-
-              // Update generation context with new document data
-              if (project.status === 'processing' || project.status === 'pending') {
-                updateGenerationFromProject(updatedProject);
-              }
-
-              return updatedProject;
-            }));
-          }
-
-          // Refresh projects to get updated document data
-          setTimeout(() => fetchProjects(), 500);
-        }
-      )
-      .subscribe();
+    // Cleanup polling interval
+    const cleanupPolling = () => {
+      clearInterval(pollInterval);
+    };
 
     // Cleanup function
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      projectSubscription.unsubscribe();
-      documentSubscription.unsubscribe();
+      cleanupPolling();
     };
   }, [user?.id, supabase, isOnline]);
 
@@ -212,12 +124,31 @@ export function useRealtimeProjects() {
     }
   };
 
+  // Optimistic update function for immediate UI updates
+  const optimisticUpdate = (updateFn: (projects: ProjectWithDocuments[]) => ProjectWithDocuments[]) => {
+    setProjects(updateFn);
+  };
+
+  // Simplified optimistic delete function
+  const optimisticDelete = (projectId: string) => {
+    console.log('Optimistic delete for project:', projectId);
+    setProjects(prev => {
+      const filtered = prev.filter(project => project.id !== projectId);
+      console.log('Projects after optimistic delete:', filtered.length);
+      return filtered;
+    });
+    // Also remove from generation context
+    removeGeneration(projectId);
+  };
+
   return {
     projects,
     loading,
     error,
     refetch,
     isOnline,
-    reconnectAttempts
+    reconnectAttempts,
+    optimisticUpdate,
+    optimisticDelete
   };
 }
