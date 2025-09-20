@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MultiStepForm } from "@/components/MultiStepForm";
-import { createProjectAndStartGenerationV2 } from "@/lib/actions/project.actions";
+import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { ProductManagerFormData } from "@/types";
 import { Sparkles, FileText, Users, Map, Code, Layout, Loader2, BarChart3, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,7 @@ export default function DashboardPage() {
     setIsGenerating(true);
     
     try {
-      const result = await createProjectAndStartGenerationV2({
+      const result = await createProjectAndStartGeneration({
         formData,
         techStack: 'To be determined based on requirements',
         targetPlatform: 'web',

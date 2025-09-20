@@ -11,11 +11,9 @@ export interface ProjectGenerationRequest {
   complexity: string;
   userId?: string;
   userEmail?: string;
-  projectSpec?: ProjectSpec;
-  // Enhanced v2 fields
-  formData?: ProductManagerFormData;
-  projectVersion?: 'v1' | 'v2';
-  // Enhanced prompts for v2
+  // V2 fields (now the only supported version)
+  formData: ProductManagerFormData;
+  // Enhanced prompts for document generation
   documentPrompts?: {
     research_insights: string;
     vision_strategy: string;
@@ -42,10 +40,10 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
 
     // Webhook submission (URL and payload logging removed for security)
 
-    // Enhance payload with document prompts for v2 projects
+    // Enhance payload with document prompts (V2 is now the only version)
     let enhancedRequest = { ...request };
     
-    if (request.projectVersion === 'v2' && request.formData) {
+    if (request.formData) {
       const promptContext = {
         formData: request.formData,
         techStack: request.techStack,

@@ -94,7 +94,7 @@ export interface GenerationStatus {
   currentStep: string;
   estimatedTime?: number;
   documents: GenerationDocument[];
-  projectVersion?: 'v1' | 'v2';
+  projectVersion?: 'v2';
 }
 
 // Add type declarations for PDF.js

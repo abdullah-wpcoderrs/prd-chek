@@ -42,14 +42,7 @@ const documentIconsV2 = {
     "Planning_Toolkit": Calendar
 };
 
-// Legacy document icons for backward compatibility
-const documentIconsV1 = {
-    "PRD": FileText,
-    "User Stories": Users,
-    "Sitemap": Map,
-    "Tech Stack": Code,
-    "Screens": Layout
-};
+// Document icons for V2 pipeline (now the only version)
 
 // Stage configuration for V2 pipeline
 const stageConfig = {
@@ -119,18 +112,11 @@ export function GenerationProgressV2({
     // Get status from context
     const progress = getGenerationStatus(projectId);
 
-    // Determine if this is a V2 project based on document types
-    const isV2Project = progress?.documents?.some(doc =>
-        ['Research_Insights', 'Vision_Strategy', 'BRD', 'TRD', 'Planning_Toolkit'].includes(doc.type)
-    );
+    // All projects are now V2
+    const isV2Project = true;
 
-    // Initialize generation polling when component mounts
-    useEffect(() => {
-        if (!progress) {
-            // Default to V2 for new generations, but this should ideally be passed as a prop
-            addGeneration(projectId, 'v2');
-        }
-    }, [projectId, addGeneration, progress]);
+    // The progress data should come from real-time Supabase updates via useRealtimeProjects
+    // No need to initialize mock data here since updateGenerationFromProject handles real data
 
     // Handle completion
     useEffect(() => {
@@ -200,8 +186,8 @@ export function GenerationProgressV2({
                                 {progress.status === 'failed' && <XCircle className="w-5 h-5 text-red-600" />}
                                 {progress.status === 'pending' && <Clock className="w-5 h-5 text-gray-400" />}
 
-                                {progress.status === 'pending' && "Preparing Enhanced Generation..."}
-                                {progress.status === 'processing' && (isV2Project ? "Generating Enhanced Documentation Suite" : "Generating Documentation")}
+                                {progress.status === 'pending' && "Preparing Generation..."}
+                                {progress.status === 'processing' && "Generating Enhanced Documentation Suite"}
                                 {progress.status === 'completed' && "Generation Complete!"}
                                 {progress.status === 'failed' && "Generation Failed"}
                             </CardTitle>
@@ -210,11 +196,9 @@ export function GenerationProgressV2({
                                 {progress.currentStep}
                             </p>
 
-                            {isV2Project && (
-                                <Badge variant="outline" className="mt-2 text-xs">
-                                    Enhanced V2 Pipeline • 6 Documents • 3 Stages
-                                </Badge>
-                            )}
+                            <Badge variant="outline" className="mt-2 text-xs">
+                                Enhanced Pipeline • 6 Documents • 3 Stages
+                            </Badge>
                         </div>
 
                         {progress.status !== 'completed' && (
@@ -244,10 +228,10 @@ export function GenerationProgressV2({
                         )}
                     </div>
 
-                    {/* V2 Stage-based Progress */}
-                    {isV2Project && groupedDocuments ? (
+                    {/* Stage-based Progress */}
+                    {groupedDocuments && (
                         <div className="space-y-6">
-                            <h3 className="font-medium text-gray-900 font-sans">Enhanced Generation Pipeline</h3>
+                            <h3 className="font-medium text-gray-900 font-sans">Generation Pipeline</h3>
 
                             {Object.entries(groupedDocuments).map(([stageKey, stageDocs]) => {
                                 const stage = stageConfig[stageKey as keyof typeof stageConfig];
@@ -324,52 +308,6 @@ export function GenerationProgressV2({
                                 );
                             })}
                         </div>
-                    ) : (
-                        /* V1 Legacy Document Display */
-                        <div className="space-y-3">
-                            <h3 className="font-medium text-gray-900 font-sans">Document Generation Status</h3>
-                            <div className="grid gap-3">
-                                {progress.documents.map((doc, index) => {
-                                    const IconComponent = documentIconsV1[doc.type as keyof typeof documentIconsV1] || FileText;
-                                    const config = statusConfig[doc.status];
-                                    const StatusIcon = config.icon;
-
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between p-3 border rounded-sm"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-sm flex items-center justify-center ${config.bgColor}`}
-                                                    style={doc.status === 'processing' ? { backgroundColor: 'var(--steel-blue-100)' } : {}}>
-                                                    <IconComponent className="w-5 h-5 text-gray-600"
-                                                        style={doc.status === 'processing' ? { color: 'var(--steel-blue-600)' } : {}} />
-                                                </div>
-
-                                                <div>
-                                                    <div className="font-medium text-sm text-gray-900 font-sans">
-                                                        {doc.name}
-                                                    </div>
-                                                    {doc.size && (
-                                                        <div className="text-xs text-gray-500 font-sans">
-                                                            {doc.size}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <Badge
-                                                variant="outline"
-                                                className={`${config.color} border-current font-sans`}
-                                            >
-                                                <StatusIcon className={`w-3 h-3 mr-1 ${config.animate === true ? 'animate-spin' : ''}`} />
-                                                {config.label}
-                                            </Badge>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
                     )}
 
                     {/* Success Message */}
@@ -380,7 +318,7 @@ export function GenerationProgressV2({
                                 <span className="font-semibold font-sans">Success!</span>
                             </div>
                             <p className="text-sm text-green-700 font-sans">
-                                Your {isV2Project ? 'enhanced ' : ''}documentation suite has been generated successfully.
+                                Your enhanced documentation suite has been generated successfully.
                                 You'll be redirected to your projects dashboard in a moment.
                             </p>
                         </div>

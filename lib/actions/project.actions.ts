@@ -48,46 +48,16 @@ export interface DocumentRecord {
   file_path: string | null;
   file_size: number | null;
   download_url: string | null;
+  document_stage?: string | null; // V2 enhancement: document stage
   created_at: string;
   updated_at: string;
 }
 
 
 
-export async function createProjectAndStartGeneration(data: CreateProjectData): Promise<{ projectId: string }> {
-  const { id: userId, email: userEmail } = await getAuthenticatedUserWithEmail();
-  
-  console.log('🚀 Starting project creation and generation...');
-  // Project data logging removed for security
-  
-  // Create project in Supabase first
-  const { projectId } = await createProject(data);
-  
-  try {
-    // Webhook submission logging removed for security
-    // Submit to N8N webhook with project ID, user ID, user email, and project spec
-    await submitProjectGeneration({
-      projectId,
-      userId,
-      userEmail: userEmail || undefined,
-      projectName: data.name,
-      description: data.description,
-      techStack: data.techStack,
-      targetPlatform: data.targetPlatform,
-      complexity: data.complexity,
-      projectSpec: data.projectSpec,
-    });
-    // Webhook success logging removed for security
-  } catch (error) {
-    console.error('❌ Failed to submit to webhook, but project was created:', error);
-    // Project is still created in database even if webhook fails
-    throw error; // Re-throw the error so user sees the issue
-  }
-  
-  return { projectId };
-}
+// V1 function removed - V2 is now the only supported version
 
-export async function createProjectV2(data: CreateProjectDataV2): Promise<{ projectId: string }> {
+export async function createProjectAndStartGeneration(data: CreateProjectDataV2): Promise<{ projectId: string }> {
   const userId = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
 
@@ -152,86 +122,34 @@ export async function createProjectV2(data: CreateProjectDataV2): Promise<{ proj
 
   console.log('✅ Enhanced document placeholders created');
 
+  // Submit to N8N webhook for document generation
+  try {
+    const { id: userIdWithEmail, email: userEmail } = await getAuthenticatedUserWithEmail();
+    
+    await submitProjectGeneration({
+      projectId: project.id,
+      userId: userIdWithEmail,
+      userEmail: userEmail || undefined,
+      projectName: data.formData.step1.productName,
+      description: data.formData.step1.productPitch,
+      techStack: data.techStack || 'To be determined',
+      targetPlatform: data.targetPlatform || 'web',
+      complexity: data.complexity || 'medium',
+      formData: data.formData,
+    });
+    
+    console.log('✅ Project submitted to generation pipeline');
+  } catch (error) {
+    console.error('❌ Failed to submit to webhook, but project was created:', error);
+    // Project is still created in database even if webhook fails
+    throw error; // Re-throw the error so user sees the issue
+  }
+
   revalidatePath('/projects');
   return { projectId: project.id };
 }
 
-export async function createProject(data: CreateProjectData): Promise<{ projectId: string }> {
-  const userId = await getAuthenticatedUser();
-  const supabase = await createSupabaseServerClient();
-
-  // User ID logging removed for security
-
-  // Create project record
-  const { data: project, error: projectError } = await supabase
-    .from('projects')
-    .insert([{
-      user_id: userId,
-      name: data.name,
-      description: data.description,
-      tech_stack: data.techStack,
-      target_platform: data.targetPlatform,
-      complexity: data.complexity,
-      status: 'pending',
-      progress: 0,
-      current_step: 'Initializing project'
-    }])
-    .select()
-    .single();
-
-  if (projectError) {
-    console.error('❌ Error creating project:', projectError);
-    throw new Error(`Failed to create project: ${projectError.message}`);
-  }
-
-  // Project ID logging removed for security
-
-  // Create document placeholders
-  const documentTypes = [
-    { type: 'PRD', name: 'Product Requirements Document' },
-    { type: 'User Stories', name: 'User Journey Document' },
-    { type: 'Sitemap', name: 'Application Sitemap' },
-    { type: 'Tech Stack', name: 'Technology Requirements' },
-    { type: 'Screens', name: 'Screen Specifications' }
-  ];
-
-  // New document types for enhanced pipeline
-  const documentTypesV2 = [
-    // Stage 1: Discovery & Research
-    { type: 'Research_Insights', name: 'Research & Insights Report', stage: 'discovery' },
-    
-    // Stage 2: Vision & Strategy  
-    { type: 'Vision_Strategy', name: 'Vision & Strategy Document', stage: 'strategy' },
-    
-    // Stage 3: Requirements & Planning
-    { type: 'PRD', name: 'Product Requirements Document', stage: 'planning' },
-    { type: 'BRD', name: 'Business Requirements Document', stage: 'planning' },
-    { type: 'TRD', name: 'Technical Requirements Document', stage: 'planning' },
-    { type: 'Planning_Toolkit', name: 'Planning Toolkit', stage: 'planning' }
-  ];
-
-  const { error: documentsError } = await supabase
-    .from('documents')
-    .insert(
-      documentTypes.map(doc => ({
-        project_id: project.id,
-        user_id: userId,
-        type: doc.type,
-        name: doc.name,
-        status: 'pending'
-      }))
-    );
-
-  if (documentsError) {
-    console.error('❌ Error creating document records:', documentsError);
-    throw new Error(`Failed to create document records: ${documentsError.message}`);
-  }
-
-  console.log('✅ Document placeholders created');
-
-  revalidatePath('/projects');
-  return { projectId: project.id };
-}
+// Legacy V1 createProject function removed - use createProjectAndStartGeneration instead
 
 export async function getUserProjects(): Promise<ProjectWithDocuments[]> {
   const userId = await getAuthenticatedUser();
@@ -373,38 +291,7 @@ export async function deleteProject(projectId: string): Promise<{ success: boole
   return { success: true };
 }
 
-export async function createProjectAndStartGenerationV2(data: CreateProjectDataV2): Promise<{ projectId: string }> {
-  // First create the project with v2 structure
-  const { projectId } = await createProjectV2(data);
-  
-  // Get user info for webhook
-  const userId = await getAuthenticatedUser();
-  const { email: userEmail } = await getAuthenticatedUserWithEmail();
-  
-  // Submit to webhook for enhanced document generation
-  try {
-    await submitProjectGeneration({
-      projectId,
-      userId,
-      userEmail: userEmail || undefined,
-      projectName: data.formData.step1.productName,
-      description: data.formData.step1.productPitch,
-      techStack: data.techStack || 'To be determined based on requirements',
-      targetPlatform: data.targetPlatform || 'web',
-      complexity: data.complexity || 'medium',
-      // Enhanced v2 data
-      formData: data.formData,
-      projectVersion: 'v2'
-    });
-    console.log('✅ Enhanced document generation started');
-  } catch (error) {
-    console.error('❌ Failed to submit to webhook, but project was created:', error);
-    // Project is still created in database even if webhook fails
-    throw error;
-  }
-  
-  return { projectId };
-}
+// Duplicate function removed - use createProjectAndStartGeneration instead
 
 export async function updateDocumentStatus(
   documentId: string,

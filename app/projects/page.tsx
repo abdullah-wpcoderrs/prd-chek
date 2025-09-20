@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DocumentViewer } from "@/components/DocumentViewer";
+import GenerationProgressV2 from "@/components/GenerationProgressV2";
 import { useRealtimeProjects } from "@/lib/hooks/useRealtimeProjects";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -105,20 +106,10 @@ const statusColors = {
   failed: "bg-red-100 text-red-700"
 };
 
-// Helper function to get document types for a project
+// Helper function to get document types for a project (V2 only)
 const getProjectDocumentTypes = (project: ProjectWithDocuments) => {
-  // Check if project has new document types (created with V2 flow)
-  const hasNewDocTypes = project.documents.some(doc => 
-    ['Research_Insights', 'Vision_Strategy', 'BRD', 'TRD', 'Planning_Toolkit'].includes(doc.type)
-  );
-  
-  if (hasNewDocTypes) {
-    // New 6-document pipeline
-    return ['Research_Insights', 'Vision_Strategy', 'PRD', 'BRD', 'TRD', 'Planning_Toolkit'];
-  } else {
-    // Legacy 5-document pipeline
-    return ['PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens'];
-  }
+  // All projects now use the enhanced 6-document pipeline
+  return ['Research_Insights', 'Vision_Strategy', 'PRD', 'BRD', 'TRD', 'Planning_Toolkit'];
 };
 
 // Helper function to get document display info
@@ -172,6 +163,7 @@ export default function ProjectsPage() {
     complexity: ''
   });
   const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
+  const [showProgressModal, setShowProgressModal] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -179,6 +171,23 @@ export default function ProjectsPage() {
       router.push('/sign-in');
     }
   }, [user, authLoading, router]);
+
+  // Auto-show progress modal for processing projects (when redirected from dashboard)
+  useEffect(() => {
+    if (projects.length > 0 && !showProgressModal) {
+      const processingProject = projects.find(p => p.status === 'processing');
+      if (processingProject) {
+        // Auto-show progress for the most recent processing project
+        const mostRecentProcessing = projects
+          .filter(p => p.status === 'processing')
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+        
+        if (mostRecentProcessing) {
+          setShowProgressModal(mostRecentProcessing.id);
+        }
+      }
+    }
+  }, [projects, showProgressModal]);
 
   const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -398,14 +407,17 @@ Complexity: ${project.complexity}`;
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <CardTitle className="font-sans text-xl">{project.name}</CardTitle>
-                          <Badge className={statusColors[project.status as keyof typeof statusColors] || statusColors.pending}>
-                            {isProcessing && (
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            )}
-                            {project.status === 'completed' ? 'Completed' : 
-                             project.status === 'processing' ? 'Processing' : 
-                             project.status === 'failed' ? 'Failed' : 'Pending'}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge className={statusColors[project.status as keyof typeof statusColors] || statusColors.pending}>
+                              {isProcessing && (
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              )}
+                              {project.status === 'completed' ? 'Completed' : 
+                               project.status === 'processing' ? 'Processing' : 
+                               project.status === 'failed' ? 'Failed' : 'Pending'}
+                            </Badge>
+                            {/* All projects are now enhanced V2 */}
+                          </div>
                         </div>
                         
                         <CardDescription className="font-sans text-gray-600 mb-3">
@@ -417,7 +429,21 @@ Complexity: ${project.complexity}`;
                           <div className="mb-3">
                             <div className="flex justify-between items-center text-sm mb-1">
                               <span className="font-medium text-gray-700 font-sans">Progress</span>
-                              <span className="text-gray-600 font-sans">{project.progress}%</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-600 font-sans">{project.progress}%</span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowProgressModal(project.id);
+                                  }}
+                                  className="text-xs px-2 py-1 h-6 font-sans"
+                                >
+                                  <BarChart3 className="w-3 h-3 mr-1" />
+                                  View Details
+                                </Button>
+                              </div>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div 
@@ -903,6 +929,27 @@ Complexity: ${project.complexity}`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Enhanced Progress Modal */}
+      {showProgressModal && (
+        <GenerationProgressV2
+          projectId={showProgressModal}
+          onComplete={(projectId) => {
+            setShowProgressModal(null);
+            toast({
+              title: "Generation Complete!",
+              description: "Your documentation suite has been generated successfully.",
+              variant: "default",
+            });
+          }}
+          onCancel={() => {
+            setShowProgressModal(null);
+          }}
+          onClickOutside={() => {
+            setShowProgressModal(null);
+          }}
+        />
+      )}
     </>
   );
 }

@@ -2,15 +2,17 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { GenerationDocument, GenerationStatus } from '@/types';
+import { formatFileSize } from '@/lib/utils/file-size';
 
 // Re-export for convenience
 export type { GenerationDocument, GenerationStatus };
 
 interface GenerationContextType {
   activeGenerations: Map<string, GenerationStatus>;
-  addGeneration: (projectId: string, version?: 'v1' | 'v2') => void;
+  addGeneration: (projectId: string) => void;
   removeGeneration: (projectId: string) => void;
   getGenerationStatus: (projectId: string) => GenerationStatus | undefined;
+  updateGenerationFromProject: (project: any) => void; // Update from real project data
 }
 
 const GenerationContext = createContext<GenerationContextType | undefined>(undefined);
@@ -30,16 +32,8 @@ interface GenerationProviderProps {
 export function GenerationProvider({ children }: GenerationProviderProps) {
   const [activeGenerations, setActiveGenerations] = useState<Map<string, GenerationStatus>>(new Map());
 
-  const addGeneration = (projectId: string, version: 'v1' | 'v2' = 'v2') => {
-    const documentsV1: GenerationDocument[] = [
-      { type: "PRD", name: "Product Requirements Document", status: "pending" },
-      { type: "User Stories", name: "User Journey Document", status: "pending" },
-      { type: "Sitemap", name: "Application Sitemap", status: "pending" },
-      { type: "Tech Stack", name: "Technology Requirements", status: "pending" },
-      { type: "Screens", name: "Screen Specifications", status: "pending" }
-    ];
-
-    const documentsV2: GenerationDocument[] = [
+  const addGeneration = (projectId: string) => {
+    const documents: GenerationDocument[] = [
       // Stage 1: Discovery & Research
       { type: "Research_Insights", name: "Research & Insights Report", status: "pending", stage: "discovery" },
       
@@ -57,9 +51,9 @@ export function GenerationProvider({ children }: GenerationProviderProps) {
       projectId,
       status: 'pending',
       progress: 0,
-      currentStep: version === 'v2' ? 'Initializing enhanced generation...' : 'Initializing...',
-      documents: version === 'v2' ? documentsV2 : documentsV1,
-      projectVersion: version
+      currentStep: 'Initializing enhanced generation...',
+      documents,
+      projectVersion: 'v2'
     };
 
     setActiveGenerations(prev => new Map(prev.set(projectId, initialStatus)));
@@ -77,12 +71,51 @@ export function GenerationProvider({ children }: GenerationProviderProps) {
     return activeGenerations.get(projectId);
   };
 
+  const updateGenerationFromProject = (project: any) => {
+    if (!project || !project.documents) return;
+
+    // Convert DocumentRecord[] to GenerationDocument[]
+    const documents: GenerationDocument[] = project.documents.map((doc: any) => ({
+      type: doc.type,
+      name: doc.name,
+      status: doc.status as 'pending' | 'processing' | 'completed' | 'failed',
+      size: doc.file_size ? formatFileSize(doc.file_size) : undefined,
+      downloadUrl: doc.download_url || undefined,
+      stage: doc.document_stage as 'discovery' | 'strategy' | 'planning' | undefined
+    }));
+
+    // All projects are now V2
+    const projectVersion: 'v2' = 'v2';
+
+    const generationStatus: GenerationStatus = {
+      projectId: project.id,
+      status: project.status as 'pending' | 'processing' | 'completed' | 'failed',
+      progress: project.progress || 0,
+      currentStep: project.current_step || 'Initializing...',
+      documents,
+      projectVersion
+    };
+
+    console.log(`🔄 Updated generation status for project ${project.id}:`, {
+      version: projectVersion,
+      status: generationStatus.status,
+      progress: generationStatus.progress,
+      documentCount: documents.length,
+      documentsWithStages: documents.filter(d => d.stage).length
+    });
+
+    setActiveGenerations(prev => new Map(prev.set(project.id, generationStatus)));
+  };
+
+
+
   return (
     <GenerationContext.Provider value={{
       activeGenerations,
       addGeneration,
       removeGeneration,
-      getGenerationStatus
+      getGenerationStatus,
+      updateGenerationFromProject
     }}>
       {children}
     </GenerationContext.Provider>

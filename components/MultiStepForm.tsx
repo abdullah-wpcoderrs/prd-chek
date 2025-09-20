@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle, Save, AlertCircle, Clock } from "lucide-react";
 import { ProductManagerFormData, ProductBasics, UsersProblems, MarketContext, ValueVision, RequirementsPlanning } from "@/types";
+import { useToast } from "@/lib/hooks/use-toast";
 
 // Import step components
 import { FormStep1ProductBasics } from "@/components/form-steps/FormStep1ProductBasics";
@@ -13,6 +14,20 @@ import { FormStep2UsersProblems } from "@/components/form-steps/FormStep2UsersPr
 import { FormStep3MarketContext } from "@/components/form-steps/FormStep3MarketContext";
 import { FormStep4ValueVision } from "@/components/form-steps/FormStep4ValueVision";
 import { FormStep5RequirementsPlanning } from "@/components/form-steps/FormStep5RequirementsPlanning";
+
+// Import new components and utilities
+import { useFormPersistence } from "@/lib/hooks/useFormPersistence";
+import { FormRecoveryDialog } from "@/components/FormRecoveryDialog";
+import { ValidationFeedback, ValidationSummary } from "@/components/ValidationFeedback";
+import {
+  validateStep1,
+  validateStep2,
+  validateStep3,
+  validateStep4,
+  validateStep5,
+  validateEntireForm,
+  StepValidationResult
+} from "@/lib/utils/form-validation";
 
 interface MultiStepFormProps {
   onSubmit: (data: ProductManagerFormData) => void;
@@ -29,102 +44,189 @@ const STEPS = [
 ];
 
 export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: MultiStepFormProps) {
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
+  const [savedFormData, setSavedFormData] = useState<ProductManagerFormData | null>(null);
+  const [savedTimestamp, setSavedTimestamp] = useState<number>();
+  const [validationResults, setValidationResults] = useState<Record<string, StepValidationResult>>({});
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const hasRestoredRef = useRef(false);
 
   // Form data state
-  const [formData, setFormData] = useState<ProductManagerFormData>(
-    initialData || {
-      step1: {
-        productName: "",
-        productPitch: "",
-        industry: "",
-        currentStage: "idea",
-      },
-      step2: {
-        targetUsers: "",
-        painPoints: [],
-        primaryJobToBeDone: "",
-      },
-      step3: {
-        competitors: [],
-        differentiation: "",
-        marketTrend: "",
-      },
-      step4: {
-        valueProposition: "",
-        productVision: "",
-        successMetric: "",
-      },
-      step5: {
-        mustHaveFeatures: [],
-        niceToHaveFeatures: [],
-        constraints: "",
-        prioritizationMethod: "RICE",
-      },
+  const [formData, setFormData] = useState<ProductManagerFormData>({
+    step1: {
+      productName: "",
+      productPitch: "",
+      industry: "",
+      currentStage: "idea",
+    },
+    step2: {
+      targetUsers: "",
+      painPoints: [],
+      primaryJobToBeDone: "",
+    },
+    step3: {
+      competitors: [],
+      differentiation: "",
+      marketTrend: "",
+    },
+    step4: {
+      valueProposition: "",
+      productVision: "",
+      successMetric: "",
+    },
+    step5: {
+      mustHaveFeatures: [],
+      niceToHaveFeatures: [],
+      constraints: "",
+      prioritizationMethod: "RICE",
+    },
+  });
+
+  // Helper function to check if there are unsaved changes
+  const hasUnsavedChanges = (): boolean => {
+    const emptyForm = {
+      step1: { productName: "", productPitch: "", industry: "", currentStage: "idea" as const },
+      step2: { targetUsers: "", painPoints: [], primaryJobToBeDone: "" },
+      step3: { competitors: [], differentiation: "", marketTrend: "" },
+      step4: { valueProposition: "", productVision: "", successMetric: "" },
+      step5: { mustHaveFeatures: [], niceToHaveFeatures: [], constraints: "", prioritizationMethod: "RICE" as const }
+    };
+
+    return JSON.stringify(formData) !== JSON.stringify(emptyForm);
+  };
+
+  // Update validation and completion status
+  const updateValidationAndCompletion = useCallback((data: ProductManagerFormData) => {
+    const results = {
+      step1: validateStep1(data.step1),
+      step2: validateStep2(data.step2),
+      step3: validateStep3(data.step3),
+      step4: validateStep4(data.step4),
+      step5: validateStep5(data.step5)
+    };
+
+    setValidationResults(results);
+
+    // Update completed steps based on validation
+    const newCompletedSteps = new Set<number>();
+    Object.entries(results).forEach(([step, result]) => {
+      if (result.isValid) {
+        newCompletedSteps.add(parseInt(step.replace('step', '')));
+      }
+    });
+    setCompletedSteps(newCompletedSteps);
+  }, []);
+
+  // Form persistence hook
+  const { saveNow, clearSavedData, hasSavedData, loadFromStorage } = useFormPersistence({
+    key: 'prd-chek-form-data',
+    data: formData,
+    autoSaveInterval: 30000, // 30 seconds
+    onRestore: (data) => {
+      if (!hasRestoredRef.current && !initialData) {
+        setSavedFormData(data);
+        setSavedTimestamp(Date.now());
+        setShowRecoveryDialog(true);
+        hasRestoredRef.current = true;
+      }
     }
-  );
+  });
+
+  // Check for saved data on mount (only once)
+  useEffect(() => {
+    if (!hasRestoredRef.current && hasSavedData() && !initialData) {
+      const saved = loadFromStorage();
+      if (saved) {
+        setSavedFormData(saved);
+        setSavedTimestamp(Date.now());
+        setShowRecoveryDialog(true);
+        hasRestoredRef.current = true;
+      }
+    }
+  }, []); // Empty dependency array to run only once
 
   // Update form data when initialData changes
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
-      // Mark steps as completed if they have data
-      const newCompletedSteps = new Set<number>();
-      if (validateStep1(initialData.step1)) newCompletedSteps.add(1);
-      if (validateStep2(initialData.step2)) newCompletedSteps.add(2);
-      if (validateStep3(initialData.step3)) newCompletedSteps.add(3);
-      if (validateStep4(initialData.step4)) newCompletedSteps.add(4);
-      if (validateStep5(initialData.step5)) newCompletedSteps.add(5);
-      setCompletedSteps(newCompletedSteps);
+      updateValidationAndCompletion(initialData);
     }
-  }, [initialData]);
+  }, [initialData, updateValidationAndCompletion]);
 
-  // Validation functions for each step
-  const validateStep1 = (data: ProductBasics): boolean => {
-    return !!(data.productName.trim() && data.productPitch.trim() && data.industry);
-  };
+  // Update validation results when form data changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      updateValidationAndCompletion(formData);
+    }, 100); // 100ms debounce
 
-  const validateStep2 = (data: UsersProblems): boolean => {
-    return !!(data.targetUsers.trim() && data.painPoints.length > 0 && data.primaryJobToBeDone.trim());
-  };
+    return () => clearTimeout(timeoutId);
+  }, [formData, updateValidationAndCompletion]);
 
-  const validateStep3 = (data: MarketContext): boolean => {
-    return !!(data.differentiation.trim());
-  };
+  // Handle browser navigation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
 
-  const validateStep4 = (data: ValueVision): boolean => {
-    return !!(data.valueProposition.trim() && data.productVision.trim());
-  };
+    const handlePopState = () => {
+      if (hasUnsavedChanges()) {
+        const shouldLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+        if (!shouldLeave) {
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
 
-  const validateStep5 = (data: RequirementsPlanning): boolean => {
-    return !!(data.mustHaveFeatures.length > 0);
-  };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
 
-  const isStepValid = useCallback((step: number): boolean => {
-    switch (step) {
-      case 1: return validateStep1(formData.step1);
-      case 2: return validateStep2(formData.step2);
-      case 3: return validateStep3(formData.step3);
-      case 4: return validateStep4(formData.step4);
-      case 5: return validateStep5(formData.step5);
-      default: return false;
-    }
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [formData]);
 
+  const isStepValid = useCallback((step: number): boolean => {
+    const stepKey = `step${step}` as keyof typeof validationResults;
+    return validationResults[stepKey]?.isValid || false;
+  }, [validationResults]);
+
   const updateStepData = useCallback((step: keyof ProductManagerFormData, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [step]: data,
-    }));
+    setFormData(prev => {
+      // Only update if data has actually changed
+      if (JSON.stringify(prev[step]) === JSON.stringify(data)) {
+        return prev;
+      }
+
+      const newData = {
+        ...prev,
+        [step]: data,
+      };
+      return newData;
+    });
+    setLastSaveTime(new Date());
   }, []);
 
   const handleNext = () => {
     if (isStepValid(currentStep)) {
-      setCompletedSteps(prev => new Set([...prev, currentStep]));
       if (currentStep < 5) {
         setCurrentStep(currentStep + 1);
       }
+      saveNow(); // Save progress when moving to next step
+    } else {
+      toast({
+        title: "Please fix validation errors",
+        description: "Complete all required fields before proceeding to the next step.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -134,11 +236,70 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     }
   };
 
-  const handleSubmit = () => {
-    if (isStepValid(5)) {
-      setCompletedSteps(prev => new Set([...prev, 5]));
-      onSubmit(formData);
+  const handleSubmit = async () => {
+    const fullValidation = validateEntireForm(formData);
+
+    if (!fullValidation.isValid) {
+      toast({
+        title: "Form validation failed",
+        description: `Please fix ${fullValidation.totalErrors} error${fullValidation.totalErrors !== 1 ? 's' : ''} before submitting.`,
+        variant: "destructive",
+      });
+      return;
     }
+
+    try {
+      await onSubmit(formData);
+      clearSavedData(); // Clear saved data after successful submission
+      toast({
+        title: "Form submitted successfully",
+        description: "Your documentation is being generated.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Submission failed",
+        description: "Please try again. Your progress has been saved.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Recovery dialog handlers
+  const handleRestoreProgress = () => {
+    if (savedFormData) {
+      setFormData(savedFormData);
+      updateValidationAndCompletion(savedFormData);
+      setShowRecoveryDialog(false);
+      hasRestoredRef.current = true;
+      toast({
+        title: "Progress restored",
+        description: "Your previous form data has been restored.",
+        variant: "default",
+      });
+    }
+  };
+
+  const handleDiscardProgress = () => {
+    clearSavedData();
+    setShowRecoveryDialog(false);
+    hasRestoredRef.current = true;
+    toast({
+      title: "Starting fresh",
+      description: "Previous progress has been cleared.",
+      variant: "default",
+    });
+  };
+
+  // Manual save handler
+  const handleManualSave = () => {
+    saveNow();
+    setLastSaveTime(new Date());
+    toast({
+      title: "Progress saved",
+      description: "Your form progress has been saved.",
+      variant: "default",
+    });
   };
 
   const goToStep = (step: number) => {
@@ -192,109 +353,169 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   };
 
   const progress = (currentStep / 5) * 100;
+  const currentStepValidation = validationResults[`step${currentStep}` as keyof typeof validationResults];
+  const fullValidation = validateEntireForm(formData);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Progress Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900 font-sans">
-            Create Your Product Documentation
-          </h2>
-          <div className="text-sm text-gray-600 font-sans">
-            Step {currentStep} of 5
+    <>
+      {/* Recovery Dialog */}
+      <FormRecoveryDialog
+        isOpen={showRecoveryDialog}
+        onRestore={handleRestoreProgress}
+        onDiscard={handleDiscardProgress}
+        savedData={savedFormData}
+        timestamp={savedTimestamp}
+      />
+
+      <div className="max-w-4xl mx-auto">
+        {/* Progress Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 font-sans">
+              Create Your Product Documentation
+            </h2>
+            <div className="flex items-center gap-4">
+              {/* Auto-save indicator */}
+              {lastSaveTime && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Clock className="w-3 h-3" />
+                  <span className="font-sans">
+                    Saved {lastSaveTime.toLocaleTimeString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Manual save button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualSave}
+                className="font-sans"
+              >
+                <Save className="w-3 h-3 mr-1" />
+                Save
+              </Button>
+
+              <div className="text-sm text-gray-600 font-sans">
+                Step {currentStep} of 5
+              </div>
+            </div>
           </div>
-        </div>
 
-        <Progress value={progress} className="mb-6" />
+          <Progress value={progress} className="mb-6" />
 
-        {/* Step Navigation */}
-        <div className="flex items-center justify-between">
-          {STEPS.map((step, index) => {
-            const isCompleted = completedSteps.has(step.id);
-            const isCurrent = currentStep === step.id;
-            const isAccessible = step.id <= Math.max(...Array.from(completedSteps), 0) + 1;
+          {/* Step Navigation - Mobile Responsive */}
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
+            {STEPS.map((step, index) => {
+              const isCompleted = completedSteps.has(step.id);
+              const isCurrent = currentStep === step.id;
+              const isAccessible = step.id <= Math.max(...Array.from(completedSteps), 0) + 1;
 
-            return (
-              <div key={step.id} className="flex items-center">
-                <button
-                  onClick={() => goToStep(step.id)}
-                  disabled={!isAccessible}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 font-semibold text-sm transition-colors ${isCompleted
+              return (
+                <div key={step.id} className="flex items-center flex-shrink-0">
+                  <button
+                    onClick={() => goToStep(step.id)}
+                    disabled={!isAccessible}
+                    className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 font-semibold text-xs md:text-sm transition-colors ${isCompleted
                       ? 'bg-green-500 border-green-500 text-white'
                       : isCurrent
                         ? 'border-blue-500 text-blue-500 bg-blue-50'
                         : isAccessible
                           ? 'border-gray-300 text-gray-500 hover:border-gray-400'
                           : 'border-gray-200 text-gray-300 cursor-not-allowed'
-                    }`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    step.id
+                      }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle className="w-3 h-3 md:w-5 md:h-5" />
+                    ) : (
+                      step.id
+                    )}
+                  </button>
+
+                  {index < STEPS.length - 1 && (
+                    <div className={`w-8 md:w-16 h-0.5 mx-1 md:mx-2 ${completedSteps.has(step.id) ? 'bg-green-500' : 'bg-gray-200'
+                      }`} />
                   )}
-                </button>
+                </div>
+              );
+            })}
+          </div>
 
-                {index < STEPS.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-2 ${completedSteps.has(step.id) ? 'bg-green-500' : 'bg-gray-200'
-                    }`} />
-                )}
+          <div className="text-center mt-4">
+            <h3 className="text-lg font-semibold text-gray-900 font-sans">
+              {STEPS[currentStep - 1].title}
+            </h3>
+            <p className="text-gray-600 font-sans">
+              {STEPS[currentStep - 1].description}
+            </p>
+          </div>
+        </div>
+
+        {/* Validation Summary */}
+        <div className="mb-6">
+          <ValidationSummary
+            totalErrors={fullValidation.totalErrors}
+            totalWarnings={fullValidation.totalWarnings}
+            completedSteps={completedSteps.size}
+            totalSteps={5}
+          />
+        </div>
+
+        {/* Form Content */}
+        <Card className="shadow-sm border-0">
+          <CardContent className="p-8">
+            {renderCurrentStep()}
+
+            {/* Current Step Validation */}
+            {currentStepValidation && (
+              <div className="mt-6">
+                <ValidationFeedback
+                  errors={currentStepValidation.errors}
+                  warnings={currentStepValidation.warnings}
+                  showSuccess={currentStepValidation.isValid && currentStepValidation.errors.length === 0 && currentStepValidation.warnings.length === 0}
+                />
               </div>
-            );
-          })}
-        </div>
+            )}
+          </CardContent>
+        </Card>
 
-        <div className="text-center mt-4">
-          <h3 className="text-lg font-semibold text-gray-900 font-sans">
-            {STEPS[currentStep - 1].title}
-          </h3>
-          <p className="text-gray-600 font-sans">
-            {STEPS[currentStep - 1].description}
-          </p>
+        {/* Navigation Buttons - Mobile Responsive */}
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1 || isSubmitting}
+            className="font-sans w-full sm:w-auto"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Previous
+          </Button>
+
+          {currentStep < 5 ? (
+            <Button
+              onClick={handleNext}
+              disabled={!isStepValid(currentStep) || isSubmitting}
+              className="font-sans text-white w-full sm:w-auto"
+              style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={!fullValidation.isValid || isSubmitting}
+              className="font-sans text-white w-full sm:w-auto"
+              style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}
+            >
+              {isSubmitting ? 'Generating...' : 'Generate Documents'}
+              {fullValidation.totalErrors > 0 && (
+                <AlertCircle className="w-4 h-4 ml-2" />
+              )}
+            </Button>
+          )}
         </div>
       </div>
-
-      {/* Form Content */}
-      <Card className="shadow-sm border-0">
-        <CardContent className="p-8">
-          {renderCurrentStep()}
-        </CardContent>
-      </Card>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-8">
-        <Button
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentStep === 1 || isSubmitting}
-          className="font-sans"
-        >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Previous
-        </Button>
-
-        {currentStep < 5 ? (
-          <Button
-            onClick={handleNext}
-            disabled={!isStepValid(currentStep) || isSubmitting}
-            className="font-sans text-white"
-            style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handleSubmit}
-            disabled={!isStepValid(5) || isSubmitting}
-            className="font-sans text-white"
-            style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}
-          >
-            {isSubmitting ? 'Generating...' : 'Generate Documents'}
-          </Button>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
