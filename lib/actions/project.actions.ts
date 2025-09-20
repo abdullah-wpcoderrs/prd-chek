@@ -52,36 +52,7 @@ export interface DocumentRecord {
   updated_at: string;
 }
 
-// New function for multi-step form data
-export async function createProjectAndStartGenerationV2(data: CreateProjectDataV2): Promise<{ projectId: string }> {
-  const { id: userId, email: userEmail } = await getAuthenticatedUserWithEmail();
-  
-  console.log('🚀 Starting project creation with multi-step form data...');
-  
-  // Create project in Supabase first
-  const { projectId } = await createProjectV2(data);
-  
-  try {
-    // Submit to N8N webhook with enhanced project data
-    await submitProjectGeneration({
-      projectId,
-      userId,
-      userEmail: userEmail || undefined,
-      projectName: data.formData.step1.productName,
-      description: `${data.formData.step1.productPitch}\n\nTarget Users: ${data.formData.step2.targetUsers}\n\nValue Proposition: ${data.formData.step4.valueProposition}`,
-      techStack: data.techStack || 'To be determined',
-      targetPlatform: data.targetPlatform || 'web',
-      complexity: data.complexity || 'medium',
-      // Enhanced project data
-      formData: data.formData,
-    });
-  } catch (error) {
-    console.error('❌ Failed to submit to webhook, but project was created:', error);
-    throw error;
-  }
-  
-  return { projectId };
-}
+
 
 export async function createProjectAndStartGeneration(data: CreateProjectData): Promise<{ projectId: string }> {
   const { id: userId, email: userEmail } = await getAuthenticatedUserWithEmail();
@@ -400,6 +371,39 @@ export async function deleteProject(projectId: string): Promise<{ success: boole
 
   revalidatePath('/projects');
   return { success: true };
+}
+
+export async function createProjectAndStartGenerationV2(data: CreateProjectDataV2): Promise<{ projectId: string }> {
+  // First create the project with v2 structure
+  const { projectId } = await createProjectV2(data);
+  
+  // Get user info for webhook
+  const userId = await getAuthenticatedUser();
+  const { email: userEmail } = await getAuthenticatedUserWithEmail();
+  
+  // Submit to webhook for enhanced document generation
+  try {
+    await submitProjectGeneration({
+      projectId,
+      userId,
+      userEmail: userEmail || undefined,
+      projectName: data.formData.step1.productName,
+      description: data.formData.step1.productPitch,
+      techStack: data.techStack || 'To be determined based on requirements',
+      targetPlatform: data.targetPlatform || 'web',
+      complexity: data.complexity || 'medium',
+      // Enhanced v2 data
+      formData: data.formData,
+      projectVersion: 'v2'
+    });
+    console.log('✅ Enhanced document generation started');
+  } catch (error) {
+    console.error('❌ Failed to submit to webhook, but project was created:', error);
+    // Project is still created in database even if webhook fails
+    throw error;
+  }
+  
+  return { projectId };
 }
 
 export async function updateDocumentStatus(

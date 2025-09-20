@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { convertTemplateToFormData } from "@/lib/utils/template-mapping";
+import GenerationProgressV2 from "@/components/GenerationProgressV2";
 
 // Template conversion logic moved to /lib/utils/template-mapping.ts
 

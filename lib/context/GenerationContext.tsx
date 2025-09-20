@@ -1,25 +1,14 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { GenerationDocument, GenerationStatus } from '@/types';
 
-export interface GenerationStatus {
-  projectId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  currentStep: string;
-  estimatedTime?: number;
-  documents: Array<{
-    type: string;
-    name: string;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
-    size?: string;
-    downloadUrl?: string;
-  }>;
-}
+// Re-export for convenience
+export type { GenerationDocument, GenerationStatus };
 
 interface GenerationContextType {
   activeGenerations: Map<string, GenerationStatus>;
-  addGeneration: (projectId: string) => void;
+  addGeneration: (projectId: string, version?: 'v1' | 'v2') => void;
   removeGeneration: (projectId: string) => void;
   getGenerationStatus: (projectId: string) => GenerationStatus | undefined;
 }
@@ -41,19 +30,36 @@ interface GenerationProviderProps {
 export function GenerationProvider({ children }: GenerationProviderProps) {
   const [activeGenerations, setActiveGenerations] = useState<Map<string, GenerationStatus>>(new Map());
 
-  const addGeneration = (projectId: string) => {
+  const addGeneration = (projectId: string, version: 'v1' | 'v2' = 'v2') => {
+    const documentsV1: GenerationDocument[] = [
+      { type: "PRD", name: "Product Requirements Document", status: "pending" },
+      { type: "User Stories", name: "User Journey Document", status: "pending" },
+      { type: "Sitemap", name: "Application Sitemap", status: "pending" },
+      { type: "Tech Stack", name: "Technology Requirements", status: "pending" },
+      { type: "Screens", name: "Screen Specifications", status: "pending" }
+    ];
+
+    const documentsV2: GenerationDocument[] = [
+      // Stage 1: Discovery & Research
+      { type: "Research_Insights", name: "Research & Insights Report", status: "pending", stage: "discovery" },
+      
+      // Stage 2: Vision & Strategy
+      { type: "Vision_Strategy", name: "Vision & Strategy Document", status: "pending", stage: "strategy" },
+      
+      // Stage 3: Requirements & Planning
+      { type: "PRD", name: "Product Requirements Document", status: "pending", stage: "planning" },
+      { type: "BRD", name: "Business Requirements Document", status: "pending", stage: "planning" },
+      { type: "TRD", name: "Technical Requirements Document", status: "pending", stage: "planning" },
+      { type: "Planning_Toolkit", name: "Planning Toolkit", status: "pending", stage: "planning" }
+    ];
+
     const initialStatus: GenerationStatus = {
       projectId,
       status: 'pending',
       progress: 0,
-      currentStep: 'Initializing...',
-      documents: [
-        { type: "PRD", name: "Product Requirements Document", status: "pending" },
-        { type: "User Stories", name: "User Journey Document", status: "pending" },
-        { type: "Sitemap", name: "Application Sitemap", status: "pending" },
-        { type: "Tech Stack", name: "Technology Requirements", status: "pending" },
-        { type: "Screens", name: "Screen Specifications", status: "pending" }
-      ]
+      currentStep: version === 'v2' ? 'Initializing enhanced generation...' : 'Initializing...',
+      documents: version === 'v2' ? documentsV2 : documentsV1,
+      projectVersion: version
     };
 
     setActiveGenerations(prev => new Map(prev.set(projectId, initialStatus)));

@@ -1,6 +1,7 @@
 // lib/webhook.ts - N8N Webhook Integration
 
-import { ProjectSpec } from '@/types';
+import { ProjectSpec, ProductManagerFormData } from '@/types';
+import V2DocumentPrompts from './prompts/v2-document-prompts';
 
 export interface ProjectGenerationRequest {
   projectName?: string;
@@ -11,6 +12,18 @@ export interface ProjectGenerationRequest {
   userId?: string;
   userEmail?: string;
   projectSpec?: ProjectSpec;
+  // Enhanced v2 fields
+  formData?: ProductManagerFormData;
+  projectVersion?: 'v1' | 'v2';
+  // Enhanced prompts for v2
+  documentPrompts?: {
+    research_insights: string;
+    vision_strategy: string;
+    prd: string;
+    brd: string;
+    trd: string;
+    planning_toolkit: string;
+  };
 }
 
 // N8N Webhook Configuration
@@ -29,6 +42,21 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
 
     // Webhook submission (URL and payload logging removed for security)
 
+    // Enhance payload with document prompts for v2 projects
+    let enhancedRequest = { ...request };
+    
+    if (request.projectVersion === 'v2' && request.formData) {
+      const promptContext = {
+        formData: request.formData,
+        techStack: request.techStack,
+        targetPlatform: request.targetPlatform,
+        complexity: request.complexity,
+        projectName: request.projectName || 'Untitled Project'
+      };
+      
+      enhancedRequest.documentPrompts = V2DocumentPrompts.getAllPrompts(promptContext);
+    }
+
     // Send to N8N with the provided project ID (fire and forget)
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
@@ -36,7 +64,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        ...request,
+        ...enhancedRequest,
         timestamp: new Date().toISOString(),
         requestId: generateRequestId(),
       }),

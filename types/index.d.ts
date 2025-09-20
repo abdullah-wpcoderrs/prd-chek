@@ -77,6 +77,26 @@ export interface CreateProjectDataV2 {
   complexity?: string;
 }
 
+// Document generation types
+export interface GenerationDocument {
+  type: string;
+  name: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  size?: string;
+  downloadUrl?: string;
+  stage?: 'discovery' | 'strategy' | 'planning';
+}
+
+export interface GenerationStatus {
+  projectId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  currentStep: string;
+  estimatedTime?: number;
+  documents: GenerationDocument[];
+  projectVersion?: 'v1' | 'v2';
+}
+
 // Add type declarations for PDF.js
 declare module "pdfjs-dist/build/pdf" {
   const pdfjsLib: any;
