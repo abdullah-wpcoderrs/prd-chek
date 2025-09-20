@@ -154,6 +154,8 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     if (initialData) {
       setFormData(initialData);
       updateValidationAndCompletion(initialData);
+      // Don't mark as interacted for initial data from templates
+      // Let user interact naturally first
     }
   }, [initialData, updateValidationAndCompletion]);
 
@@ -200,6 +202,11 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   }, [validationResults]);
 
   const updateStepData = useCallback((step: keyof ProductManagerFormData, data: any) => {
+    // Mark that user has interacted with the form
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
+
     setFormData(prev => {
       // Only update if data has actually changed
       if (JSON.stringify(prev[step]) === JSON.stringify(data)) {
@@ -213,9 +220,14 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
       return newData;
     });
     setLastSaveTime(new Date());
-  }, []);
+  }, [hasUserInteracted]);
 
   const handleNext = () => {
+    // Mark user interaction when they try to navigate
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
+
     if (isStepValid(currentStep)) {
       if (currentStep < 5) {
         setCurrentStep(currentStep + 1);
@@ -237,6 +249,11 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   };
 
   const handleSubmit = async () => {
+    // Mark user interaction when they try to submit
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
+
     const fullValidation = validateEntireForm(formData);
 
     if (!fullValidation.isValid) {
@@ -251,17 +268,11 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     try {
       await onSubmit(formData);
       clearSavedData(); // Clear saved data after successful submission
-      toast({
-        title: "Form submitted successfully",
-        description: "Your documentation is being generated.",
-        variant: "default",
-      });
+      // Success toast is handled by the parent component (dashboard)
     } catch (error) {
-      toast({
-        title: "Submission failed",
-        description: "Please try again. Your progress has been saved.",
-        variant: "destructive",
-      });
+      // Error handling is done by the parent component
+      // Just ensure form stays interactive for retry
+      console.error('Form submission error:', error);
     }
   };
 
@@ -272,6 +283,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
       updateValidationAndCompletion(savedFormData);
       setShowRecoveryDialog(false);
       hasRestoredRef.current = true;
+      setHasUserInteracted(true); // Mark as interacted when restoring
       toast({
         title: "Progress restored",
         description: "Your previous form data has been restored.",
@@ -451,23 +463,25 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
           </div>
         </div>
 
-        {/* Validation Summary */}
-        <div className="mb-6">
-          <ValidationSummary
-            totalErrors={fullValidation.totalErrors}
-            totalWarnings={fullValidation.totalWarnings}
-            completedSteps={completedSteps.size}
-            totalSteps={5}
-          />
-        </div>
+        {/* Validation Summary - Only show after user interaction */}
+        {hasUserInteracted && (
+          <div className="mb-6">
+            <ValidationSummary
+              totalErrors={fullValidation.totalErrors}
+              totalWarnings={fullValidation.totalWarnings}
+              completedSteps={completedSteps.size}
+              totalSteps={5}
+            />
+          </div>
+        )}
 
         {/* Form Content */}
         <Card className="shadow-sm border-0">
           <CardContent className="p-8">
             {renderCurrentStep()}
 
-            {/* Current Step Validation */}
-            {currentStepValidation && (
+            {/* Current Step Validation - Only show after user interaction */}
+            {hasUserInteracted && currentStepValidation && (
               <div className="mt-6">
                 <ValidationFeedback
                   errors={currentStepValidation.errors}

@@ -88,6 +88,8 @@ export default function DashboardPage() {
     setIsGenerating(true);
     
     try {
+      console.log('🚀 Starting project creation process...');
+      
       const result = await createProjectAndStartGeneration({
         formData,
         techStack: 'To be determined based on requirements',
@@ -95,11 +97,13 @@ export default function DashboardPage() {
         complexity: 'medium',
       });
       
+      console.log('✅ Project created successfully:', result.projectId);
+      
       // Show success toast notification
       toast({
-        variant: "success",
-        title: "Documents Being Generated",
-        description: "Your comprehensive documentation suite is being prepared. You can track progress in your projects dashboard.",
+        title: "Generation Started Successfully!",
+        description: "Your project has been created and document generation is now in progress. Redirecting to projects page...",
+        variant: "default",
       });
       
       // Redirect to projects page
@@ -108,12 +112,37 @@ export default function DashboardPage() {
       }, 2000);
       
     } catch (error) {
-      console.error('Generation failed:', error);
+      console.error('❌ Project creation failed:', error);
+      
+      // Extract user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      // Determine error type for better UX
+      let title = "Generation Failed";
+      let description = errorMessage;
+      
+      if (errorMessage.includes('network') || errorMessage.includes('connect')) {
+        title = "Connection Error";
+        description = "Unable to connect to our servers. Please check your internet connection and try again.";
+      } else if (errorMessage.includes('timeout')) {
+        title = "Request Timeout";
+        description = "The request is taking longer than expected. Please try again.";
+      } else if (errorMessage.includes('service')) {
+        title = "Service Unavailable";
+        description = errorMessage; // Use the specific service error message
+      } else if (errorMessage.includes('webhook') || errorMessage.includes('generation service')) {
+        title = "Generation Service Error";
+        description = "Our document generation service is currently unavailable. Please try again in a few minutes.";
+      }
+      
       toast({
         variant: "destructive",
-        title: "Generation Failed",
-        description: "Failed to start generation. Please try again.",
+        title,
+        description,
+        duration: 8000, // Show error longer so user can read it
       });
+      
+      // Don't redirect on error - let user try again
     } finally {
       setIsGenerating(false);
     }

@@ -61,73 +61,14 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
   const userId = await getAuthenticatedUser();
   const supabase = await createSupabaseServerClient();
 
-  // Create project record with enhanced data
-  const { data: project, error: projectError } = await supabase
-    .from('projects')
-    .insert([{
-      user_id: userId,
-      name: data.formData.step1.productName,
-      description: data.formData.step1.productPitch,
-      tech_stack: data.techStack || 'To be determined',
-      target_platform: data.targetPlatform || 'web',
-      complexity: data.complexity || 'medium',
-      status: 'pending',
-      progress: 0,
-      current_step: 'Initializing project',
-      // Store the complete form data as JSON
-      form_data: data.formData,
-      // Mark as v2 project
-      project_version: 'v2'
-    }])
-    .select()
-    .single();
+  console.log('🚀 Starting project creation with webhook-first approach...');
 
-  if (projectError) {
-    console.error('❌ Error creating project:', projectError);
-    throw new Error(`Failed to create project: ${projectError.message}`);
-  }
-
-  // Create enhanced document placeholders
-  const documentTypesV2 = [
-    // Stage 1: Discovery & Research
-    { type: 'Research_Insights', name: 'Research & Insights Report', stage: 'discovery' },
-    
-    // Stage 2: Vision & Strategy  
-    { type: 'Vision_Strategy', name: 'Vision & Strategy Document', stage: 'strategy' },
-    
-    // Stage 3: Requirements & Planning
-    { type: 'PRD', name: 'Product Requirements Document', stage: 'planning' },
-    { type: 'BRD', name: 'Business Requirements Document', stage: 'planning' },
-    { type: 'TRD', name: 'Technical Requirements Document', stage: 'planning' },
-    { type: 'Planning_Toolkit', name: 'Planning Toolkit', stage: 'planning' }
-  ];
-
-  const { error: documentsError } = await supabase
-    .from('documents')
-    .insert(
-      documentTypesV2.map(doc => ({
-        project_id: project.id,
-        user_id: userId,
-        type: doc.type,
-        name: doc.name,
-        status: 'pending',
-        document_stage: doc.stage
-      }))
-    );
-
-  if (documentsError) {
-    console.error('❌ Error creating document records:', documentsError);
-    throw new Error(`Failed to create document records: ${documentsError.message}`);
-  }
-
-  console.log('✅ Enhanced document placeholders created');
-
-  // Submit to N8N webhook for document generation
+  // Step 1: Test webhook connectivity and prepare payload FIRST
+  let webhookPayload;
   try {
     const { id: userIdWithEmail, email: userEmail } = await getAuthenticatedUserWithEmail();
     
-    await submitProjectGeneration({
-      projectId: project.id,
+    webhookPayload = {
       userId: userIdWithEmail,
       userEmail: userEmail || undefined,
       projectName: data.formData.step1.productName,
@@ -136,17 +77,181 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
       targetPlatform: data.targetPlatform || 'web',
       complexity: data.complexity || 'medium',
       formData: data.formData,
+    };
+
+    console.log('📡 Testing webhook connectivity...');
+    
+    // Test webhook connectivity without projectId first
+    await testWebhookConnectivity();
+    
+  } catch (error) {
+    console.error('❌ Webhook connectivity test failed:', error);
+    throw new Error('Unable to connect to document generation service. Please check your internet connection and try again.');
+  }
+
+  // Step 2: Create project record only after webhook test passes
+  let project;
+  try {
+    console.log('💾 Creating project record...');
+    
+    const { data: projectData, error: projectError } = await supabase
+      .from('projects')
+      .insert([{
+        user_id: userId,
+        name: data.formData.step1.productName,
+        description: data.formData.step1.productPitch,
+        tech_stack: data.techStack || 'To be determined',
+        target_platform: data.targetPlatform || 'web',
+        complexity: data.complexity || 'medium',
+        status: 'pending',
+        progress: 0,
+        current_step: 'Initializing project',
+        // Store the complete form data as JSON
+        form_data: data.formData,
+        // Mark as v2 project
+        project_version: 'v2'
+      }])
+      .select()
+      .single();
+
+    if (projectError) {
+      console.error('❌ Error creating project:', projectError);
+      throw new Error(`Failed to create project: ${projectError.message}`);
+    }
+
+    project = projectData;
+    console.log('✅ Project record created successfully');
+
+  } catch (error) {
+    console.error('❌ Project creation failed:', error);
+    throw error;
+  }
+
+  // Step 3: Create document placeholders
+  try {
+    console.log('📄 Creating document placeholders...');
+    
+    const documentTypesV2 = [
+      // Stage 1: Discovery & Research
+      { type: 'Research_Insights', name: 'Research & Insights Report', stage: 'discovery' },
+      
+      // Stage 2: Vision & Strategy  
+      { type: 'Vision_Strategy', name: 'Vision & Strategy Document', stage: 'strategy' },
+      
+      // Stage 3: Requirements & Planning
+      { type: 'PRD', name: 'Product Requirements Document', stage: 'planning' },
+      { type: 'BRD', name: 'Business Requirements Document', stage: 'planning' },
+      { type: 'TRD', name: 'Technical Requirements Document', stage: 'planning' },
+      { type: 'Planning_Toolkit', name: 'Planning Toolkit', stage: 'planning' }
+    ];
+
+    const { error: documentsError } = await supabase
+      .from('documents')
+      .insert(
+        documentTypesV2.map(doc => ({
+          project_id: project.id,
+          user_id: userId,
+          type: doc.type,
+          name: doc.name,
+          status: 'pending',
+          document_stage: doc.stage
+        }))
+      );
+
+    if (documentsError) {
+      console.error('❌ Error creating document records:', documentsError);
+      // Rollback: Delete the project if document creation fails
+      await rollbackProject(project.id, supabase);
+      throw new Error(`Failed to create document records: ${documentsError.message}`);
+    }
+
+    console.log('✅ Document placeholders created successfully');
+
+  } catch (error) {
+    console.error('❌ Document creation failed:', error);
+    throw error;
+  }
+
+  // Step 4: Submit to webhook with project ID
+  try {
+    console.log('🚀 Submitting to generation pipeline...');
+    
+    await submitProjectGeneration({
+      ...webhookPayload,
+      projectId: project.id, // Now we have the project ID
     });
     
-    console.log('✅ Project submitted to generation pipeline');
+    console.log('✅ Project submitted to generation pipeline successfully');
+
   } catch (error) {
-    console.error('❌ Failed to submit to webhook, but project was created:', error);
-    // Project is still created in database even if webhook fails
-    throw error; // Re-throw the error so user sees the issue
+    console.error('❌ Webhook submission failed after project creation:', error);
+    
+    // Rollback: Delete the project and documents since webhook failed
+    try {
+      await rollbackProject(project.id, supabase);
+      console.log('🔄 Project rolled back due to webhook failure');
+    } catch (rollbackError) {
+      console.error('❌ Rollback failed:', rollbackError);
+    }
+    
+    throw new Error('Failed to start document generation. The project was not created. Please try again.');
   }
 
   revalidatePath('/projects');
   return { projectId: project.id };
+}
+
+// Helper function to test webhook connectivity
+async function testWebhookConnectivity(): Promise<void> {
+  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+  
+  if (!webhookUrl) {
+    throw new Error('Webhook URL not configured');
+  }
+
+  // Simple connectivity test - just check if the endpoint is reachable
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'HEAD', // Use HEAD to test connectivity without sending data
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Accept any response that's not a network error
+    // Even 404 or 405 means the server is reachable
+    if (!response) {
+      throw new Error('No response from webhook service');
+    }
+    
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to reach document generation service');
+    }
+    throw error;
+  }
+}
+
+// Helper function to rollback project creation
+async function rollbackProject(projectId: string, supabase: any): Promise<void> {
+  try {
+    // Delete documents first (foreign key constraint)
+    await supabase
+      .from('documents')
+      .delete()
+      .eq('project_id', projectId);
+
+    // Then delete the project
+    await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+
+    console.log('🔄 Project and documents rolled back successfully');
+  } catch (error) {
+    console.error('❌ Rollback operation failed:', error);
+    throw new Error('Failed to clean up after error. Please contact support.');
+  }
 }
 
 // Legacy V1 createProject function removed - use createProjectAndStartGeneration instead

@@ -32,13 +32,19 @@ const N8N_WEBHOOK_URL = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://your
  * This function sends the project data to N8N and doesn't wait for a response
  */
 export async function submitProjectGeneration(request: ProjectGenerationRequest & { projectId?: string }): Promise<{ projectId: string }> {
+  const startTime = Date.now();
+  
   try {
-    // If projectId is not provided, it means project creation should happen elsewhere
+    // Validate required fields
     if (!request.projectId) {
       throw new Error('Project ID is required for webhook submission');
     }
 
-    // Webhook submission (URL and payload logging removed for security)
+    if (!N8N_WEBHOOK_URL) {
+      throw new Error('Webhook URL is not configured. Please check your environment variables.');
+    }
+
+    console.log('🚀 Submitting project to webhook...');
 
     // Enhance payload with document prompts (V2 is now the only version)
     let enhancedRequest = { ...request };
@@ -55,32 +61,79 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
       enhancedRequest.documentPrompts = V2DocumentPrompts.getAllPrompts(promptContext);
     }
 
-    // Send to N8N with the provided project ID (fire and forget)
+    // Send to N8N with enhanced error handling and timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'User-Agent': 'PRD-Chek/1.0',
       },
       body: JSON.stringify({
         ...enhancedRequest,
         timestamp: new Date().toISOString(),
         requestId: generateRequestId(),
       }),
+      signal: controller.signal,
     });
 
-    // Response status logging removed for security
+    clearTimeout(timeoutId);
+
+    const duration = Date.now() - startTime;
+    console.log(`📡 Webhook response received in ${duration}ms`);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Webhook error response:', errorText);
-      throw new Error(`Webhook request failed: ${response.status} ${response.statusText}`);
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          errorMessage += ` - ${errorText}`;
+        }
+      } catch (e) {
+        // Ignore error reading response body
+      }
+
+      console.error('❌ Webhook error response:', errorMessage);
+      
+      // Provide user-friendly error messages based on status code
+      if (response.status >= 500) {
+        throw new Error('Document generation service is temporarily unavailable. Please try again in a few minutes.');
+      } else if (response.status === 404) {
+        throw new Error('Document generation service endpoint not found. Please contact support.');
+      } else if (response.status === 403) {
+        throw new Error('Access denied to document generation service. Please contact support.');
+      } else if (response.status >= 400) {
+        throw new Error('Invalid request to document generation service. Please try again.');
+      } else {
+        throw new Error(`Document generation service error: ${errorMessage}`);
+      }
     }
 
-    // Webhook success logging removed for security
+    console.log('✅ Webhook submission successful');
     return { projectId: request.projectId };
   } catch (error) {
-    console.error('❌ Failed to submit project generation:', error);
-    throw new Error('Failed to submit project for generation. Please try again.');
+    const duration = Date.now() - startTime;
+    console.error(`❌ Webhook submission failed after ${duration}ms:`, error);
+    
+    // Handle specific error types
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to document generation service. Please check your internet connection.');
+    }
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout: Document generation service is taking too long to respond. Please try again.');
+    }
+    
+    // Re-throw custom errors as-is
+    if (error instanceof Error && error.message.includes('generation service')) {
+      throw error;
+    }
+    
+    // Generic fallback
+    throw new Error('Failed to start document generation. Please try again or contact support if the problem persists.');
   }
 }
 
