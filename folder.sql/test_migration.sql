@@ -270,11 +270,11 @@ BEGIN
     -- Insert test project
     INSERT INTO public.projects (
         id, user_id, name, description, tech_stack, target_platform, 
-        complexity, status, progress, current_step, form_data, project_version
+        status, progress, current_step, form_data, project_version
     ) VALUES (
         test_project_id, test_user_id, 'Integration Test Project',
         'Testing the complete v2 workflow', 'Next.js + Supabase',
-        'web', 'medium', 'pending', 0, 'Testing migration',
+        'web', 'pending', 0, 'Testing migration',
         test_form_data, 'v2'
     );
     

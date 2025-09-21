@@ -81,7 +81,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
   "description": "Detailed project description from user input",
   "techStack": "Next.js + Supabase + TypeScript",
   "targetPlatform": "web",
-  "complexity": "medium",
   "userId": "user_123",
   "timestamp": "2025-01-10T12:00:00.000Z",
   "requestId": "req_1704974400000_abc123xyz",
@@ -104,7 +103,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 | `description` | string | **Yes** | - | Detailed project description (max 2000 chars) |
 | `techStack` | string | **Yes** | See tech stack options | Selected technology stack |
 | `targetPlatform` | string | **Yes** | `web`, `mobile`, `desktop`, `both` | Target deployment platform |
-| `complexity` | string | **Yes** | `simple`, `medium`, `complex` | Project complexity level |
 | `userId` | string | No | - | User identifier (if authentication enabled) |
 | `timestamp` | string | **Yes** | ISO 8601 | Request submission timestamp |
 | `requestId` | string | **Yes** | - | Unique request identifier |
@@ -152,7 +150,7 @@ When users provide additional project specifications via the "Add Project Spec" 
 ```
 
 #### Expected Response
-```json
+```
 {
   "projectId": "project_unique_id_123",
   "status": "accepted",
@@ -168,7 +166,7 @@ When users provide additional project specifications via the "Add Project Spec" 
 - **Query Parameter**: `projectId` (required)
 
 #### Expected Response Structure
-```json
+```
 {
   "projectId": "project_unique_id_123",
   "status": "processing",
@@ -392,7 +390,7 @@ Your N8N workflow must generate these 5 document types:
 
 ### Recommended Workflow Structure
 
-```mermaid
+```
 graph TB
     A[Webhook Trigger: /generate-docs] --> B[Validate Request Data]
     B --> C[Generate Project ID]
@@ -495,7 +493,6 @@ graph TB
        "description": "Test project description",
        "techStack": "Next.js + Supabase + TypeScript",
        "targetPlatform": "web",
-       "complexity": "medium",
        "timestamp": "2025-01-10T12:00:00.000Z",
        "requestId": "test_req_123"
      }'
@@ -508,7 +505,6 @@ graph TB
        "description": "A comprehensive collaboration platform for remote teams",
        "techStack": "Next.js + Supabase + TypeScript",
        "targetPlatform": "web",
-       "complexity": "complex",
        "timestamp": "2025-01-10T12:00:00.000Z",
        "requestId": "test_req_124",
        "projectSpec": {
@@ -636,7 +632,7 @@ The frontend includes comprehensive error handling:
 
 ### Debug Mode
 Enable detailed logging by adding to `.env.local`:
-```env
+``env
 NEXT_PUBLIC_DEBUG_WEBHOOKS=true
 ```
 

@@ -8,7 +8,6 @@ export interface ProjectGenerationRequest {
   description: string;
   techStack: string;
   targetPlatform: string;
-  complexity: string;
   userId?: string;
   userEmail?: string;
   // V2 fields (now the only supported version)
@@ -54,7 +53,6 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
         formData: request.formData,
         techStack: request.techStack,
         targetPlatform: request.targetPlatform,
-        complexity: request.complexity,
         projectName: request.projectName || 'Untitled Project'
       };
       
@@ -114,7 +112,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
 
     console.log('✅ Webhook submission successful');
     return { projectId: request.projectId };
-  } catch (error) {
+  } catch (error: any) {
     const duration = Date.now() - startTime;
     console.error(`❌ Webhook submission failed after ${duration}ms:`, error);
     

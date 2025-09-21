@@ -10,7 +10,6 @@ export interface CreateProjectData {
   description: string;
   techStack: string;
   targetPlatform: string;
-  complexity: string;
   projectSpec?: ProjectSpec;
 }
 
@@ -19,7 +18,6 @@ export interface CreateProjectDataV2 {
   formData: ProductManagerFormData;
   techStack?: string;
   targetPlatform?: string;
-  complexity?: string;
 }
 
 export interface ProjectWithDocuments {
@@ -29,7 +27,6 @@ export interface ProjectWithDocuments {
   description: string;
   tech_stack: string;
   target_platform: string;
-  complexity: string;
   status: string;
   progress: number;
   current_step: string;
@@ -75,7 +72,6 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
       description: data.formData.step1.productPitch,
       techStack: data.techStack || 'To be determined',
       targetPlatform: data.targetPlatform || 'web',
-      complexity: data.complexity || 'medium',
       formData: data.formData,
     };
 
@@ -102,7 +98,6 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
         description: data.formData.step1.productPitch,
         tech_stack: data.techStack || 'To be determined',
         target_platform: data.targetPlatform || 'web',
-        complexity: data.complexity || 'medium',
         status: 'pending',
         progress: 0,
         current_step: 'Initializing project',
@@ -333,7 +328,6 @@ export async function updateProject(
     description?: string;
     tech_stack?: string;
     target_platform?: string;
-    complexity?: string;
   }
 ): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUser();

@@ -161,8 +161,7 @@ export default function ProjectsPage() {
     name: '',
     description: '',
     tech_stack: '',
-    target_platform: '',
-    complexity: ''
+    target_platform: ''
   });
   const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
   const [showProgressModal, setShowProgressModal] = useState<string | null>(null);
@@ -262,7 +261,7 @@ export default function ProjectsPage() {
       description: project.description || '',
       tech_stack: project.tech_stack,
       target_platform: project.target_platform,
-      complexity: project.complexity
+      // complexity: project.complexity // Removed as complexity field no longer exists
     });
     setEditDialogOpen(true);
   };
@@ -299,8 +298,7 @@ export default function ProjectsPage() {
     const projectDetails = `Project: ${project.name}
 Description: ${project.description}
 Tech Stack: ${project.tech_stack}
-Target Platform: ${project.target_platform}
-Complexity: ${project.complexity}`;
+Target Platform: ${project.target_platform}`;
     navigator.clipboard.writeText(projectDetails);
     toast({
       title: "Project details copied",
@@ -731,6 +729,14 @@ Complexity: ${project.complexity}`;
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
+                    <div className="text-sm text-gray-600 font-sans">
+                      <div className="font-medium mb-1">Project Details:</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div><span className="font-medium">Tech Stack:</span> {projects.find(p => p.id === selectedProject)?.tech_stack}</div>
+                        <div><span className="font-medium">Target Platform:</span> {projects.find(p => p.id === selectedProject)?.target_platform}</div>
+                      </div>
+                    </div>
+                    
                     {(() => {
                       const selectedProjectData = projects.find(p => p.id === selectedProject);
                       if (!selectedProjectData) return null;
@@ -906,83 +912,31 @@ Complexity: ${project.complexity}`;
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Tech Stack */}
               <div className="space-y-2">
                 <Label htmlFor="edit-tech-stack" className="font-sans font-medium">
-                  Tech Stack *
+                  Tech Stack
                 </Label>
-                <Select
+                <Input
+                  id="edit-tech-stack"
                   value={editForm.tech_stack}
-                  onValueChange={(value) => setEditForm(prev => ({ ...prev, tech_stack: value }))}
-                  disabled={!!updatingProjectId}
-                >
-                  <SelectTrigger className="font-sans">
-                    <SelectValue placeholder="Select tech stack" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="React + Node.js" className="font-sans">React + Node.js</SelectItem>
-                    <SelectItem value="Next.js" className="font-sans">Next.js</SelectItem>
-                    <SelectItem value="Vue.js" className="font-sans">Vue.js</SelectItem>
-                    <SelectItem value="Angular" className="font-sans">Angular</SelectItem>
-                    <SelectItem value="Flutter" className="font-sans">Flutter</SelectItem>
-                    <SelectItem value="React Native" className="font-sans">React Native</SelectItem>
-                    <SelectItem value="Python + Django" className="font-sans">Python + Django</SelectItem>
-                    <SelectItem value="Laravel" className="font-sans">Laravel</SelectItem>
-                    <SelectItem value="Ruby on Rails" className="font-sans">Ruby on Rails</SelectItem>
-                    <SelectItem value="ASP.NET" className="font-sans">ASP.NET</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setEditForm(prev => ({ ...prev, tech_stack: e.target.value }))}
+                  className="font-sans"
+                />
               </div>
-
-              {/* Target Platform */}
+              
               <div className="space-y-2">
-                <Label htmlFor="edit-platform" className="font-sans font-medium">
-                  Target Platform *
+                <Label htmlFor="edit-target-platform" className="font-sans font-medium">
+                  Target Platform
                 </Label>
-                <Select
+                <Input
+                  id="edit-target-platform"
                   value={editForm.target_platform}
-                  onValueChange={(value) => setEditForm(prev => ({ ...prev, target_platform: value }))}
-                  disabled={!!updatingProjectId}
-                >
-                  <SelectTrigger className="font-sans">
-                    <SelectValue placeholder="Select platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Web Application" className="font-sans">Web Application</SelectItem>
-                    <SelectItem value="Mobile App (iOS/Android)" className="font-sans">Mobile App (iOS/Android)</SelectItem>
-                    <SelectItem value="Desktop Application" className="font-sans">Desktop Application</SelectItem>
-                    <SelectItem value="Progressive Web App (PWA)" className="font-sans">Progressive Web App (PWA)</SelectItem>
-                    <SelectItem value="API/Backend Service" className="font-sans">API/Backend Service</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setEditForm(prev => ({ ...prev, target_platform: e.target.value }))}
+                  className="font-sans"
+                />
               </div>
-            </div>
+              
 
-            {/* Complexity */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-complexity" className="font-sans font-medium">
-                Project Complexity *
-              </Label>
-              <Select
-                value={editForm.complexity}
-                onValueChange={(value) => setEditForm(prev => ({ ...prev, complexity: value }))}
-                disabled={!!updatingProjectId}
-              >
-                <SelectTrigger className="font-sans">
-                  <SelectValue placeholder="Select complexity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Simple" className="font-sans">
-                    Simple - Basic functionality, few features
-                  </SelectItem>
-                  <SelectItem value="Medium" className="font-sans">
-                    Medium - Moderate complexity, multiple features
-                  </SelectItem>
-                  <SelectItem value="Complex" className="font-sans">
-                    Complex - Advanced features, integrations
-                  </SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 

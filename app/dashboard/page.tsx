@@ -92,9 +92,8 @@ export default function DashboardPage() {
       
       const result = await createProjectAndStartGeneration({
         formData,
-        techStack: 'To be determined based on requirements',
-        targetPlatform: 'web',
-        complexity: 'medium',
+        techStack: formData.step1.techStack || 'To be determined based on requirements',
+        targetPlatform: formData.step1.targetPlatform || 'web',
       });
       
       console.log('✅ Project created successfully:', result.projectId);

@@ -54,6 +54,28 @@ const STAGE_OPTIONS = [
   },
 ];
 
+const TECH_STACK_OPTIONS = [
+  { value: "mern", label: "MERN Stack (MongoDB, Express, React, Node.js)" },
+  { value: "nextjs", label: "Next.js + Supabase" },
+  { value: "react", label: "React + Node.js" },
+  { value: "vue", label: "Vue.js + Firebase" },
+  { value: "angular", label: "Angular + NestJS" },
+  { value: "django", label: "Django + PostgreSQL" },
+  { value: "laravel", label: "Laravel + MySQL" },
+  { value: "spring", label: "Spring Boot + React" },
+  { value: "flutter", label: "Flutter + Firebase" },
+  { value: "react-native", label: "React Native + Node.js" },
+  { value: "other", label: "Other" },
+];
+
+const TARGET_PLATFORM_OPTIONS = [
+  { value: "web", label: "Web" },
+  { value: "mobile", label: "Mobile" },
+  { value: "desktop", label: "Desktop" },
+  { value: "both", label: "Web + Mobile" },
+  { value: "other", label: "Other" }
+];
+
 export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasicsProps) {
   const updateField = (field: keyof ProductBasics, value: string) => {
     onUpdate({
@@ -106,7 +128,7 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
             Describe your product's core value in one compelling sentence
           </p>
           <span className="text-xs text-gray-500 font-sans">
-            {data.productPitch.length}/300
+            {(data.productPitch || '').length}/300
           </span>
         </div>
       </div>
@@ -145,7 +167,7 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
           {STAGE_OPTIONS.map((stage) => (
             <div
               key={stage.value}
-              onClick={() => updateField('currentStage', stage.value as ProductBasics['currentStage'])}
+              onClick={() => updateField('currentStage', stage.value)}
               className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-300 ${
                 data.currentStage === stage.value
                   ? 'border-blue-500 bg-blue-50'
@@ -166,16 +188,60 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
         </p>
       </div>
 
+      {/* Tech Stack Selection */}
+      <div className="space-y-3">
+        <Label htmlFor="techStack" className="text-base font-semibold text-gray-900 font-sans">
+          Preferred Tech Stack
+        </Label>
+        <Select value={data.techStack || ''} onValueChange={(value) => updateField('techStack', value)}>
+          <SelectTrigger className="text-base font-sans">
+            <SelectValue placeholder="Select your preferred tech stack" />
+          </SelectTrigger>
+          <SelectContent>
+            {TECH_STACK_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="font-sans">
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-gray-600 font-sans">
+          Specify your preferred technology stack (optional - will be determined based on requirements if left blank)
+        </p>
+      </div>
+
+      {/* Target Platform Selection */}
+      <div className="space-y-3">
+        <Label htmlFor="targetPlatform" className="text-base font-semibold text-gray-900 font-sans">
+          Target Platform
+        </Label>
+        <Select value={data.targetPlatform || ''} onValueChange={(value) => updateField('targetPlatform', value)}>
+          <SelectTrigger className="text-base font-sans">
+            <SelectValue placeholder="Select your target platform" />
+          </SelectTrigger>
+          <SelectContent>
+            {TARGET_PLATFORM_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="font-sans">
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-gray-600 font-sans">
+          Select the primary platform for your product
+        </p>
+      </div>
+
       {/* Validation Summary */}
       <div className="bg-gray-50 rounded-lg p-4">
         <h4 className="font-semibold text-gray-900 font-sans mb-2">Step 1 Progress</h4>
         <div className="space-y-1 text-sm">
-          <div className={`flex items-center gap-2 ${data.productName.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-            <div className={`w-2 h-2 rounded-full ${data.productName.trim() ? 'bg-green-500' : 'bg-gray-300'}`} />
+          <div className={`flex items-center gap-2 ${(data.productName || '').trim() ? 'text-green-600' : 'text-gray-500'}`}>
+            <div className={`w-2 h-2 rounded-full ${(data.productName || '').trim() ? 'bg-green-500' : 'bg-gray-300'}`} />
             Product name provided
           </div>
-          <div className={`flex items-center gap-2 ${data.productPitch.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-            <div className={`w-2 h-2 rounded-full ${data.productPitch.trim() ? 'bg-green-500' : 'bg-gray-300'}`} />
+          <div className={`flex items-center gap-2 ${(data.productPitch || '').trim() ? 'text-green-600' : 'text-gray-500'}`}>
+            <div className={`w-2 h-2 rounded-full ${(data.productPitch || '').trim() ? 'bg-green-500' : 'bg-gray-300'}`} />
             Product pitch written
           </div>
           <div className={`flex items-center gap-2 ${data.industry ? 'text-green-600' : 'text-gray-500'}`}>
@@ -185,6 +251,14 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
           <div className={`flex items-center gap-2 ${data.currentStage ? 'text-green-600' : 'text-gray-500'}`}>
             <div className={`w-2 h-2 rounded-full ${data.currentStage ? 'bg-green-500' : 'bg-gray-300'}`} />
             Current stage selected
+          </div>
+          <div className={`flex items-center gap-2 ${data.techStack ? 'text-green-600' : 'text-gray-500'}`}>
+            <div className={`w-2 h-2 rounded-full ${data.techStack ? 'bg-green-500' : 'bg-gray-300'}`} />
+            Tech stack specified
+          </div>
+          <div className={`flex items-center gap-2 ${data.targetPlatform ? 'text-green-600' : 'text-gray-500'}`}>
+            <div className={`w-2 h-2 rounded-full ${data.targetPlatform ? 'bg-green-500' : 'bg-gray-300'}`} />
+            Target platform selected
           </div>
         </div>
       </div>

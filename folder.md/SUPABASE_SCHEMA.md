@@ -40,7 +40,6 @@ CREATE TABLE public.projects (
   description TEXT,
   tech_stack TEXT,
   target_platform TEXT,
-  complexity TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
   progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
   current_step TEXT DEFAULT 'Initializing project',

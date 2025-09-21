@@ -75,7 +75,6 @@ This data can be used when testing the webhook endpoint to ensure proper handlin
   "description": "A comprehensive social media platform creator that allows users to build, customize, and deploy their own social networking applications...",
   "techStack": "Next.js + Supabase + TypeScript",
   "targetPlatform": "both",
-  "complexity": "complex",
   "projectSpec": {
     "coreFeatures": "User registration and authentication with social login options, Profile creation and customization with photo/video uploads, Real-time messaging system with text, voice, and video capabilities...",
     "targetUsers": "Primary users are entrepreneurs, content creators, and community builders aged 25-45 who want to create niche social platforms...",

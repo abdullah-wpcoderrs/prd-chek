@@ -23,7 +23,7 @@ The new V2 system introduces an enhanced 6-document generation pipeline with ric
 ## 📡 **Enhanced Webhook Payload (V2)**
 
 ### **New V2 Request Structure**
-```json
+```
 {
   "projectId": "project_123",
   "userId": "user_456", 
@@ -32,7 +32,6 @@ The new V2 system introduces an enhanced 6-document generation pipeline with ric
   "description": "Intelligent task management with AI prioritization",
   "techStack": "Next.js + Supabase + TypeScript",
   "targetPlatform": "web",
-  "complexity": "medium",
   "timestamp": "2025-01-10T12:00:00.000Z",
   "requestId": "req_1704974400000_abc123",
   
@@ -43,7 +42,9 @@ The new V2 system introduces an enhanced 6-document generation pipeline with ric
       "productName": "AI Task Manager Pro",
       "productPitch": "Revolutionary task management with AI-powered prioritization",
       "industry": "productivity", 
-      "currentStage": "mvp"
+      "currentStage": "mvp",
+      "techStack": "Next.js + Supabase + TypeScript",
+      "targetPlatform": "web"
     },
     "step2": {
       "targetUsers": "Knowledge workers, remote teams, project managers",
@@ -135,7 +136,6 @@ The new V2 system introduces an enhanced 6-document generation pipeline with ric
 - **Enhanced Content Sources**:
   - Technology stack from `techStack`
   - Platform requirements from `targetPlatform`
-  - Complexity considerations from `complexity`
   - Technical constraints from `formData.step5.constraints`
 
 ### **6. Planning Toolkit**
@@ -152,7 +152,7 @@ The new V2 system introduces an enhanced 6-document generation pipeline with ric
 ## 🔧 **N8N Workflow Configuration (V2)**
 
 ### **Enhanced Status Response Structure**
-```json
+```
 {
   "projectId": "project_123",
   "status": "processing",

@@ -30,6 +30,8 @@ export interface ProductBasics {
   productPitch: string;
   industry: string;
   currentStage: 'idea' | 'mvp' | 'growth' | 'scaling';
+  techStack?: string;
+  targetPlatform?: 'web' | 'mobile' | 'desktop' | 'both' | 'other';
 }
 
 export interface UsersProblems {

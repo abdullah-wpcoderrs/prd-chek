@@ -7,7 +7,7 @@ export interface DocumentPromptContext {
   formData: ProductManagerFormData;
   techStack: string;
   targetPlatform: string;
-  complexity: string;
+  complexity?: string; // Make complexity optional
   projectName: string;
 }
 
@@ -132,7 +132,7 @@ Create a comprehensive PRD for "${formData.step1.productName}":
 - **Description**: ${formData.step1.productPitch}
 - **Industry**: ${formData.step1.industry}
 - **Target Platform**: ${targetPlatform}
-- **Complexity**: ${complexity}
+- **Complexity**: ${complexity || 'To be determined'}
 - **Technology Stack**: ${techStack}
 
 ## User Requirements
@@ -275,7 +275,7 @@ Create a comprehensive TRD for "${formData.step1.productName}":
 - **Product**: ${formData.step1.productName}
 - **Technology Stack**: ${techStack}
 - **Target Platform**: ${targetPlatform}
-- **Complexity Level**: ${complexity}
+- **Complexity Level**: ${complexity || 'To be determined'}
 - **Industry**: ${formData.step1.industry}
 
 ## Architecture Requirements
@@ -359,7 +359,7 @@ Create a comprehensive Planning Toolkit for "${formData.step1.productName}":
 - **Product**: ${formData.step1.productName}
 - **Current Stage**: ${formData.step1.currentStage}
 - **Technology**: ${techStack}
-- **Complexity**: ${complexity}
+- **Complexity**: ${complexity || 'To be determined'}
 
 ## Feature Roadmap
 
