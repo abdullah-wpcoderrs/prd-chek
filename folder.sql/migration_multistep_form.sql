@@ -30,10 +30,10 @@ DROP CONSTRAINT IF EXISTS documents_type_check;
 ALTER TABLE public.documents 
 ADD CONSTRAINT documents_type_check 
 CHECK (type IN (
-  -- Legacy document types (v1)
-  'PRD', 'User Stories', 'Sitemap', 'Tech Stack', 'Screens',
-  -- New document types (v2)
-  'Research_Insights', 'Vision_Strategy', 'BRD', 'TRD', 'Planning_Toolkit'
+  -- Legacy document types (v1) - COMMENTED OUT FOR V2 DOMINANCE
+  -- 'User Stories', 'Sitemap', 'Tech Stack', 'Screens',
+  -- New document types (v2) - NOW DOMINANT (PRD RESTORED)
+  'Research_Insights', 'Vision_Strategy', 'PRD', 'BRD', 'TRD', 'Planning_Toolkit'
 ));
 
 -- Add document_stage column to categorize documents by pipeline stage
@@ -162,12 +162,13 @@ GROUP BY p.id, p.name, p.project_version;
 -- STEP 7: Update document stages for new document types
 -- ============================================================================
 
--- Update document stages based on document type
+-- Update document stages based on document type (V2 WITH PRD RESTORED)
 UPDATE public.documents 
 SET document_stage = CASE 
   WHEN type = 'Research_Insights' THEN 'discovery'
   WHEN type = 'Vision_Strategy' THEN 'strategy'
   WHEN type IN ('PRD', 'BRD', 'TRD', 'Planning_Toolkit') THEN 'planning'
+  -- PRD restored to V2 pipeline
   ELSE NULL -- Legacy documents don't have stages
 END
 WHERE document_stage IS NULL;

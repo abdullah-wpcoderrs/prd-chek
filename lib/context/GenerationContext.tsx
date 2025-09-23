@@ -40,7 +40,7 @@ export function GenerationProvider({ children }: GenerationProviderProps) {
       // Stage 2: Vision & Strategy
       { type: "Vision_Strategy", name: "Vision & Strategy Document", status: "pending", stage: "strategy" },
       
-      // Stage 3: Requirements & Planning
+      // Stage 3: Requirements & Planning (V2 WITH PRD RESTORED)
       { type: "PRD", name: "Product Requirements Document", status: "pending", stage: "planning" },
       { type: "BRD", name: "Business Requirements Document", status: "pending", stage: "planning" },
       { type: "TRD", name: "Technical Requirements Document", status: "pending", stage: "planning" },

@@ -64,21 +64,21 @@ import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project
 import { deleteProject, updateProject } from "@/lib/actions/project.actions";
 import { formatFileSize } from "@/lib/utils/file-size";
 
-// Updated document icons for new pipeline
+// V2 Document Pipeline Icons (DOMINANT WITH PRD RESTORED)
 const documentIcons = {
-  // Legacy documents (for backward compatibility)
-  "PRD": FileText,
-  "User Stories": Users,
-  "Sitemap": Map,
-  "Tech Stack": Code,
-  "Screens": Layout,
-
-  // New document pipeline
+  // V2 Document Pipeline (ACTIVE)
   "Research_Insights": Search,
   "Vision_Strategy": Eye,
+  "PRD": FileText,
   "BRD": Users,
   "TRD": Code,
-  "Planning_Toolkit": Layout
+  "Planning_Toolkit": Layout,
+
+  // Legacy documents (V1) - COMMENTED OUT FOR V2 DOMINANCE
+  // "User Stories": Users,
+  // "Sitemap": Map,
+  // "Tech Stack": Code,
+  // "Screens": Layout
 };
 
 // Document stages for new pipeline
@@ -96,7 +96,7 @@ const documentStages = {
   planning: {
     title: "Requirements & Planning",
     color: "green",
-    documents: ["PRD", "BRD", "TRD", "Planning_Toolkit"]
+    documents: ["PRD", "BRD", "TRD", "Planning_Toolkit"] // V2 WITH PRD RESTORED
   }
 };
 
@@ -108,25 +108,28 @@ const statusColors = {
   failed: "bg-red-100 text-red-700"
 };
 
-// Helper function to get document types for a project (V2 only)
+// Helper function to get document types for a project (V2 WITH PRD RESTORED)
 const getProjectDocumentTypes = (project: ProjectWithDocuments) => {
-  // All projects now use the enhanced 6-document pipeline
+  // V2 projects use the enhanced 6-document pipeline (PRD restored)
   return ['Research_Insights', 'Vision_Strategy', 'PRD', 'BRD', 'TRD', 'Planning_Toolkit'];
 };
 
-// Helper function to get document display info
+// Helper function to get document display info (V2 DOMINANT WITH PRD RESTORED)
 const getDocumentDisplayInfo = (docType: string) => {
   const displayNames: Record<string, string> = {
+    // V2 Document Types (ACTIVE)
     'Research_Insights': 'Research & Insights',
     'Vision_Strategy': 'Vision & Strategy',
+    'PRD': 'PRD',
     'BRD': 'Business Requirements',
     'TRD': 'Technical Requirements',
     'Planning_Toolkit': 'Planning Toolkit',
-    'PRD': 'PRD',
-    'User Stories': 'User Stories',
-    'Sitemap': 'Sitemap',
-    'Tech Stack': 'Tech Stack',
-    'Screens': 'Screens'
+    
+    // V1 Legacy Types (COMMENTED OUT)
+    // 'User Stories': 'User Stories',
+    // 'Sitemap': 'Sitemap',
+    // 'Tech Stack': 'Tech Stack',
+    // 'Screens': 'Screens'
   };
 
   return {

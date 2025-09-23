@@ -133,7 +133,7 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
       // Stage 2: Vision & Strategy  
       { type: 'Vision_Strategy', name: 'Vision & Strategy Document', stage: 'strategy' },
       
-      // Stage 3: Requirements & Planning
+      // Stage 3: Requirements & Planning - V2 WITH PRD RESTORED
       { type: 'PRD', name: 'Product Requirements Document', stage: 'planning' },
       { type: 'BRD', name: 'Business Requirements Document', stage: 'planning' },
       { type: 'TRD', name: 'Technical Requirements Document', stage: 'planning' },
