@@ -51,17 +51,85 @@ export function UrlHtmlViewer({ url, title = "HTML Document", isOpen, onClose }:
         setContentError(null);
 
         try {
-            const response = await fetch(url);
+            console.log('Fetching from URL:', url);
+            
+            // Handle data URLs directly
+            if (url.startsWith('data:')) {
+                const htmlText = decodeURIComponent(url.split(',')[1] || '');
+                if (htmlText) {
+                    setHtmlContent(htmlText);
+                    return;
+                } else {
+                    setContentError('Invalid data URL format');
+                    return;
+                }
+            }
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                },
+                mode: 'cors', // Explicitly set CORS mode
+            });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
             if (!response.ok) {
-                setContentError(`Failed to fetch HTML content: ${response.statusText}`);
+                if (response.status === 404) {
+                    setContentError(`Document not found (404). The file may have been moved or deleted.`);
+                } else if (response.status === 403) {
+                    setContentError(`Access denied (403). You may not have permission to view this document.`);
+                } else if (response.status === 0) {
+                    setContentError(`Network error. This may be due to CORS restrictions or the server being unreachable.`);
+                } else {
+                    setContentError(`Failed to fetch HTML content: ${response.status} ${response.statusText}`);
+                }
                 return;
             }
 
             const htmlText = await response.text();
+            console.log('Response content length:', htmlText.length);
+            console.log('Response content preview:', htmlText.substring(0, 200));
+            
+            // Check if we actually got HTML content
+            if (!htmlText || htmlText.trim().length === 0) {
+                setContentError('Document appears to be empty');
+                return;
+            }
+
+            // Check if the response contains HTML content (more flexible detection)
+            const lowerContent = htmlText.toLowerCase();
+            const hasHtmlTags = lowerContent.includes('<html') || 
+                               lowerContent.includes('<!doctype') || 
+                               lowerContent.includes('<body') || 
+                               lowerContent.includes('<div') ||
+                               lowerContent.includes('<h1') ||
+                               lowerContent.includes('<h2') ||
+                               lowerContent.includes('<p') ||
+                               lowerContent.includes('<span') ||
+                               lowerContent.includes('<section');
+            
+            if (!hasHtmlTags) {
+                // If it looks like an error message, show it
+                if (htmlText.length < 500 && (lowerContent.includes('error') || lowerContent.includes('not found') || lowerContent.includes('access denied'))) {
+                    setContentError(`Server error: ${htmlText}`);
+                } else {
+                    setContentError('The response does not appear to contain HTML content');
+                }
+                return;
+            }
+
             setHtmlContent(htmlText);
 
         } catch (error) {
-            setContentError(`Failed to load document: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            console.error('Fetch error:', error);
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                setContentError(`Network error: Unable to reach the server. This could be due to CORS restrictions, network connectivity issues, or the server being down.`);
+            } else {
+                setContentError(`Failed to load document: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
+            }
         } finally {
             setLoadingContent(false);
         }

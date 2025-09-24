@@ -22,7 +22,7 @@ export default function HomePage() {
             
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto font-sans leading-relaxed">
               Create, customize, and generate comprehensive project documentation in seconds. 
-              The ultimate tool for vibe coders building with AI.
+              The ultimate tool for Product Managers and Context Engineers building with Tech Products with AI.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -33,7 +33,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               
-              <Button variant="outline" className="px-10 py-6 text-lg rounded-sm font-medium font-sans border-2 border-gray-300 hover:border-gray-400">
+              <Button variant="outline" className="px-10 py-6 text-md rounded-sm font-medium font-sans border-2 border-gray-300 hover:border-gray-400">
                 View Templates
               </Button>
             </div>

@@ -213,6 +213,58 @@ export default function ProjectsPage() {
     setIsViewerOpen(true);
   };
 
+  const handleDownloadDocument = async (document: DocumentRecord) => {
+    try {
+      if (!document.download_url) {
+        toast({
+          title: "Download failed",
+          description: "No download URL available for this document.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Fetch the HTML content
+      const response = await fetch(document.download_url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        mode: 'cors',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch document: ${response.status} ${response.statusText}`);
+      }
+
+      const htmlContent = await response.text();
+      
+      // Create downloadable HTML file
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.name}.html`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download started",
+        description: `${document.name}.html has been downloaded.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: error instanceof Error ? error.message : "Failed to download document. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCloseViewer = () => {
     setIsViewerOpen(false);
     setViewerDocument(null);
@@ -569,22 +621,62 @@ Target Platform: ${project.target_platform}`;
                           return (
                             <div
                               key={docType}
-                              className={`p-3 rounded-sm border-2 relative flex flex-col justify-between items-center min-h-[80px] ${doc.status === 'ready' || doc.status === 'completed' ? 'border-green-200 bg-green-50' :
+                              className={`p-3 rounded-sm border-2 relative flex flex-col justify-between items-center min-h-[80px] group ${doc.status === 'ready' || doc.status === 'completed' ? 'border-green-200 bg-green-50 cursor-pointer hover:border-green-300 hover:bg-green-100' :
                                   doc.status === 'processing' ? 'border-yellow-200 bg-yellow-50' :
                                     'border-gray-200 bg-gray-50'
                                 }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (doc.status === 'ready' || doc.status === 'completed') {
+                                  handleViewDocument(doc);
+                                }
+                              }}
                             >
                               {doc.status === 'processing' && (
                                 <div className="absolute top-1 right-1">
                                   <Loader2 className="w-3 h-3 animate-spin text-yellow-600" />
                                 </div>
                               )}
+                              
+                              {/* Action buttons overlay - only show on hover for completed documents */}
+                              {(doc.status === 'ready' || doc.status === 'completed') && (
+                                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="p-1 h-6 w-6 bg-white/80 hover:bg-white shadow-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewDocument(doc);
+                                    }}
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="p-1 h-6 w-6 bg-white/80 hover:bg-white shadow-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownloadDocument(doc);
+                                    }}
+                                  >
+                                    <Download className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              )}
+
                               <IconComponent className={`w-6 h-6 flex-shrink-0 ${doc.status === 'ready' || doc.status === 'completed' ? 'text-green-600' :
                                   doc.status === 'processing' ? 'text-yellow-600' :
                                     'text-gray-400'
                                 }`} />
                               <div className="text-xs font-medium text-gray-700 font-sans text-center mt-auto">
                                 {displayInfo.name}
+                              </div>
+                              
+                              {/* Status indicator */}
+                              <div className="text-xs text-gray-500 font-sans">
+                                {formatFileSize(doc.file_size)}
                               </div>
                             </div>
                           );
@@ -639,7 +731,20 @@ Target Platform: ${project.target_platform}`;
                                 }
 
                                 return (
-                                  <div key={docType} className="flex items-center justify-between p-3 border rounded-sm">
+                                  <div 
+                                    key={docType} 
+                                    className={`flex items-center justify-between p-3 border rounded-sm ${
+                                      (doc.status === 'ready' || doc.status === 'completed') 
+                                        ? 'cursor-pointer hover:bg-gray-50' 
+                                        : ''
+                                    }`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (doc.status === 'ready' || doc.status === 'completed') {
+                                        handleViewDocument(doc);
+                                      }
+                                    }}
+                                  >
                                     <div className="flex items-center gap-3">
                                       <IconComponent className="w-5 h-5 text-gray-600" />
                                       <div>
@@ -670,7 +775,7 @@ Target Platform: ${project.target_platform}`;
                                             className="p-1 h-auto"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              // Handle download
+                                              handleDownloadDocument(doc);
                                             }}
                                           >
                                             <Download className="w-4 h-4" />
@@ -763,7 +868,19 @@ Target Platform: ${project.target_platform}`;
                         }
 
                         return (
-                          <div key={docType} className="flex items-center justify-between p-3 border rounded-sm">
+                          <div 
+                            key={docType} 
+                            className={`flex items-center justify-between p-3 border rounded-sm ${
+                              (doc.status === 'ready' || doc.status === 'completed') 
+                                ? 'cursor-pointer hover:bg-gray-50' 
+                                : ''
+                            }`}
+                            onClick={() => {
+                              if (doc.status === 'ready' || doc.status === 'completed') {
+                                handleViewDocument(doc);
+                              }
+                            }}
+                          >
                             <div className="flex items-center gap-3">
                               <IconComponent className="w-5 h-5 text-gray-600" />
                               <div>
@@ -781,11 +898,22 @@ Target Platform: ${project.target_platform}`;
                                     size="sm"
                                     variant="ghost"
                                     className="p-1 h-auto"
-                                    onClick={() => handleViewDocument(doc)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewDocument(doc);
+                                    }}
                                   >
                                     <Eye className="w-4 h-4" />
                                   </Button>
-                                  <Button size="sm" variant="ghost" className="p-1 h-auto">
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="p-1 h-auto"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownloadDocument(doc);
+                                    }}
+                                  >
                                     <Download className="w-4 h-4" />
                                   </Button>
                                 </>
