@@ -17,8 +17,6 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = [
     '/dashboard',
     '/projects',
-    '/recipes',
-    '/my-cookbook',
     '/subscription',
     '/templates',
     '/profile'
