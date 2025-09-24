@@ -62,7 +62,6 @@ import {
 import Link from "next/link";
 import type { ProjectWithDocuments, DocumentRecord } from "@/lib/actions/project.actions";
 import { deleteProject, updateProject } from "@/lib/actions/project.actions";
-import { formatFileSize } from "@/lib/utils/file-size";
 
 // V2 Document Pipeline Icons (DOMINANT WITH PRD RESTORED)
 const documentIcons = {
@@ -149,7 +148,6 @@ export default function ProjectsPage() {
     id: string;
     name: string;
     type: string;
-    size: string;
     downloadUrl: string;
     createdAt?: string;
     documentId?: string;
@@ -205,7 +203,6 @@ export default function ProjectsPage() {
       id: `${selectedProject}-${document.type}`,
       name: document.name,
       type: document.type,
-      size: formatFileSize(document.file_size),
       downloadUrl: document.download_url || `#download-${document.type}`,
       createdAt: document.created_at,
       documentId: document.id // Pass the actual document ID for content fetching
@@ -673,11 +670,6 @@ Target Platform: ${project.target_platform}`;
                               <div className="text-xs font-medium text-gray-700 font-sans text-center mt-auto">
                                 {displayInfo.name}
                               </div>
-                              
-                              {/* Status indicator */}
-                              <div className="text-xs text-gray-500 font-sans">
-                                {formatFileSize(doc.file_size)}
-                              </div>
                             </div>
                           );
                         })}
@@ -749,9 +741,6 @@ Target Platform: ${project.target_platform}`;
                                       <IconComponent className="w-5 h-5 text-gray-600" />
                                       <div>
                                         <div className="font-medium text-sm font-sans">{doc.name}</div>
-                                        <div className="text-xs text-gray-500 font-sans">
-                                          {formatFileSize(doc.file_size)}
-                                        </div>
                                       </div>
                                     </div>
 
@@ -885,9 +874,7 @@ Target Platform: ${project.target_platform}`;
                               <IconComponent className="w-5 h-5 text-gray-600" />
                               <div>
                                 <div className="font-medium text-sm font-sans">{doc.name}</div>
-                                <div className="text-xs text-gray-500 font-sans">
-                                  {formatFileSize(doc.file_size)}
-                                </div>
+                                {/* Size removed from project details panel per request */}
                               </div>
                             </div>
 

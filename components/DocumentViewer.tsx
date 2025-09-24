@@ -7,7 +7,6 @@ interface DocumentViewerProps {
     id: string;
     name: string;
     type: string;
-    size: string;
     content?: string;
     downloadUrl?: string;
     createdAt?: string;

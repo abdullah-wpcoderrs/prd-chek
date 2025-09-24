@@ -23,7 +23,6 @@ interface HtmlDocumentViewerProps {
     id: string;
     name: string;
     type: string;
-    size: string;
     downloadUrl?: string;
     createdAt?: string;
     documentId?: string;
@@ -282,7 +281,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-gray-900 font-sans truncate">{document.name}</h3>
               <p className="text-sm text-gray-500 font-sans truncate">
-                {document.type} • {document.size}
+                {document.type}
                 {document.createdAt && ` • ${new Date(document.createdAt).toLocaleDateString()}`}
               </p>
             </div>
