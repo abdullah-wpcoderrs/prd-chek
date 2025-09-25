@@ -290,7 +290,7 @@ export default function HowItWorksPage() {
               Ready to Streamline Your Product Development?
             </h3>
             <p className="text-gray-300 mb-6 font-sans max-w-2xl mx-auto">
-              Join technical product managers who've eliminated documentation bottlenecks and accelerated development cycles with comprehensive, AI-ready specifications.
+              Join technical product managers who&apos;ve eliminated documentation bottlenecks and accelerated development cycles with comprehensive, AI-ready specifications.
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm mb-6">
               <div className="flex items-center gap-2 text-gray-300">

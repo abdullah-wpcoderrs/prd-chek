@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { MultiStepForm } from "@/components/MultiStepForm";
 import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { ProductManagerFormData } from "@/types";
-import { Sparkles, FileText, Users, Code, Layout, Loader2, BarChart3, X } from "lucide-react";
+import { Sparkles, FileText, Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { convertTemplateToFormData } from "@/lib/utils/template-mapping";
 import { Template } from "@/lib/actions/template.actions";
 

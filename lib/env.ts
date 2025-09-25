@@ -1,5 +1,4 @@
 import { z } from 'zod';
-
 // Environment validation schema with proper error handling
 // All environment variables are now required for proper functionality
 const envSchema = z.object({
@@ -97,15 +96,18 @@ if (!parsed.success) {
 }
 
 // Export validated environment variables
-export const env = parsed.success ? parsed.data : ({} as any);
+export const env = parsed.success ? parsed.data : ({} as Record<string, unknown>);
 
 // Helper function to check if environment is properly configured
 export const isEnvConfigured = () => {
-  return parsed.success && 
-    env.NEXT_PUBLIC_SUPABASE_URL && 
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-    !env.NEXT_PUBLIC_SUPABASE_URL.includes('example.supabase.co') &&
-    !env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes('placeholder');
+  if (!parsed.success) return false;
+  
+  const { NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY } = env as z.infer<typeof envSchema>;
+  
+  return NEXT_PUBLIC_SUPABASE_URL && 
+    NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    !NEXT_PUBLIC_SUPABASE_URL.includes('example.supabase.co') &&
+    !NEXT_PUBLIC_SUPABASE_ANON_KEY.includes('placeholder');
 };
 
 // Legacy compatibility for N8N_WEBHOOK_URL (some files may still reference this)

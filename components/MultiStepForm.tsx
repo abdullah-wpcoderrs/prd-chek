@@ -18,7 +18,7 @@ import { FormStep5RequirementsPlanning } from "@/components/form-steps/FormStep5
 // Import new components and utilities
 import { useFormPersistence } from "@/lib/hooks/useFormPersistence";
 import { FormRecoveryDialog } from "@/components/FormRecoveryDialog";
-import { ValidationFeedback, ValidationSummary } from "@/components/ValidationFeedback";
+import { ValidationFeedback } from "@/components/ValidationFeedback";
 import {
   validateStep1,
   validateStep2,
@@ -308,16 +308,16 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     handleRestoreProgress();
   };
 
-  // Manual save handler
-  const handleManualSave = () => {
-    saveNow();
-    setLastSaveTime(new Date());
-    toast({
-      title: "Progress saved",
-      description: "Your form progress has been saved.",
-      variant: "default",
-    });
-  };
+  // Manual save handler (commented out - not currently used in UI)
+  // const handleManualSave = () => {
+  //   saveNow();
+  //   setLastSaveTime(new Date());
+  //   toast({
+  //     title: "Progress saved",
+  //     description: "Your form progress has been saved.",
+  //     variant: "default",
+  //   });
+  // };
 
   const goToStep = (step: number) => {
     // Allow navigation to completed steps or the next step after the last completed
