@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { GenerationDocument, GenerationStatus } from '@/types';
 import { formatFileSize } from '@/lib/utils/file-size';
+import type { ProjectWithDocuments } from '@/lib/actions/project.actions';
 
 // Re-export for convenience
 export type { GenerationDocument, GenerationStatus };
@@ -12,7 +13,7 @@ interface GenerationContextType {
   addGeneration: (projectId: string) => void;
   removeGeneration: (projectId: string) => void;
   getGenerationStatus: (projectId: string) => GenerationStatus | undefined;
-  updateGenerationFromProject: (project: any) => void; // Update from real project data
+  updateGenerationFromProject: (project: ProjectWithDocuments) => void; // Update from real project data
 }
 
 const GenerationContext = createContext<GenerationContextType | undefined>(undefined);
@@ -71,11 +72,11 @@ export function GenerationProvider({ children }: GenerationProviderProps) {
     return activeGenerations.get(projectId);
   };
 
-  const updateGenerationFromProject = (project: any) => {
+  const updateGenerationFromProject = (project: ProjectWithDocuments) => {
     if (!project || !project.documents) return;
 
     // Convert DocumentRecord[] to GenerationDocument[]
-    const documents: GenerationDocument[] = project.documents.map((doc: any) => ({
+    const documents: GenerationDocument[] = project.documents.map((doc) => ({
       type: doc.type,
       name: doc.name,
       status: doc.status as 'pending' | 'processing' | 'completed' | 'failed',
@@ -85,7 +86,7 @@ export function GenerationProvider({ children }: GenerationProviderProps) {
     }));
 
     // All projects are now V2
-    const projectVersion: 'v2' = 'v2';
+    const projectVersion = 'v2' as const;
 
     const generationStatus: GenerationStatus = {
       projectId: project.id,

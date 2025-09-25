@@ -252,7 +252,7 @@ async function createWordDocument(text: string, documentName: string): Promise<D
             
             // Detect headings
             const isHeading = detectHeading(trimmedLine);
-            const isListItem = /^[-•*]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine);
+            
             
             if (isHeading.isHeading) {
                 docParagraphs.push(
@@ -273,7 +273,7 @@ async function createWordDocument(text: string, documentName: string): Promise<D
                         },
                     })
                 );
-            } else if (isListItem) {
+            } else if (isListItem(trimmedLine)) {
                 // Handle list items
                 const listText = trimmedLine.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '');
                 docParagraphs.push(

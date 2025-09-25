@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import { AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { ValidationError } from "@/lib/utils/form-validation";
 
 interface ValidationFeedbackProps {

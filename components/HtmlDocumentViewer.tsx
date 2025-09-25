@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Download,
@@ -42,18 +42,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Fetch HTML content when viewer opens
-  useEffect(() => {
-    if (isOpen && (document.downloadUrl || (document.documentId && user))) {
-      fetchHtmlContent();
-    } else if (!isOpen) {
-      // Reset content when viewer closes
-      setHtmlContent('');
-      setContentError(null);
-    }
-  }, [isOpen, document.downloadUrl, document.documentId, user]);
-
-  const fetchHtmlContent = async () => {
+  const fetchHtmlContent = useCallback(async () => {
     setLoadingContent(true);
     setContentError(null);
 
@@ -182,7 +171,18 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
     } finally {
       setLoadingContent(false);
     }
-  };
+  }, [document.downloadUrl, document.documentId, user, supabase]);
+
+  // Fetch HTML content when viewer opens
+  useEffect(() => {
+    if (isOpen && (document.downloadUrl || (document.documentId && user))) {
+      fetchHtmlContent();
+    } else if (!isOpen) {
+      // Reset content when viewer closes
+      setHtmlContent('');
+      setContentError(null);
+    }
+  }, [isOpen, document.downloadUrl, document.documentId, user, fetchHtmlContent]);
 
   const handleDownload = () => {
     if (htmlContent) {
@@ -230,7 +230,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
 
   const handleOpenInNewTab = () => {
     // Try to get the URL that was used to fetch the content
-    let urlToOpen = document.downloadUrl;
+    const urlToOpen = document.downloadUrl;
     
     if (!urlToOpen && document.documentId && user) {
       // If no direct URL, we could construct one or show a message

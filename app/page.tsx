@@ -163,7 +163,7 @@ export default function HomePage() {
               </h3>
               <p className="text-gray-600 font-sans leading-relaxed">
                 Choose your preferred technologies and frameworks.
-                We'll ensure compatibility and provide recommendations.
+                We&apos;ll ensure compatibility and provide recommendations.
               </p>
             </div>
 

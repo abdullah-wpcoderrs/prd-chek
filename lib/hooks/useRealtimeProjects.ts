@@ -8,15 +8,14 @@ import { useSupabase } from './useSupabase';
 
 export function useRealtimeProjects() {
   const { user } = useAuth();
-  const { addGeneration, removeGeneration, updateGenerationFromProject } = useGeneration();
+  const { removeGeneration, updateGenerationFromProject } = useGeneration();
   const supabase = useSupabase();
   const [projects, setProjects] = useState<ProjectWithDocuments[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
-  const [optimisticDeletes, setOptimisticDeletes] = useState<Set<string>>(new Set());
-  const [isDeletingProject, setIsDeletingProject] = useState(false);
+
 
   useEffect(() => {
     if (!user?.id) {
@@ -81,7 +80,7 @@ export function useRealtimeProjects() {
     // Polling for project updates every 5 seconds for processing projects
     const pollInterval = setInterval(() => {
       const hasProcessingProjects = projects.some(p => p.status === 'processing' || p.status === 'pending');
-      if (hasProcessingProjects && !isDeletingProject) {
+      if (hasProcessingProjects) {
         console.log('Polling for project updates...');
         fetchProjects();
       }
@@ -98,7 +97,7 @@ export function useRealtimeProjects() {
       window.removeEventListener('offline', handleOffline);
       cleanupPolling();
     };
-  }, [user?.id, supabase, isOnline]);
+  }, [user?.id, supabase, isOnline, projects, removeGeneration, updateGenerationFromProject]);
 
   // Manual refresh function
   const refetch = async () => {

@@ -53,7 +53,7 @@ export default function SignUpForm() {
           router.push('/dashboard')
         }
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
@@ -63,7 +63,7 @@ export default function SignUpForm() {
   const handleOAuthSignUp = async (provider: 'google' | 'github') => {
     try {
       await signInWithOAuth(provider)
-    } catch (err) {
+    } catch {
       setError("OAuth sign up failed")
     }
   }

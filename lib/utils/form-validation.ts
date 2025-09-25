@@ -12,8 +12,20 @@ export interface StepValidationResult {
   warnings: ValidationError[];
 }
 
+interface ValidationRule {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  patternMessage?: string;
+  minItems?: number;
+  maxItems?: number;
+  itemMinLength?: number;
+  itemMaxLength?: number;
+}
+
 // Validation rules configuration
-const VALIDATION_RULES = {
+const VALIDATION_RULES: { [key: string]: ValidationRule } = {
   productName: {
     required: true,
     minLength: 2,
@@ -71,7 +83,7 @@ const VALIDATION_RULES = {
 };
 
 // Helper function to validate a single field
-function validateField(value: any, rules: any, fieldName: string): ValidationError[] {
+function validateField(value: unknown, rules: ValidationRule, fieldName: string): ValidationError[] {
   const errors: ValidationError[] = [];
 
   // Required validation

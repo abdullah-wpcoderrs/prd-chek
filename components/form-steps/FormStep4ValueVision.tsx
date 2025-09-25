@@ -91,7 +91,7 @@ export function FormStep4ValueVision({ data, onUpdate }: FormStep4ValueVisionPro
         />
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-600 font-sans">
-            What's one key metric or outcome that would indicate success? (KPI/OKR example)
+            What&apos;s one key metric or outcome that would indicate success? (KPI/OKR example)
           </p>
           <span className="text-xs text-gray-500 font-sans">
             {(data.successMetric || "").length}/200
@@ -109,19 +109,19 @@ export function FormStep4ValueVision({ data, onUpdate }: FormStep4ValueVisionPro
           <div className="bg-white rounded-lg p-3 border border-blue-100">
             <span className="font-medium text-blue-800 font-sans block mb-1">Value Proposition Formula:</span>
             <span className="text-blue-700 font-sans">
-              "We help [target users] achieve [desired outcome] by [unique approach], resulting in [specific benefit]"
+              &quot;We help [target users] achieve [desired outcome] by [unique approach], resulting in [specific benefit]&quot;
             </span>
           </div>
           <div className="bg-white rounded-lg p-3 border border-purple-100">
             <span className="font-medium text-purple-800 font-sans block mb-1">Vision Statement Guide:</span>
             <span className="text-purple-700 font-sans">
-              Focus on the future state you want to create and the impact you want to have on your users' lives or work
+              Focus on the future state you want to create and the impact you want to have on your users&apos; lives or work
             </span>
           </div>
           <div className="bg-white rounded-lg p-3 border border-green-100">
             <span className="font-medium text-green-800 font-sans block mb-1">Success Metrics Examples:</span>
             <span className="text-green-700 font-sans">
-              • User engagement: "90% weekly active users" • Efficiency: "50% reduction in task completion time" • Business: "25% increase in team productivity"
+              • User engagement: &quot;90% weekly active users&quot; • Efficiency: &quot;50% reduction in task completion time&quot; • Business: &quot;25% increase in team productivity&quot;
             </span>
           </div>
         </div>
@@ -135,21 +135,21 @@ export function FormStep4ValueVision({ data, onUpdate }: FormStep4ValueVisionPro
         </h4>
         <div className="space-y-3 text-sm">
           <div>
-            <span className="font-medium text-yellow-800 font-sans">Slack's Value Prop:</span>
+            <span className="font-medium text-yellow-800 font-sans">Slack&apos;s Value Prop:</span>
             <span className="text-yellow-700 font-sans ml-1">
-              "Transform how teams communicate by replacing email with organized, searchable conversations"
+              &quot;Transform how teams communicate by replacing email with organized, searchable conversations&quot;
             </span>
           </div>
           <div>
-            <span className="font-medium text-yellow-800 font-sans">Notion's Vision:</span>
+            <span className="font-medium text-yellow-800 font-sans">Notion&apos;s Vision:</span>
             <span className="text-yellow-700 font-sans ml-1">
-              "A workspace where teams can think, write, and plan together in one unified tool"
+              &quot;A workspace where teams can think, write, and plan together in one unified tool&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-yellow-800 font-sans">Success Metric:</span>
             <span className="text-yellow-700 font-sans ml-1">
-              "Reduce time spent in status meetings by 75% within first quarter of adoption"
+              &quot;Reduce time spent in status meetings by 75% within first quarter of adoption&quot;
             </span>
           </div>
         </div>

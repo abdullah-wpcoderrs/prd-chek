@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, CheckCircle, Save, AlertCircle, Clock } from "lucide-react";
-import { ProductManagerFormData, ProductBasics, UsersProblems, MarketContext, ValueVision, RequirementsPlanning } from "@/types";
+import { ProductManagerFormData } from "@/types";
 import { useToast } from "@/lib/hooks/use-toast";
 
 // Import step components
@@ -87,7 +87,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   });
 
   // Helper function to check if there are unsaved changes
-  const hasUnsavedChanges = (): boolean => {
+  const hasUnsavedChanges = useCallback((): boolean => {
     const emptyForm = {
       step1: { productName: "", productPitch: "", industry: "", currentStage: "idea" as const },
       step2: { targetUsers: "", painPoints: [], primaryJobToBeDone: "" },
@@ -97,7 +97,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     };
 
     return JSON.stringify(formData) !== JSON.stringify(emptyForm);
-  };
+  }, [formData]);
 
   // Update validation and completion status
   const updateValidationAndCompletion = useCallback((data: ProductManagerFormData) => {
@@ -147,7 +147,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
         hasRestoredRef.current = true;
       }
     }
-  }, []); // Empty dependency array to run only once
+  }, [hasSavedData, initialData, loadFromStorage]);
 
   // Update form data when initialData changes
   useEffect(() => {
@@ -194,14 +194,14 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [formData]);
+  }, [hasUnsavedChanges]);
 
   const isStepValid = useCallback((step: number): boolean => {
     const stepKey = `step${step}` as keyof typeof validationResults;
     return validationResults[stepKey]?.isValid || false;
   }, [validationResults]);
 
-  const updateStepData = useCallback((step: keyof ProductManagerFormData, data: any) => {
+  const updateStepData = useCallback((step: keyof ProductManagerFormData, data: unknown) => {
     // Mark that user has interacted with the form
     if (!hasUserInteracted) {
       setHasUserInteracted(true);

@@ -216,19 +216,19 @@ export function FormStep3MarketContext({ data, onUpdate }: FormStep3MarketContex
           <div>
             <span className="font-medium text-purple-800 font-sans">Competitors:</span>
             <span className="text-purple-700 font-sans ml-1">
-              "Slack (team communication), Asana (task management), Notion (documentation)"
+              &quot;Slack (team communication), Asana (task management), Notion (documentation)&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-purple-800 font-sans">Differentiation:</span>
             <span className="text-purple-700 font-sans ml-1">
-              "First tool to combine real-time collaboration with AI-powered project insights in one platform"
+              &quot;First tool to combine real-time collaboration with AI-powered project insights in one platform&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-purple-800 font-sans">Market Trend:</span>
             <span className="text-purple-700 font-sans ml-1">
-              "85% of companies plan to increase remote work options, driving need for better digital collaboration tools"
+              &quot;85% of companies plan to increase remote work options, driving need for better digital collaboration tools&quot;
             </span>
           </div>
         </div>

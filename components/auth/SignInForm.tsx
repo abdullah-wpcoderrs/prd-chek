@@ -38,7 +38,7 @@ export default function SignInForm() {
         // Immediate redirect
         router.push(redirectTo)
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
@@ -48,7 +48,7 @@ export default function SignInForm() {
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     try {
       await signInWithOAuth(provider)
-    } catch (err) {
+    } catch {
       setError("OAuth sign in failed")
     }
   }
@@ -136,7 +136,7 @@ export default function SignInForm() {
         </div>
 
         <div className="text-center text-sm">
-          <span className="text-gray-600">Don't have an account? </span>
+          <span className="text-gray-600">Don&apos;t have an account? </span>
           <Link href="/sign-up" className="text-primary hover:underline">
             Sign up
           </Link>

@@ -4,14 +4,15 @@ import { useState, useEffect } from "react";
 import { MultiStepForm } from "@/components/MultiStepForm";
 import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { ProductManagerFormData } from "@/types";
-import { Sparkles, FileText, Users, Map, Code, Layout, Loader2, BarChart3, X } from "lucide-react";
+import { Sparkles, FileText, Users, Code, Layout, Loader2, BarChart3, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { convertTemplateToFormData } from "@/lib/utils/template-mapping";
-import GenerationProgressV2 from "@/components/GenerationProgressV2";
+import { Template } from "@/lib/actions/template.actions";
+
 
 // Template conversion logic moved to /lib/utils/template-mapping.ts
 
@@ -22,7 +23,7 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [initialFormData, setInitialFormData] = useState<ProductManagerFormData | null>(null);
 
 

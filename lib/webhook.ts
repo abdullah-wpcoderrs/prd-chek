@@ -1,7 +1,7 @@
 // lib/webhook.ts - N8N Webhook Integration
 
 import { env } from '@/lib/env';
-import { ProjectSpec, ProductManagerFormData } from '@/types';
+import { ProductManagerFormData } from '@/types';
 import V2DocumentPrompts from './prompts/v2-document-prompts';
 
 export interface ProjectGenerationRequest {
@@ -43,7 +43,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
     console.log('🚀 Submitting project to webhook...');
 
     // Enhance payload with document prompts (V2 is now the only version)
-    let enhancedRequest = { ...request };
+    const enhancedRequest = { ...request };
     
     if (request.formData) {
       const promptContext = {
@@ -87,7 +87,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
         if (errorText) {
           errorMessage += ` - ${errorText}`;
         }
-      } catch (e) {
+      } catch {
         // Ignore error reading response body
       }
 
@@ -109,7 +109,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
 
     console.log('✅ Webhook submission successful');
     return { projectId: request.projectId };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const duration = Date.now() - startTime;
     console.error(`❌ Webhook submission failed after ${duration}ms:`, error);
     
@@ -118,7 +118,7 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
       throw new Error('Network error: Unable to connect to document generation service. Please check your internet connection.');
     }
     
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Request timeout: Document generation service is taking too long to respond. Please try again.');
     }
     

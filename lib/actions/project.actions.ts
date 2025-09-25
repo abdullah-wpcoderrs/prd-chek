@@ -4,6 +4,7 @@ import { createSupabaseServerClient, getAuthenticatedUser, getAuthenticatedUserW
 import { submitProjectGeneration } from "@/lib/webhook";
 import { revalidatePath } from "next/cache";
 import { ProjectSpec, ProductManagerFormData } from "@/types";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export interface CreateProjectData {
   name: string;
@@ -228,7 +229,7 @@ async function testWebhookConnectivity(): Promise<void> {
 }
 
 // Helper function to rollback project creation
-async function rollbackProject(projectId: string, supabase: any): Promise<void> {
+async function rollbackProject(projectId: string, supabase: SupabaseClient): Promise<void> {
   try {
     // Delete documents first (foreign key constraint)
     await supabase

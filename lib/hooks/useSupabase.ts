@@ -42,7 +42,7 @@ export function useSupabase() {
           setIsConnected(true)
           setLastError(null)
         }
-      } catch (err) {
+      } catch {
         setIsConnected(false)
         setLastError('Network error')
       }

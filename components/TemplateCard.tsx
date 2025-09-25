@@ -12,8 +12,7 @@ import {
   Download,
   Eye,
   X,
-  CheckCircle,
-  FileText
+  CheckCircle
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Template, incrementTemplateDownloads } from "@/lib/actions/template.actions";
@@ -188,7 +187,7 @@ export function TemplateCard({ template }: TemplateCardProps) {
               </Button>
             </div>
             <DialogDescription className="font-sans">
-              Detailed overview of this template's features and capabilities
+              Detailed overview of this template&apos;s features and capabilities
             </DialogDescription>
           </DialogHeader>
 

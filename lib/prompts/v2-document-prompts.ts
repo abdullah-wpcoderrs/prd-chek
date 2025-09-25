@@ -189,7 +189,7 @@ Generate a detailed, technical PRD that serves as the definitive product specifi
    * Stage: Planning
    */
   static generateBRDPrompt(context: DocumentPromptContext): string {
-    const { formData, targetPlatform } = context;
+    const { formData } = context;
     
     return `
 # Business Requirements Document (BRD) Generation

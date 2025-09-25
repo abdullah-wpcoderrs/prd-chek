@@ -59,6 +59,12 @@ export function FormRecoveryDialog({
   const getCompletionSummary = () => {
     if (!savedData) return null;
 
+    const checkFieldValue = (data: unknown, field: string): boolean => {
+      const obj = data as Record<string, unknown>;
+      const value = obj[field];
+      return Array.isArray(value) ? value.length > 0 : Boolean(value?.toString?.().trim());
+    };
+
     const steps = [
       { name: 'Product Basics', data: savedData.step1, required: ['productName', 'productPitch', 'industry'] },
       { name: 'Users & Problems', data: savedData.step2, required: ['targetUsers', 'primaryJobToBeDone'] },
@@ -68,10 +74,7 @@ export function FormRecoveryDialog({
     ];
 
     return steps.map((step, index) => {
-      const isComplete = step.required.every(field => {
-        const value = (step.data as any)[field];
-        return Array.isArray(value) ? value.length > 0 : Boolean(value?.toString().trim());
-      });
+      const isComplete = step.required.every(field => checkFieldValue(step.data, field));
 
       return {
         ...step,
@@ -144,7 +147,7 @@ export function FormRecoveryDialog({
           <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-amber-800 font-sans">
-              Choosing "Start Fresh" will permanently delete your saved progress.
+              Choosing &quot;Start Fresh&quot; will permanently delete your saved progress.
             </div>
           </div>
         </div>

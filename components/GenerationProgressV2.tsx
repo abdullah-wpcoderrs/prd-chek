@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,20 +9,17 @@ import { useGeneration } from "@/lib/context/GenerationContext";
 import { GenerationDocument } from "@/types";
 import {
     FileText,
-    Users,
-    Map,
     Code,
-    Layout,
     Clock,
     CheckCircle2,
     Loader2,
     XCircle,
     AlertCircle,
     Search,
-    Target,
     Briefcase,
-    Settings,
-    Calendar
+    Calendar,
+    Target,
+    type LucideIcon
 } from "lucide-react";
 
 interface GenerationProgressV2Props {
@@ -67,7 +64,7 @@ const stageConfig = {
 };
 
 const statusConfig: Record<string, {
-    icon: any;
+    icon: LucideIcon;
     color: string;
     bgColor: string;
     label: string;
@@ -106,7 +103,7 @@ export function GenerationProgressV2({
     onCancel,
     onClickOutside
 }: GenerationProgressV2Props) {
-    const { getGenerationStatus, addGeneration } = useGeneration();
+    const { getGenerationStatus } = useGeneration();
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Get status from context
@@ -319,7 +316,7 @@ export function GenerationProgressV2({
                             </div>
                             <p className="text-sm text-green-700 font-sans">
                                 Your enhanced documentation suite has been generated successfully.
-                                You'll be redirected to your projects dashboard in a moment.
+                                You&apos;ll be redirected to your projects dashboard in a moment.
                             </p>
                         </div>
                     )}

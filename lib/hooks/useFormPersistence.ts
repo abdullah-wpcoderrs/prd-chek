@@ -16,7 +16,7 @@ export function useFormPersistence({
   autoSaveInterval = 30000, // 30 seconds default
   onRestore
 }: UseFormPersistenceOptions) {
-  const autoSaveTimerRef = useRef<NodeJS.Timeout>();
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<string>('');
 
   // Save to localStorage
@@ -106,7 +106,7 @@ export function useFormPersistence({
     if (savedData && onRestore) {
       onRestore(savedData);
     }
-  }, []); // Empty dependency array to run only once on mount
+  }, [loadFromStorage, onRestore]); // Added missing dependencies
 
   // Auto-save when data changes
   useEffect(() => {

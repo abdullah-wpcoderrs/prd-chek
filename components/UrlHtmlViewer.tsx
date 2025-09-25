@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Download,
@@ -33,18 +33,9 @@ export function UrlHtmlViewer({ url, title = "HTML Document", isOpen, onClose }:
     const contentRef = useRef<HTMLDivElement>(null);
     const { toast } = useToast();
 
-    // Fetch HTML content when viewer opens
-    useEffect(() => {
-        if (isOpen && url) {
-            fetchHtmlContent();
-        } else if (!isOpen) {
-            // Reset content when viewer closes
-            setHtmlContent('');
-            setContentError(null);
-        }
-    }, [isOpen, url]);
+    // This useEffect will be defined after fetchHtmlContent
 
-    const fetchHtmlContent = async () => {
+    const fetchHtmlContent = useCallback(async () => {
         if (!url) return;
 
         setLoadingContent(true);
@@ -133,7 +124,18 @@ export function UrlHtmlViewer({ url, title = "HTML Document", isOpen, onClose }:
         } finally {
             setLoadingContent(false);
         }
-    };
+    }, [url]);
+
+    // Fetch HTML content when viewer opens
+    useEffect(() => {
+        if (isOpen && url) {
+            fetchHtmlContent();
+        } else if (!isOpen) {
+            // Reset content when viewer closes
+            setHtmlContent('');
+            setContentError(null);
+        }
+    }, [isOpen, url, fetchHtmlContent]);
 
     const handleFallbackDownload = async () => {
         // Fallback method: Create a new window with print styles and trigger print

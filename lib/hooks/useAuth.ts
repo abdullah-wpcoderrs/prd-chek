@@ -58,7 +58,7 @@ export function useAuth() {
       }),
     changePassword: (newPassword: string) =>
       supabase.auth.updateUser({ password: newPassword }),
-    updateProfile: (updates: { email?: string; data?: any }) =>
+    updateProfile: (updates: { email?: string; data?: object }) =>
       supabase.auth.updateUser(updates),
     resendConfirmation: (email: string) =>
       supabase.auth.resend({ 

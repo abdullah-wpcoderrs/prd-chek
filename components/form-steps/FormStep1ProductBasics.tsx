@@ -125,7 +125,7 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
         />
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-600 font-sans">
-            Describe your product's core value in one compelling sentence
+            Describe your product&apos;s core value in one compelling sentence
           </p>
           <span className="text-xs text-gray-500 font-sans">
             {(data.productPitch || '').length}/300

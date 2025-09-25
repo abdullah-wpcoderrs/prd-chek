@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/lib/hooks/useAuth"
-import { User, Mail, Lock, Save, Eye, EyeOff } from "lucide-react"
+import { User, Lock, Save, Eye, EyeOff } from "lucide-react"
 import EmailVerification from "@/components/EmailVerification"
 
 export default function ProfileSettings() {
@@ -21,7 +21,7 @@ export default function ProfileSettings() {
   const [profileMessage, setProfileMessage] = useState("")
   
   // Password form state
-  const [currentPassword, setCurrentPassword] = useState("")
+  const [, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPasswords, setShowPasswords] = useState(false)
@@ -59,7 +59,7 @@ export default function ProfileSettings() {
         setProfileMessage("Profile updated successfully!")
         setTimeout(() => setProfileMessage(""), 3000)
       }
-    } catch (err) {
+    } catch {
       setProfileError("Failed to update profile")
     } finally {
       setProfileLoading(false)
@@ -96,7 +96,7 @@ export default function ProfileSettings() {
         setConfirmPassword("")
         setTimeout(() => setPasswordMessage(""), 3000)
       }
-    } catch (err) {
+    } catch {
       setPasswordError("Failed to change password")
     } finally {
       setPasswordLoading(false)

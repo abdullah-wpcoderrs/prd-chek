@@ -22,13 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { DocumentViewer } from "@/components/DocumentViewer";
 import GenerationProgressV2 from "@/components/GenerationProgressV2";
 import { useRealtimeProjects } from "@/lib/hooks/useRealtimeProjects";
@@ -38,7 +32,6 @@ import { useToast } from "@/lib/hooks/use-toast";
 import {
   FileText,
   Users,
-  Map,
   Code,
   Layout,
   Download,
@@ -55,7 +48,6 @@ import {
   Copy,
   Save,
   BarChart3,
-  Target,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
@@ -80,24 +72,7 @@ const documentIcons = {
   // "Screens": Layout
 };
 
-// Document stages for new pipeline
-const documentStages = {
-  discovery: {
-    title: "Discovery & Research",
-    color: "blue",
-    documents: ["Research_Insights"]
-  },
-  strategy: {
-    title: "Vision & Strategy",
-    color: "purple",
-    documents: ["Vision_Strategy"]
-  },
-  planning: {
-    title: "Requirements & Planning",
-    color: "green",
-    documents: ["PRD", "BRD", "TRD", "Planning_Toolkit"] // V2 WITH PRD RESTORED
-  }
-};
+
 
 const statusColors = {
   ready: "bg-green-100 text-green-700",
@@ -108,7 +83,7 @@ const statusColors = {
 };
 
 // Helper function to get document types for a project (V2 WITH PRD RESTORED)
-const getProjectDocumentTypes = (project: ProjectWithDocuments) => {
+const getProjectDocumentTypes = () => {
   // V2 projects use the enhanced 6-document pipeline (PRD restored)
   return ['Research_Insights', 'Vision_Strategy', 'PRD', 'BRD', 'TRD', 'Planning_Toolkit'];
 };
@@ -123,7 +98,7 @@ const getDocumentDisplayInfo = (docType: string) => {
     'BRD': 'Business Requirements',
     'TRD': 'Technical Requirements',
     'Planning_Toolkit': 'Planning Toolkit',
-    
+
     // V1 Legacy Types (COMMENTED OUT)
     // 'User Stories': 'User Stories',
     // 'Sitemap': 'Sitemap',
@@ -138,7 +113,7 @@ const getDocumentDisplayInfo = (docType: string) => {
 };
 
 export default function ProjectsPage() {
-  const { projects, loading: projectsLoading, error, optimisticUpdate, optimisticDelete, refetch } = useRealtimeProjects();
+  const { projects, loading: projectsLoading, error } = useRealtimeProjects();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -193,9 +168,9 @@ export default function ProjectsPage() {
     }
   }, [projects, showProgressModal]);
 
-  const filteredProjects = projects.filter(project =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProjects = projects.filter(proj =>
+    proj.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    proj.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleViewDocument = (document: DocumentRecord) => {
@@ -235,7 +210,7 @@ export default function ProjectsPage() {
       }
 
       const htmlContent = await response.text();
-      
+
       // Create downloadable HTML file
       const blob = new Blob([htmlContent], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
@@ -246,7 +221,7 @@ export default function ProjectsPage() {
       link.click();
       window.document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Download started",
         description: `${document.name}.html has been downloaded.`,
@@ -271,7 +246,7 @@ export default function ProjectsPage() {
     if (!projectToDelete || deletingProjectId) return;
 
     const projectIdToDelete = projectToDelete.id;
-    const projectNameToDelete = projectToDelete.name;
+
 
     setDeletingProjectId(projectIdToDelete);
 
@@ -595,7 +570,7 @@ Target Platform: ${project.target_platform}`;
 
                     <CardContent>
                       <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                        {getProjectDocumentTypes(project).map((docType) => {
+                        {getProjectDocumentTypes().map((docType) => {
                           const doc = project.documents.find(d => d.type === docType);
                           const displayInfo = getDocumentDisplayInfo(docType);
                           const IconComponent = displayInfo.icon;
@@ -619,8 +594,8 @@ Target Platform: ${project.target_platform}`;
                             <div
                               key={docType}
                               className={`p-3 rounded-sm border-2 relative flex flex-col justify-between items-center min-h-[80px] group ${doc.status === 'ready' || doc.status === 'completed' ? 'border-green-200 bg-green-50 cursor-pointer hover:border-green-300 hover:bg-green-100' :
-                                  doc.status === 'processing' ? 'border-yellow-200 bg-yellow-50' :
-                                    'border-gray-200 bg-gray-50'
+                                doc.status === 'processing' ? 'border-yellow-200 bg-yellow-50' :
+                                  'border-gray-200 bg-gray-50'
                                 }`}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -634,7 +609,7 @@ Target Platform: ${project.target_platform}`;
                                   <Loader2 className="w-3 h-3 animate-spin text-yellow-600" />
                                 </div>
                               )}
-                              
+
                               {/* Action buttons overlay - only show on hover for completed documents */}
                               {(doc.status === 'ready' || doc.status === 'completed') && (
                                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
@@ -664,8 +639,8 @@ Target Platform: ${project.target_platform}`;
                               )}
 
                               <IconComponent className={`w-6 h-6 flex-shrink-0 ${doc.status === 'ready' || doc.status === 'completed' ? 'text-green-600' :
-                                  doc.status === 'processing' ? 'text-yellow-600' :
-                                    'text-gray-400'
+                                doc.status === 'processing' ? 'text-yellow-600' :
+                                  'text-gray-400'
                                 }`} />
                               <div className="text-xs font-medium text-gray-700 font-sans text-center mt-auto">
                                 {displayInfo.name}
@@ -701,7 +676,7 @@ Target Platform: ${project.target_platform}`;
                               const selectedProjectData = projects.find(p => p.id === project.id);
                               if (!selectedProjectData) return null;
 
-                              return getProjectDocumentTypes(selectedProjectData).map((docType) => {
+                              return getProjectDocumentTypes().map((docType) => {
                                 const doc = selectedProjectData.documents.find(d => d.type === docType);
                                 const displayInfo = getDocumentDisplayInfo(docType);
                                 const IconComponent = displayInfo.icon;
@@ -723,13 +698,12 @@ Target Platform: ${project.target_platform}`;
                                 }
 
                                 return (
-                                  <div 
-                                    key={docType} 
-                                    className={`flex items-center justify-between p-3 border rounded-sm ${
-                                      (doc.status === 'ready' || doc.status === 'completed') 
-                                        ? 'cursor-pointer hover:bg-gray-50' 
-                                        : ''
-                                    }`}
+                                  <div
+                                    key={docType}
+                                    className={`flex items-center justify-between p-3 border rounded-sm ${(doc.status === 'ready' || doc.status === 'completed')
+                                      ? 'cursor-pointer hover:bg-gray-50'
+                                      : ''
+                                      }`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (doc.status === 'ready' || doc.status === 'completed') {
@@ -835,7 +809,7 @@ Target Platform: ${project.target_platform}`;
                       const selectedProjectData = projects.find(p => p.id === selectedProject);
                       if (!selectedProjectData) return null;
 
-                      return getProjectDocumentTypes(selectedProjectData).map((docType) => {
+                      return getProjectDocumentTypes().map((docType) => {
                         const doc = selectedProjectData.documents.find(d => d.type === docType);
                         const displayInfo = getDocumentDisplayInfo(docType);
                         const IconComponent = displayInfo.icon;
@@ -857,13 +831,12 @@ Target Platform: ${project.target_platform}`;
                         }
 
                         return (
-                          <div 
-                            key={docType} 
-                            className={`flex items-center justify-between p-3 border rounded-sm ${
-                              (doc.status === 'ready' || doc.status === 'completed') 
-                                ? 'cursor-pointer hover:bg-gray-50' 
-                                : ''
-                            }`}
+                          <div
+                            key={docType}
+                            className={`flex items-center justify-between p-3 border rounded-sm ${(doc.status === 'ready' || doc.status === 'completed')
+                              ? 'cursor-pointer hover:bg-gray-50'
+                              : ''
+                              }`}
                             onClick={() => {
                               if (doc.status === 'ready' || doc.status === 'completed') {
                                 handleViewDocument(doc);
@@ -892,9 +865,9 @@ Target Platform: ${project.target_platform}`;
                                   >
                                     <Eye className="w-4 h-4" />
                                   </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost" 
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
                                     className="p-1 h-auto"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1099,7 +1072,7 @@ Target Platform: ${project.target_platform}`;
           <DialogHeader>
             <DialogTitle className="font-sans">Delete Project</DialogTitle>
             <DialogDescription className="font-sans">
-              Are you sure you want to delete <span className="font-semibold">"{projectToDelete?.name}"</span>?
+              Are you sure you want to delete <span className="font-semibold">&quot;{projectToDelete?.name}&quot;</span>?
               This action cannot be undone and will permanently remove all associated documents.
             </DialogDescription>
           </DialogHeader>
@@ -1143,7 +1116,7 @@ Target Platform: ${project.target_platform}`;
       {showProgressModal && (
         <GenerationProgressV2
           projectId={showProgressModal}
-          onComplete={(projectId) => {
+          onComplete={() => {
             setShowProgressModal(null);
             toast({
               title: "Generation Complete!",

@@ -4,10 +4,11 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/lib/hooks/useAuth"
-import { Mail, CheckCircle, AlertCircle, RefreshCw } from "lucide-react"
+import { Mail, AlertCircle, RefreshCw } from "lucide-react"
+import { User } from "@supabase/supabase-js"
 
 interface EmailVerificationProps {
-  user: any
+  user: User | null
 }
 
 export default function EmailVerification({ user }: EmailVerificationProps) {
@@ -34,7 +35,7 @@ export default function EmailVerification({ user }: EmailVerificationProps) {
       } else {
         setMessage("Verification email sent! Check your inbox.")
       }
-    } catch (err) {
+    } catch {
       setError("Failed to send verification email")
     } finally {
       setLoading(false)

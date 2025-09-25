@@ -1,17 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { TemplateCard } from "@/components/TemplateCard";
 import { CreateCustomButton } from "@/components/CreateCustomButton";
-import { 
-  FileText, 
-  Users, 
-  Map, 
-  Code, 
-  Layout, 
-  Star,
-  Clock,
-  Download,
-  Eye
-} from "lucide-react";
 import { getTemplates, getTemplateStats, type Template, type TemplateStats } from "@/lib/actions/template.actions";
 
 export default async function TemplatesPage() {
@@ -63,7 +51,7 @@ export default async function TemplatesPage() {
 
         {/* CTA Section */}
         <div className="mt-16 rounded-sm p-8 text-center text-white" style={{background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))`}}>
-          <h2 className="text-3xl font-bold mb-4 font-sans">Don't See Your Project Type?</h2>
+          <h2 className="text-3xl font-bold mb-4 font-sans">Don&apos;t See Your Project Type?</h2>
           <p className="text-xl mb-6 font-sans" style={{color: 'var(--steel-blue-100)'}}>
             Create custom documentation from scratch using our AI generator
           </p>

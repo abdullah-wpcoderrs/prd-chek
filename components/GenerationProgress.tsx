@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +16,9 @@ import {
   CheckCircle2,
   Loader2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  type LucideIcon
 } from "lucide-react";
-
 
 
 interface GenerationProgressComponentProps {
@@ -37,7 +37,7 @@ const documentIcons = {
 };
 
 const statusConfig: Record<string, {
-  icon: any;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   label: string;
@@ -238,7 +238,7 @@ export function GenerationProgressComponent({
               </div>
               <p className="text-sm text-green-700 font-sans">
                 Your documentation suite has been generated successfully.
-                You'll be redirected to your projects dashboard in a moment.
+                You&apos;ll be redirected to your projects dashboard in a moment.
               </p>
             </div>
           )}

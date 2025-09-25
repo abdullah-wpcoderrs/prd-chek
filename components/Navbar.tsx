@@ -3,24 +3,19 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useGeneration } from "@/lib/context/GenerationContext";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { Loader2, User, LogOut, Menu, X } from "lucide-react";
+import { User, LogOut, Menu, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
+
 
 const Navbar = () => {
-  const { activeGenerations } = useGeneration();
   const { user, loading, signOut } = useAuth();
-  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const activeCount = activeGenerations.size;
   
   const handleSignOut = async () => {
     await signOut();

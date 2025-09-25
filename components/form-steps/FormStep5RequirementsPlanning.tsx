@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { RequirementsPlanning } from "@/types";
 import { CheckSquare, Square, Settings, Plus, X, AlertTriangle } from "lucide-react";
 
@@ -194,7 +194,7 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
         
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-600 font-sans">
-            Features that would be valuable but aren't critical for launch (maximum 10)
+            Features that would be valuable but aren&apos;t critical for launch (maximum 10)
           </p>
           <span className="text-xs text-gray-500 font-sans">
             {data.niceToHaveFeatures.length}/10 features
@@ -260,7 +260,7 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
         </div>
         
         <p className="text-sm text-gray-600 font-sans">
-          Choose the framework you'd like to use for prioritizing features in your documentation
+          Choose the framework you&apos;d like to use for prioritizing features in your documentation
         </p>
       </div>
 
@@ -274,19 +274,19 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
           <div>
             <span className="font-medium text-green-800 font-sans">Must-have:</span>
             <span className="text-green-700 font-sans ml-1">
-              "User registration, project creation, task assignment, basic notifications"
+              &quot;User registration, project creation, task assignment, basic notifications&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-green-800 font-sans">Nice-to-have:</span>
             <span className="text-green-700 font-sans ml-1">
-              "Advanced analytics, custom themes, third-party integrations, mobile app"
+              &quot;Advanced analytics, custom themes, third-party integrations, mobile app&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-green-800 font-sans">Constraints:</span>
             <span className="text-green-700 font-sans ml-1">
-              "Must work on mobile devices, integrate with Slack, comply with SOC 2, launch by Q3"
+              &quot;Must work on mobile devices, integrate with Slack, comply with SOC 2, launch by Q3&quot;
             </span>
           </div>
         </div>

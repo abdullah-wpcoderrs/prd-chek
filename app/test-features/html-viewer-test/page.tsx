@@ -18,7 +18,20 @@ export default function HtmlViewerTest() {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [isEmbeddedViewerOpen, setIsEmbeddedViewerOpen] = useState(false);
   const [zoom, setZoom] = useState(100);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<{
+    url: string;
+    status?: number;
+    statusText?: string;
+    error?: string;
+    errorType?: string;
+    responseTime?: number;
+    contentLength?: number;
+    contentType?: string;
+    isHtml?: boolean;
+    corsHeaders?: Record<string, string>;
+    headers?: Record<string, string>;
+    contentPreview?: string;
+  } | null>(null);
   const [isDebugging, setIsDebugging] = useState(false);
 
   const handleTestViewer = () => {
@@ -72,11 +85,11 @@ export default function HtmlViewerTest() {
                 responseText.toLowerCase().includes('<div') ||
                 responseText.toLowerCase().includes('<h1') ||
                 responseText.toLowerCase().includes('<p'),
-        contentType: response.headers.get('content-type'),
+        contentType: response.headers.get('content-type') || undefined,
         corsHeaders: {
-          'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
-          'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
-          'access-control-allow-headers': response.headers.get('access-control-allow-headers'),
+          'access-control-allow-origin': response.headers.get('access-control-allow-origin') || '',
+          'access-control-allow-methods': response.headers.get('access-control-allow-methods') || '',
+          'access-control-allow-headers': response.headers.get('access-control-allow-headers') || '',
         }
       });
     } catch (error) {

@@ -169,19 +169,19 @@ export function FormStep2UsersProblems({ data, onUpdate }: FormStep2UsersProblem
           <div>
             <span className="font-medium text-blue-800 font-sans">Target Users:</span>
             <span className="text-blue-700 font-sans ml-1">
-              "Small business owners (5-20 employees) who manage customer relationships manually using spreadsheets or basic CRM tools"
+              &quot;Small business owners (5-20 employees) who manage customer relationships manually using spreadsheets or basic CRM tools&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-blue-800 font-sans">Pain Points:</span>
             <span className="text-blue-700 font-sans ml-1">
-              "Lost customer data, missed follow-ups, time-consuming manual data entry"
+              &quot;Lost customer data, missed follow-ups, time-consuming manual data entry&quot;
             </span>
           </div>
           <div>
             <span className="font-medium text-blue-800 font-sans">Job-To-Be-Done:</span>
             <span className="text-blue-700 font-sans ml-1">
-              "Efficiently manage customer relationships and sales pipeline without complex setup or training"
+              &quot;Efficiently manage customer relationships and sales pipeline without complex setup or training&quot;
             </span>
           </div>
         </div>

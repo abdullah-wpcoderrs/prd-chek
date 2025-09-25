@@ -73,7 +73,7 @@ function ResetPasswordForm() {
           router.push('/sign-in')
         }, 2000)
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
