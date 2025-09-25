@@ -2,8 +2,10 @@ import SignUpForm from "@/components/auth/SignUpForm";
 
 const SignUpPage = () => {
   return (
-    <main className="flex justify-center items-center min-h-screen bg-gray-50">
-      <SignUpForm />
+    <main className="auth-main flex justify-center items-center min-h-screen bg-gray-50 p-4">
+      <div className="w-full max-w-md">
+        <SignUpForm />
+      </div>
     </main>
   );
 };

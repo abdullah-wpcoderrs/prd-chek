@@ -18,6 +18,7 @@ interface FormRecoveryDialogProps {
   isOpen: boolean;
   onRestore: () => void;
   onDiscard: () => void;
+  onCancel?: () => void; // New optional cancel handler
   savedData: ProductManagerFormData | null;
   timestamp?: number;
 }
@@ -26,6 +27,7 @@ export function FormRecoveryDialog({
   isOpen,
   onRestore,
   onDiscard,
+  onCancel,
   savedData,
   timestamp
 }: FormRecoveryDialogProps) {
@@ -37,6 +39,16 @@ export function FormRecoveryDialog({
       await onRestore();
     } finally {
       setIsRestoring(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // If onCancel is provided, call it (this will restore progress automatically)
+    // Otherwise, default to restoring progress
+    if (onCancel) {
+      onCancel();
+    } else {
+      handleRestore();
     }
   };
 
@@ -89,7 +101,12 @@ export function FormRecoveryDialog({
   const totalSteps = completionSummary?.length || 5;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        // When dialog is closed, automatically restore progress
+        handleCancel();
+      }
+    }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-sans">
@@ -153,6 +170,14 @@ export function FormRecoveryDialog({
         </div>
 
         <DialogFooter className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isRestoring}
+            className="font-sans"
+          >
+            Cancel
+          </Button>
           <Button
             variant="outline"
             onClick={onDiscard}

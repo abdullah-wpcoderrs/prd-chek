@@ -54,11 +54,11 @@ export default function SignInForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6">
-      <div className="space-y-6">
+    <Card className="w-full max-w-md mx-auto p-4 sm:p-6 shadow-lg">
+      <div className="space-y-4 sm:space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Welcome back</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Sign in to your account</p>
         </div>
 
         {error && (
@@ -73,34 +73,36 @@ export default function SignInForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="email" className="text-sm">Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
+              className="h-10 sm:h-11"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="password" className="text-sm">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
+              className="h-10 sm:h-11"
               required
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-10 sm:h-11 text-sm sm:text-base"
             disabled={loading || !email || !password}
           >
             {loading ? "Signing in..." : "Sign in"}
@@ -118,9 +120,10 @@ export default function SignInForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <Button
             variant="outline"
+            className="h-10 sm:h-11 text-xs sm:text-sm"
             onClick={() => handleOAuthSignIn('google')}
             disabled={loading}
           >
@@ -128,6 +131,7 @@ export default function SignInForm() {
           </Button>
           <Button
             variant="outline"
+            className="h-10 sm:h-11 text-xs sm:text-sm"
             onClick={() => handleOAuthSignIn('github')}
             disabled={loading}
           >

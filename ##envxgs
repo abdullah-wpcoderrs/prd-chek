@@ -1,0 +1,55 @@
+# ==============================================
+# PRD-CHEK Environment Variables
+# ==============================================
+
+# ==============================================
+# SUPABASE CONFIGURATION (REQUIRED)
+# ==============================================
+# Get these from your Supabase project dashboard: https://app.supabase.com
+NEXT_PUBLIC_SUPABASE_URL= "https://qiviknxunhsatdhwmzdz.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpdmlrbnh1bmhzYXRkaHdtemR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc2NjEzNzQsImV4cCI6MjA3MzIzNzM3NH0.xOFWN7s_0o9h0siaNfIZZp68wc1uHhF1mms0dFDSLOY"
+
+# Service Role Key (NEVER expose to client-side, keep secret!)
+SUPABASE_SERVICE_ROLE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpdmlrbnh1bmhzYXRkaHdtemR6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzY2MTM3NCwiZXhwIjoyMDczMjM3Mzc0fQ.BNrssdWRaI7spWEN991edcuItiDw3lIZilz0NFxp-EY"
+
+# ==============================================
+# APPLICATION CONFIGURATION
+# ==============================================
+# Your application URL (use http://localhost:3000 for local development)
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# Environment mode (development for local, production for live)
+NODE_ENV=development
+
+# ==============================================
+# N8N WEBHOOK INTEGRATION (OPTIONAL)
+# ==============================================
+# N8N webhook URLs for document generation
+# Leave as placeholder URLs if you don't have N8N set up yet
+NEXT_PUBLIC_N8N_WEBHOOK_URL=https://smart-nocode.app.n8n.cloud/webhook-test/prd-generator
+NEXT_PUBLIC_N8N_STATUS_WEBHOOK_URL=https://smart-nocode.app.n8n.cloud/webhook-test/status
+
+# ==============================================
+# DEBUG & DEVELOPMENT (OPTIONAL)
+# ==============================================
+# Enable detailed webhook logging (true/false)
+NEXT_PUBLIC_DEBUG_WEBHOOKS=false
+
+# ==============================================
+# INSTRUCTIONS:
+# ==============================================
+# 1. Replace 'your_supabase_project_url_here' with your actual Supabase URL
+# 2. Replace 'your_supabase_anon_key_here' with your Supabase anonymous key
+# 3. Replace 'your_supabase_service_role_key_here' with your Supabase service role key
+# 4. If you have N8N set up, replace the N8N webhook URLs with your actual endpoints
+# 5. Change NEXT_PUBLIC_SITE_URL when deploying to production
+# 6. Set NODE_ENV=production when deploying to production
+#
+# To find your Supabase credentials:
+# 1. Go to https://app.supabase.com
+# 2. Select your project
+# 3. Go to Settings > API
+# 4. Copy the Project URL and anon/public key
+# 5. Copy the service_role key (keep this secret!)
+#
+# ==============================================

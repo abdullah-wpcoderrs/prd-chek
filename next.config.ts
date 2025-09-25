@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   env: {
-    N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL || 'https://webhook.site/test-placeholder-url'
+    N8N_WEBHOOK_URL: process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
   },
   images: {
     remotePatterns: [],

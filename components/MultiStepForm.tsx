@@ -303,6 +303,11 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     });
   };
 
+  const handleCancelDialog = () => {
+    // Cancel means restore progress and close dialog
+    handleRestoreProgress();
+  };
+
   // Manual save handler
   const handleManualSave = () => {
     saveNow();
@@ -375,6 +380,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
         isOpen={showRecoveryDialog}
         onRestore={handleRestoreProgress}
         onDiscard={handleDiscardProgress}
+        onCancel={handleCancelDialog}
         savedData={savedFormData}
         timestamp={savedTimestamp}
       />

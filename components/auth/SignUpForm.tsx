@@ -69,11 +69,11 @@ export default function SignUpForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6">
-      <div className="space-y-6">
+    <Card className="w-full max-w-md mx-auto p-4 sm:p-6 shadow-lg">
+      <div className="space-y-4 sm:space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-gray-600">Get started with PRDGen</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Create your account</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Get started with PRDGen</p>
         </div>
 
         {error && (

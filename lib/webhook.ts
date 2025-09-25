@@ -25,7 +25,7 @@ export interface ProjectGenerationRequest {
 }
 
 // N8N Webhook Configuration
-const N8N_WEBHOOK_URL = env.N8N_WEBHOOK_URL;
+const N8N_WEBHOOK_URL = env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
 
 /**
  * Submit a project for documentation generation
