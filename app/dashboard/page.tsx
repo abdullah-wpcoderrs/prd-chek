@@ -158,7 +158,7 @@ export default function DashboardPage() {
             Product Management Suite Generator
           </div>
           
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 font-sans">
+          <h1 className="text-3xl md:text-6xl font-bold text-gray-900 mb-6 font-sans">
             Complete Product Documentation
           </h1>
           
