@@ -87,15 +87,7 @@ Promise<{ projectId: string; status: string }>
 - `createTemplate()` - Creates custom templates
 - `updateTemplate()` - Modifies template configurations
 
-### Comment Management Actions
-**Location**: `lib/actions/comment.actions.ts`
 
-**Purpose**: Manages user comments and feedback
-
-**Key Functions**:
-- `createComment()` - Adds new comments
-- `getComments()` - Retrieves comments for projects
-- `updateComment()` - Modifies existing comments
 
 ## API Endpoints
 
