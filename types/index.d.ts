@@ -22,7 +22,7 @@ export interface ProductBasics {
   productName: string;
   productPitch: string;
   industry: string;
-  currentStage: 'idea' | 'mvp' | 'growth' | 'scaling';
+  currentStage: 'idea' | 'mvp' | 'growth' | 'scaling' | '';
   techStack?: string;
   targetPlatform?: 'web' | 'mobile' | 'desktop' | 'both' | 'other';
 }

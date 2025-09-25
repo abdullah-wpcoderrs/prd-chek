@@ -1,6 +1,0 @@
-[build]
-  command = "next build"
-  publish = ".next"
-
-[build.environment]
-  N8N_WEBHOOK_URL = "https://your-n8n-webhook-url.com/webhook"

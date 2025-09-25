@@ -140,7 +140,7 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
           <Label className="text-base font-semibold text-gray-900 font-sans">
             Current Stage *
           </Label>
-          <Select value={data.currentStage || ''} onValueChange={(value) => updateField('currentStage', value)}>
+          <Select value={data.currentStage} onValueChange={(value) => updateField('currentStage', value)}>
             <SelectTrigger className="text-base font-sans">
               <SelectValue placeholder="Select current stage" />
             </SelectTrigger>

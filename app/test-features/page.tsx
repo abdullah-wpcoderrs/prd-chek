@@ -16,7 +16,7 @@ export default function TestFeaturesPage() {
     productName: "",
     productPitch: "",
     industry: "",
-    currentStage: "idea",
+    currentStage: "",
   });
 
   const [step2Data, setStep2Data] = useState<UsersProblems>({

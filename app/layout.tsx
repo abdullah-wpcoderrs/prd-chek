@@ -9,8 +9,8 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PRD-CHEK - AI Documentation Generator for Vibe Coders",
-  description: "Generate comprehensive PRDs, user stories, sitemaps, and technical documentation instantly with AI-powered tools designed for modern developers",
+  title: "PRD-CHEK - AI Documentation Generator for Technical Product Managers",
+  description: "Generate comprehensive PRDs, technical specifications, and strategic documentation instantly with AI-powered tools designed for technical product managers and context engineers",
   icons: {
     icon: [
       {

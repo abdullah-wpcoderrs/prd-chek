@@ -49,6 +49,9 @@ const Navbar = () => {
               <Link href="/templates" className="text-sm font-medium hover:text-primary transition-colors font-sans">
                 Templates
               </Link>
+              <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+                How It Works
+              </Link>
             </>
           )}
           
@@ -58,7 +61,7 @@ const Navbar = () => {
               <Link href="/#features" className="text-sm font-medium hover:text-primary transition-colors font-sans">
                 Features
               </Link>
-              <Link href="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors font-sans">
+              <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors font-sans">
                 How It Works
               </Link>
             </>
@@ -166,6 +169,13 @@ const Navbar = () => {
                 >
                   Templates
                 </Link>
+                <Link 
+                  href="/how-it-works" 
+                  className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
+                  onClick={closeMobileMenu}
+                >
+                  How It Works
+                </Link>
               </>
             )}
             
@@ -180,7 +190,7 @@ const Navbar = () => {
                   Features
                 </Link>
                 <Link 
-                  href="/#how-it-works" 
+                  href="/how-it-works" 
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >

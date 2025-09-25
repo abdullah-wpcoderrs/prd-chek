@@ -61,7 +61,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
       productName: "",
       productPitch: "",
       industry: "",
-      currentStage: "idea",
+      currentStage: "",
     },
     step2: {
       targetUsers: "",
@@ -89,7 +89,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   // Helper function to check if there are unsaved changes
   const hasUnsavedChanges = useCallback((): boolean => {
     const emptyForm = {
-      step1: { productName: "", productPitch: "", industry: "", currentStage: "idea" as const },
+      step1: { productName: "", productPitch: "", industry: "", currentStage: "" as const },
       step2: { targetUsers: "", painPoints: [], primaryJobToBeDone: "" },
       step3: { competitors: [], differentiation: "", marketTrend: "" },
       step4: { valueProposition: "", productVision: "", successMetric: "" },

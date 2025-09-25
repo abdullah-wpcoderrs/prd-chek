@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { MultiStepForm } from "@/components/MultiStepForm";
 import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { ProductManagerFormData } from "@/types";
 import { Sparkles, FileText, Users, Code, Layout, Loader2, BarChart3, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/use-toast";
@@ -155,16 +156,31 @@ export default function DashboardPage() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6" style={{backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-700)'}}>
             <Sparkles className="w-4 h-4" />
-            Product Management Suite Generator
+            AI-Powered Documentation Generator for Technical Product Managers
           </div>
           
           <h1 className="text-3xl md:text-6xl font-bold text-gray-900 mb-6 font-sans">
-            Complete Product Documentation
+            From Idea to <span className="text-blue-600">Production-Ready</span> Documentation
           </h1>
           
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto font-sans">
-            Answer 5 simple questions to generate a comprehensive documentation suite for your product
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto font-sans leading-relaxed">
+            Skip the documentation bottleneck. Generate comprehensive PRDs, technical specs, and planning documents that enable seamless stakeholder alignment and engineering handoff.
           </p>
+          
+          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="font-sans">5-minute setup</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="font-sans">Technical-ready specifications</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <span className="font-sans">Export to project management tools</span>
+            </div>
+          </div>
         </div>
 
         {/* Template Selection Info */}
@@ -209,138 +225,43 @@ export default function DashboardPage() {
           initialData={initialFormData}
         />
 
-        {/* What Will Be Generated - Enhanced */}
-        <div className="max-w-5xl mx-auto mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center font-sans">
-            3-Stage Documentation Pipeline
-          </h2>
-          <p className="text-gray-600 text-center mb-12 font-sans">
-            Your responses will generate a complete product management workflow
-          </p>
-          
-          {/* Stage 1: Discovery & Research */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
-              <h3 className="text-2xl font-bold text-gray-900 font-sans">Discovery & Research</h3>
-            </div>
-            <Card className="border-2 border-blue-100 hover:border-blue-200 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2 font-sans">
-                      Research & Insights Report
-                    </h4>
-                    <p className="text-gray-600 font-sans">
-                      Combines market research, user research, problem statement, and value proposition analysis based on your inputs
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Stage 2: Vision & Strategy */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
-              <h3 className="text-2xl font-bold text-gray-900 font-sans">Vision & Strategy</h3>
-            </div>
-            <Card className="border-2 border-purple-100 hover:border-purple-200 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <BarChart3 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2 font-sans">
-                      Vision & Strategy Document
-                    </h4>
-                    <p className="text-gray-600 font-sans">
-                      Defines product vision, strategy, and success metrics (KPIs/OKRs) based on your value proposition and goals
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Stage 3: Requirements & Planning */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
-              <h3 className="text-2xl font-bold text-gray-900 font-sans">Requirements & Planning</h3>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="border-2 border-green-100 hover:border-green-200 transition-colors">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 font-sans text-sm">
-                    Product Requirements Document (PRD)
-                  </h4>
-                  <p className="text-gray-600 text-xs font-sans">
-                    Main product scope and features
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-green-100 hover:border-green-200 transition-colors">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 font-sans text-sm">
-                    Business Requirements Document (BRD)
-                  </h4>
-                  <p className="text-gray-600 text-xs font-sans">
-                    Business and executive alignment
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-green-100 hover:border-green-200 transition-colors">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Code className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 font-sans text-sm">
-                    Technical Requirements Document (TRD)
-                  </h4>
-                  <p className="text-gray-600 text-xs font-sans">
-                    Engineering feasibility analysis
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-green-100 hover:border-green-200 transition-colors">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Layout className="w-5 h-5" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 font-sans text-sm">
-                    Planning Toolkit
-                  </h4>
-                  <p className="text-gray-600 text-xs font-sans">
-                    Prioritization frameworks and user stories
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Flow Summary */}
-          <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6 text-center">
-            <h4 className="font-semibold text-gray-900 font-sans mb-2">Document Flow</h4>
-            <p className="text-gray-700 font-sans">
-              <span className="font-medium text-blue-600">Research & Insights</span> → informs → 
-              <span className="font-medium text-purple-600 mx-2">Vision & Strategy</span> → shapes → 
-              <span className="font-medium text-green-600">Requirements & Planning</span>
+        {/* Brief Process Overview */}
+        <div className="max-w-4xl mx-auto mt-16">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 font-sans">
+              Complete Documentation in 3 Stages
+            </h2>
+            <p className="text-gray-600 font-sans">
+              Generate comprehensive, stakeholder-ready documentation optimized for technical teams and engineering handoff
             </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 text-sm font-bold">1</div>
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-sm">Discovery & Research</h3>
+              <p className="text-xs text-gray-600 font-sans">Market analysis, competitive research, and user insights</p>
+            </div>
+            
+            <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-100">
+              <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 text-sm font-bold">2</div>
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-sm">Vision & Strategy</h3>
+              <p className="text-xs text-gray-600 font-sans">Strategic framework with measurable success metrics</p>
+            </div>
+            
+            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-100">
+              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 text-sm font-bold">3</div>
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-sm">Requirements & Planning</h3>
+              <p className="text-xs text-gray-600 font-sans">PRD, BRD, TRD, and implementation toolkit</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Link href="/how-it-works">
+              <Button variant="outline" className="font-sans">
+                Learn More About Our Process →
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

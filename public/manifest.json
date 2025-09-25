@@ -1,7 +1,7 @@
 {
-  "name": "PRD-CHEK - AI Documentation Generator",
+  "name": "PRD-CHEK - AI Documentation Generator for Technical Product Managers",
   "short_name": "PRD-CHEK",
-  "description": "Generate comprehensive PRDs, user stories, sitemaps, and technical documentation instantly with AI-powered tools designed for modern developers",
+  "description": "Generate comprehensive PRDs, technical specifications, and strategic documentation instantly with AI-powered tools designed for technical product managers and context engineers",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#2563eb",

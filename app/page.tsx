@@ -13,16 +13,16 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6" style={{ backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-700)' }}>
               <Sparkles className="w-4 h-4" />
-              AI-Powered Documentation Generator
+              AI-Powered Documentation Generator for Technical Product Managers
             </div>
 
             <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 font-sans leading-tight">
-              PRD Generator
+              PRD-CHEK
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto font-sans leading-relaxed">
-              Create, customize, and generate comprehensive project documentation in seconds.
-              The ultimate tool for Product Managers and Context Engineers building with Tech Products with AI.
+              Transform product concepts into comprehensive, AI-ready documentation suites.
+              The essential toolkit for <span className="font-semibold text-gray-900">Technical Product Managers</span> and <span className="font-semibold text-gray-900">Context Engineers</span> building next-generation products.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -34,12 +34,12 @@ export default function HomePage() {
               </Link>
 
               <Button variant="outline" className="px-10 py-6 text-md rounded-sm font-medium font-sans border-2 border-gray-300 hover:border-gray-400">
-                View Templates
+                <Link href="/how-it-works">How it Works</Link>
               </Button>
             </div>
 
             <p className="text-sm text-gray-500 mt-6 font-sans">
-              Totally Free. No sign-up required. All documents are processed securely.
+              Free to use. No sign-up required. Enterprise-grade security for your product specifications.
             </p>
           </div>
 
@@ -56,14 +56,14 @@ export default function HomePage() {
               </div>
 
               <p className="mb-6 font-sans" style={{ color: 'var(--steel-blue-100)' }}>
-                Describe your project idea and select your preferred tech stack.
-                Get a complete documentation suite in minutes.
+                Input your product concept, technical requirements, and strategic objectives.
+                Generate a complete documentation suite optimized for technical teams and stakeholder alignment.
               </p>
 
               <div className="bg-white/10 rounded-sm p-4 backdrop-blur-sm">
                 <div className="text-sm mb-2 font-sans" style={{ color: 'var(--steel-blue-100)' }}>Project Description</div>
                 <div className="bg-white/20 rounded-sm px-3 py-2 text-white font-sans text-sm">
-                  A social media app for developers to share code snippets and collaborate...
+                  AI-powered task management platform for distributed engineering teams with real-time collaboration features, automated sprint planning, and predictive analytics for delivery optimization...
                 </div>
               </div>
             </div>
@@ -76,11 +76,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-sans">
-              What You Can Do
+              Documentation Suite for Technical Teams
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-sans">
-              Everything you need to transform your ideas into well-documented,
-              development-ready projects
+              Generate comprehensive, stakeholder-ready documentation that bridges the gap between product vision and technical implementation
             </p>
           </div>
 
@@ -89,9 +88,9 @@ export default function HomePage() {
               <div className="w-16 h-16 rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: 'var(--steel-blue-100)', color: 'var(--steel-blue-600)' }}>
                 <FileText className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Generate PRDs</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Product Requirements (PRD)</h3>
               <p className="text-gray-600 font-sans">
-                Create comprehensive Product Requirement Documents with AI precision
+                Comprehensive product specifications with technical constraints, acceptance criteria, and engineering-ready feature definitions
               </p>
             </div>
 
@@ -99,9 +98,9 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-green-100 text-green-600 rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Users className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">User Stories</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Business Requirements (BRD)</h3>
               <p className="text-gray-600 font-sans">
-                Detailed user journey mapping and story documentation for better UX
+                Executive-level business requirements, stakeholder alignment documentation, and strategic objectives with measurable outcomes
               </p>
             </div>
 
@@ -109,9 +108,9 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Map className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Smart Sitemaps</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Technical Requirements (TRD)</h3>
               <p className="text-gray-600 font-sans">
-                Screen-by-screen application flow with intelligent navigation mapping
+                Architecture specifications, API requirements, technical constraints, and implementation guidelines for development teams
               </p>
             </div>
 
@@ -119,9 +118,9 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Code className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Tech Specs</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-sans">Research & Strategy</h3>
               <p className="text-gray-600 font-sans">
-                Technology stack recommendations with compatibility analysis
+                Market analysis, competitive research, user insights, and strategic framework to guide product development decisions
               </p>
             </div>
           </div>
@@ -133,10 +132,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-sans">
-              How It Works
+              3-Stage Documentation Process
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-sans">
-              Simple 3-step process to get your complete documentation suite
+              From product concept to implementation-ready specifications in minutes
             </p>
           </div>
 
@@ -146,11 +145,10 @@ export default function HomePage() {
                 1
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4 font-sans">
-                Describe Your Project
+                Discovery & Research
               </h3>
               <p className="text-gray-600 font-sans leading-relaxed">
-                Tell us about your project idea, target audience, and core features.
-                Our AI understands context and requirements.
+                Input product concept, target users, and market context. Generate comprehensive market research and competitive analysis that informs technical decisions.
               </p>
             </div>
 
@@ -159,11 +157,10 @@ export default function HomePage() {
                 2
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4 font-sans">
-                Select Tech Stack
+                Vision & Strategy
               </h3>
               <p className="text-gray-600 font-sans leading-relaxed">
-                Choose your preferred technologies and frameworks.
-                We&apos;ll ensure compatibility and provide recommendations.
+                Define product vision, success metrics, and strategic objectives. Create alignment framework between business goals and technical implementation.
               </p>
             </div>
 
@@ -172,13 +169,20 @@ export default function HomePage() {
                 3
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4 font-sans">
-                Get Your Documents
+                Requirements & Planning
               </h3>
               <p className="text-gray-600 font-sans leading-relaxed">
-                Receive a complete suite of 5 professional documents ready for
-                development and team collaboration.
+                Generate complete PRD, BRD, TRD, and planning toolkit. Receive implementation-ready documentation for immediate development handoff.
               </p>
             </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/how-it-works">
+              <Button variant="outline" className="font-sans">
+                View Complete Process →
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -189,11 +193,10 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-sans">
-                Built for Vibe Coders
+                Built for Technical Product Management
               </h2>
               <p className="text-xl text-gray-600 mb-8 font-sans leading-relaxed">
-                Perfect for developers who build with AI tools and need comprehensive
-                documentation to guide their development process.
+                Designed specifically for technical product managers and context engineers who need comprehensive documentation that bridges product vision with engineering implementation.
               </p>
 
               <div className="space-y-6">
@@ -202,8 +205,8 @@ export default function HomePage() {
                     <Zap className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1 font-sans">Lightning Fast</h3>
-                    <p className="text-gray-600 font-sans">Generate complete documentation suites in under 5 minutes</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 font-sans">AI-Optimized for Technical Teams</h3>
+                    <p className="text-gray-600 font-sans">Documentation structured specifically for engineering handoff and technical stakeholder alignment</p>
                   </div>
                 </div>
 
@@ -212,8 +215,8 @@ export default function HomePage() {
                     <Shield className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1 font-sans">Secure & Private</h3>
-                    <p className="text-gray-600 font-sans">Your project ideas and documents are processed securely</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 font-sans">Enterprise-Grade Security</h3>
+                    <p className="text-gray-600 font-sans">Your product specifications and strategic information are processed with bank-level security</p>
                   </div>
                 </div>
 
@@ -222,35 +225,35 @@ export default function HomePage() {
                     <Globe className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1 font-sans">Export Anywhere</h3>
-                    <p className="text-gray-600 font-sans">Download PDFs or view online - use with any AI coding IDE</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 font-sans">Integration Ready</h3>
+                    <p className="text-gray-600 font-sans">Export to PDF, integrate with project management tools, or use directly in technical planning sessions</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="p-8 text-white" style={{ background: `linear-gradient(to right, var(--steel-blue-500), var(--steel-blue-600))` }}>
-              <h3 className="text-2xl font-bold mb-6 font-sans">Documentation Suite Includes:</h3>
+              <h3 className="text-2xl font-bold mb-6 font-sans">Complete Documentation Suite:</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5" />
-                  <span className="font-sans">Product Requirement Document</span>
+                  <span className="font-sans">Product Requirements Document (PRD)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Users className="w-5 h-5" />
-                  <span className="font-sans">User Journey & Story Document</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Map className="w-5 h-5" />
-                  <span className="font-sans">Sitemap Document</span>
+                  <span className="font-sans">Business Requirements Document (BRD)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Code className="w-5 h-5" />
-                  <span className="font-sans">Features & Tech Stack Requirements</span>
+                  <span className="font-sans">Technical Requirements Document (TRD)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Map className="w-5 h-5" />
+                  <span className="font-sans">Research & Insights Report</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Layout className="w-5 h-5" />
-                  <span className="font-sans">Screen-by-Screen Specifications</span>
+                  <span className="font-sans">Vision & Strategy Document</span>
                 </div>
               </div>
             </div>
@@ -262,10 +265,10 @@ export default function HomePage() {
       <section className="py-20 px-4 text-white" style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}>
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 font-sans">
-            Ready to Build Your Dream Project?
+            Ready to Accelerate Your Product Development?
           </h2>
           <p className="text-xl mb-8 font-sans" style={{ color: 'var(--steel-blue-100)' }}>
-            Join thousands of vibe coders who trust PRDGen for their documentation needs
+            Join technical product managers who trust PRD-CHEK for comprehensive, stakeholder-ready documentation
           </p>
 
           <Link href="/dashboard">
