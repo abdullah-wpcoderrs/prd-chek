@@ -41,6 +41,9 @@ const VALIDATION_RULES: { [key: string]: ValidationRule } = {
   industry: {
     required: true
   },
+  currentStage: {
+    required: true
+  },
   targetUsers: {
     required: true,
     minLength: 10,
@@ -79,6 +82,9 @@ const VALIDATION_RULES: { [key: string]: ValidationRule } = {
     maxItems: 20,
     itemMinLength: 3,
     itemMaxLength: 100
+  },
+  prioritizationMethod: {
+    required: true
   }
 };
 
@@ -195,6 +201,7 @@ export function validateStep1(data: ProductBasics): StepValidationResult {
   errors.push(...validateField(data.productName, VALIDATION_RULES.productName, 'productName'));
   errors.push(...validateField(data.productPitch, VALIDATION_RULES.productPitch, 'productPitch'));
   errors.push(...validateField(data.industry, VALIDATION_RULES.industry, 'industry'));
+  errors.push(...validateField(data.currentStage, VALIDATION_RULES.currentStage, 'currentStage'));
 
   // Custom validations
   if (data.productName && data.productPitch && 
@@ -305,6 +312,7 @@ export function validateStep5(data: RequirementsPlanning): StepValidationResult 
   const warnings: ValidationError[] = [];
 
   errors.push(...validateField(data.mustHaveFeatures, VALIDATION_RULES.mustHaveFeatures, 'mustHaveFeatures'));
+  errors.push(...validateField(data.prioritizationMethod, VALIDATION_RULES.prioritizationMethod, 'prioritizationMethod'));
 
   // Check for overlap between must-have and nice-to-have features
   const mustHaveSet = new Set(data.mustHaveFeatures.map(f => f.toLowerCase().trim()));

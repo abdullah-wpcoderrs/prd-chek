@@ -1,6 +1,7 @@
 "use client";
 
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { RequirementsPlanning } from "@/types";
 import { CheckSquare, Square, Settings, AlertTriangle } from "lucide-react";
@@ -112,31 +113,25 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Settings className="w-5 h-5 text-purple-600" />
-          <Label className="text-base font-semibold text-gray-900 font-sans">
+          <Label htmlFor="prioritizationMethod" className="text-base font-semibold text-gray-900 font-sans">
             Prioritization Method *
           </Label>
         </div>
-        
-        <div className="grid gap-3">
-          {PRIORITIZATION_METHODS.map((method) => (
-            <div
-              key={method.value}
-              onClick={() => updateField('prioritizationMethod', method.value as RequirementsPlanning['prioritizationMethod'])}
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-purple-300 ${
-                data.prioritizationMethod === method.value
-                  ? 'border-purple-500 bg-purple-50'
-                  : 'border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              <div className="font-semibold text-gray-900 font-sans mb-1">
-                {method.label}
-              </div>
-              <div className="text-sm text-gray-600 font-sans">
-                {method.description}
-              </div>
-            </div>
-          ))}
-        </div>
+        <Select value={data.prioritizationMethod || ''} onValueChange={(value) => updateField('prioritizationMethod', value as RequirementsPlanning['prioritizationMethod'])}>
+          <SelectTrigger className="text-base font-sans">
+            <SelectValue placeholder="Select prioritization framework" />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITIZATION_METHODS.map((method) => (
+              <SelectItem key={method.value} value={method.value} className="font-sans">
+                <div>
+                  <div className="font-medium">{method.label}</div>
+                  <div className="text-sm text-white-300">{method.description}</div>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
 
