@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-
 import { RequirementsPlanning } from "@/types";
-import { CheckSquare, Square, Settings, Plus, X, AlertTriangle } from "lucide-react";
+import { CheckSquare, Square, Settings, AlertTriangle } from "lucide-react";
 
 interface FormStep5RequirementsPlanningProps {
   data: RequirementsPlanning;
@@ -33,9 +29,6 @@ const PRIORITIZATION_METHODS = [
 ];
 
 export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5RequirementsPlanningProps) {
-  const [newMustHave, setNewMustHave] = useState("");
-  const [newNiceToHave, setNewNiceToHave] = useState("");
-
   const updateField = (field: keyof RequirementsPlanning, value: string | string[]) => {
     onUpdate({
       ...data,
@@ -43,161 +36,50 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
     });
   };
 
-  const addMustHaveFeature = () => {
-    if (newMustHave.trim() && data.mustHaveFeatures.length < 10) {
-      updateField('mustHaveFeatures', [...data.mustHaveFeatures, newMustHave.trim()]);
-      setNewMustHave("");
-    }
-  };
-
-  const removeMustHaveFeature = (index: number) => {
-    const updated = data.mustHaveFeatures.filter((_, i) => i !== index);
-    updateField('mustHaveFeatures', updated);
-  };
-
-  const addNiceToHaveFeature = () => {
-    if (newNiceToHave.trim() && data.niceToHaveFeatures.length < 10) {
-      updateField('niceToHaveFeatures', [...data.niceToHaveFeatures, newNiceToHave.trim()]);
-      setNewNiceToHave("");
-    }
-  };
-
-  const removeNiceToHaveFeature = (index: number) => {
-    const updated = data.niceToHaveFeatures.filter((_, i) => i !== index);
-    updateField('niceToHaveFeatures', updated);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent, type: 'must' | 'nice') => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (type === 'must') {
-        addMustHaveFeature();
-      } else {
-        addNiceToHaveFeature();
-      }
-    }
-  };
-
   return (
     <div className="space-y-8">
       {/* Must-have Features */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <CheckSquare className="w-5 h-5 text-red-600" />
-          <Label className="text-base font-semibold text-gray-900 font-sans">
+          <Label htmlFor="mustHaveFeatures" className="text-base font-semibold text-gray-900 font-sans">
             Must-have Features *
           </Label>
         </div>
-        
-        {/* Existing Must-have Features */}
-        <div className="space-y-2">
-          {data.mustHaveFeatures.map((feature, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <CheckSquare className="w-4 h-4 text-red-600 flex-shrink-0" />
-              <div className="flex-1 text-gray-900 font-sans">
-                {feature}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeMustHaveFeature(index)}
-                className="text-gray-500 hover:text-red-600"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-
-        {/* Add New Must-have Feature */}
-        {data.mustHaveFeatures.length < 10 && (
-          <div className="flex gap-2">
-            <Input
-              value={newMustHave}
-              onChange={(e) => setNewMustHave(e.target.value)}
-              onKeyPress={(e) => handleKeyPress(e, 'must')}
-              placeholder="e.g., User authentication and login system"
-              className="flex-1 font-sans"
-              maxLength={100}
-            />
-            <Button
-              onClick={addMustHaveFeature}
-              disabled={!newMustHave.trim()}
-              variant="outline"
-              className="font-sans"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-        
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-gray-600 font-sans">
-            Core features essential for your MVP (minimum 1, maximum 10)
-          </p>
+        <Textarea
+          id="mustHaveFeatures"
+          value={data.mustHaveFeatures.join('\n')}
+          onChange={(e) => updateField('mustHaveFeatures', e.target.value.split('\n').filter(feature => feature.trim()))}
+          placeholder="List core features essential for your MVP (one per line)&#10;e.g.:&#10;User authentication and login system&#10;Project creation and management&#10;Task assignment and tracking&#10;Basic notifications"
+          className="min-h-[120px] text-base font-sans resize-none"
+          maxLength={1000}
+        />
+        <div className="flex justify-end">
           <span className="text-xs text-gray-500 font-sans">
-            {data.mustHaveFeatures.length}/10 features
+            {data.mustHaveFeatures.join('\n').length}/1000
           </span>
         </div>
       </div>
 
       {/* Nice-to-have Features */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Square className="w-5 h-5 text-blue-600" />
-          <Label className="text-base font-semibold text-gray-900 font-sans">
+          <Label htmlFor="niceToHaveFeatures" className="text-base font-semibold text-gray-900 font-sans">
             Nice-to-have Features
           </Label>
         </div>
-        
-        {/* Existing Nice-to-have Features */}
-        <div className="space-y-2">
-          {data.niceToHaveFeatures.map((feature, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <Square className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <div className="flex-1 text-gray-900 font-sans">
-                {feature}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeNiceToHaveFeature(index)}
-                className="text-gray-500 hover:text-red-600"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-
-        {/* Add New Nice-to-have Feature */}
-        {data.niceToHaveFeatures.length < 10 && (
-          <div className="flex gap-2">
-            <Input
-              value={newNiceToHave}
-              onChange={(e) => setNewNiceToHave(e.target.value)}
-              onKeyPress={(e) => handleKeyPress(e, 'nice')}
-              placeholder="e.g., Dark mode theme option"
-              className="flex-1 font-sans"
-              maxLength={100}
-            />
-            <Button
-              onClick={addNiceToHaveFeature}
-              disabled={!newNiceToHave.trim()}
-              variant="outline"
-              className="font-sans"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-        
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-gray-600 font-sans">
-            Features that would be valuable but aren&apos;t critical for launch (maximum 10)
-          </p>
+        <Textarea
+          id="niceToHaveFeatures"
+          value={data.niceToHaveFeatures.join('\n')}
+          onChange={(e) => updateField('niceToHaveFeatures', e.target.value.split('\n').filter(feature => feature.trim()))}
+          placeholder="List features that would be valuable but aren't critical for launch (one per line)&#10;e.g.:&#10;Dark mode theme option&#10;Advanced analytics dashboard&#10;Third-party integrations&#10;Mobile app"
+          className="min-h-[100px] text-base font-sans resize-none"
+          maxLength={800}
+        />
+        <div className="flex justify-end">
           <span className="text-xs text-gray-500 font-sans">
-            {data.niceToHaveFeatures.length}/10 features
+            {data.niceToHaveFeatures.join('\n').length}/800
           </span>
         </div>
       </div>
@@ -219,10 +101,7 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
           className="min-h-[100px] text-base font-sans resize-none"
           maxLength={400}
         />
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-gray-600 font-sans">
-            Any technical limitations, budget constraints, compliance requirements, or deadlines
-          </p>
+        <div className="flex justify-end">
           <span className="text-xs text-gray-500 font-sans">
             {(data.constraints || "").length}/400
           </span>
@@ -258,62 +137,9 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
             </div>
           ))}
         </div>
-        
-        <p className="text-sm text-gray-600 font-sans">
-          Choose the framework you&apos;d like to use for prioritizing features in your documentation
-        </p>
       </div>
 
-      {/* Feature Examples */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <h4 className="font-semibold text-green-900 font-sans mb-2 flex items-center gap-2">
-          <CheckSquare className="w-4 h-4" />
-          Feature Examples
-        </h4>
-        <div className="space-y-3 text-sm">
-          <div>
-            <span className="font-medium text-green-800 font-sans">Must-have:</span>
-            <span className="text-green-700 font-sans ml-1">
-              &quot;User registration, project creation, task assignment, basic notifications&quot;
-            </span>
-          </div>
-          <div>
-            <span className="font-medium text-green-800 font-sans">Nice-to-have:</span>
-            <span className="text-green-700 font-sans ml-1">
-              &quot;Advanced analytics, custom themes, third-party integrations, mobile app&quot;
-            </span>
-          </div>
-          <div>
-            <span className="font-medium text-green-800 font-sans">Constraints:</span>
-            <span className="text-green-700 font-sans ml-1">
-              &quot;Must work on mobile devices, integrate with Slack, comply with SOC 2, launch by Q3&quot;
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* Validation Summary */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="font-semibold text-gray-900 font-sans mb-2">Step 5 Progress</h4>
-        <div className="space-y-1 text-sm">
-          <div className={`flex items-center gap-2 ${data.mustHaveFeatures.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
-            <div className={`w-2 h-2 rounded-full ${data.mustHaveFeatures.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`} />
-            Must-have features defined ({data.mustHaveFeatures.length})
-          </div>
-          <div className={`flex items-center gap-2 text-green-600`}>
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            Nice-to-have features listed ({data.niceToHaveFeatures.length})
-          </div>
-          <div className={`flex items-center gap-2 text-green-600`}>
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            Constraints documented (optional)
-          </div>
-          <div className={`flex items-center gap-2 ${data.prioritizationMethod ? 'text-green-600' : 'text-gray-500'}`}>
-            <div className={`w-2 h-2 rounded-full ${data.prioritizationMethod ? 'bg-green-500' : 'bg-gray-300'}`} />
-            Prioritization method selected
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

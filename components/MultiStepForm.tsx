@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, CheckCircle, Save, AlertCircle, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { ProductManagerFormData } from "@/types";
 import { useToast } from "@/lib/hooks/use-toast";
 
@@ -403,24 +403,13 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
                 </div>
               )}
 
-              {/* Manual save button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleManualSave}
-                className="font-sans"
-              >
-                <Save className="w-3 h-3 mr-1" />
-                Save
-              </Button>
-
               <div className="text-sm text-gray-600 font-sans">
                 Step {currentStep} of 5
               </div>
             </div>
           </div>
 
-          <Progress value={progress} className="mb-6" />
+          <Progress value={progress} className="mb-6 h-1" />
 
           {/* Step Navigation - Mobile Responsive */}
           <div className="flex items-center justify-between overflow-x-auto pb-2">
@@ -469,17 +458,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
           </div>
         </div>
 
-        {/* Validation Summary - Only show after user interaction */}
-        {hasUserInteracted && (
-          <div className="mb-6">
-            <ValidationSummary
-              totalErrors={fullValidation.totalErrors}
-              totalWarnings={fullValidation.totalWarnings}
-              completedSteps={completedSteps.size}
-              totalSteps={5}
-            />
-          </div>
-        )}
+
 
         {/* Form Content */}
         <Card className="shadow-sm border-0">
@@ -500,12 +479,12 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
         </Card>
 
         {/* Navigation Buttons - Mobile Responsive */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
+        <div className="flex justify-between gap-3 mt-8">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1 || isSubmitting}
-            className="font-sans w-full sm:w-auto"
+            className="font-sans flex-1 max-w-[120px] sm:max-w-none sm:flex-none"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Previous
@@ -515,7 +494,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
             <Button
               onClick={handleNext}
               disabled={!isStepValid(currentStep) || isSubmitting}
-              className="font-sans text-white w-full sm:w-auto"
+              className="font-sans text-white flex-1 max-w-[120px] sm:max-w-none sm:flex-none"
               style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}
             >
               Next
@@ -525,7 +504,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
             <Button
               onClick={handleSubmit}
               disabled={!fullValidation.isValid || isSubmitting}
-              className="font-sans text-white w-full sm:w-auto"
+              className="font-sans text-white flex-1 max-w-[180px] sm:max-w-none sm:flex-none"
               style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}
             >
               {isSubmitting ? 'Generating...' : 'Generate Documents'}
