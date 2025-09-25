@@ -1,5 +1,6 @@
 // lib/webhook.ts - N8N Webhook Integration
 
+import { env } from '@/lib/env';
 import { ProjectSpec, ProductManagerFormData } from '@/types';
 import V2DocumentPrompts from './prompts/v2-document-prompts';
 
@@ -24,7 +25,7 @@ export interface ProjectGenerationRequest {
 }
 
 // N8N Webhook Configuration
-const N8N_WEBHOOK_URL = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/generate-docs';
+const N8N_WEBHOOK_URL = env.N8N_WEBHOOK_URL;
 
 /**
  * Submit a project for documentation generation
@@ -37,10 +38,6 @@ export async function submitProjectGeneration(request: ProjectGenerationRequest 
     // Validate required fields
     if (!request.projectId) {
       throw new Error('Project ID is required for webhook submission');
-    }
-
-    if (!N8N_WEBHOOK_URL) {
-      throw new Error('Webhook URL is not configured. Please check your environment variables.');
     }
 
     console.log('🚀 Submitting project to webhook...');

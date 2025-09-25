@@ -5,10 +5,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    // It's recommended to disable this for production builds
+    // to ensure code quality.
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    // It's recommended to disable this for production builds
+    // to ensure type safety.
+    ignoreBuildErrors: false,
   },
   turbopack: {
     resolveAlias: {

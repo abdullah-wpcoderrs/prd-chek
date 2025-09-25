@@ -198,7 +198,7 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
 
 // Helper function to test webhook connectivity
 async function testWebhookConnectivity(): Promise<void> {
-  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
   
   if (!webhookUrl) {
     throw new Error('Webhook URL not configured');
