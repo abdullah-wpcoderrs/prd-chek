@@ -331,26 +331,61 @@ export async function updateProject(
     target_platform?: string;
   }
 ): Promise<{ success: boolean }> {
-  const userId = await getAuthenticatedUser();
-  const supabase = await createSupabaseServerClient();
+  try {
+    const userId = await getAuthenticatedUser();
+    const supabase = await createSupabaseServerClient();
 
-  // Project update logging removed for security
+    // First, verify that the project exists and belongs to the user
+    const { data: project, error: fetchError } = await supabase
+      .from('projects')
+      .select('id, user_id')
+      .eq('id', projectId)
+      .eq('user_id', userId)
+      .single();
 
-  const { error } = await supabase
-    .from('projects')
-    .update(data)
-    .eq('id', projectId)
-    .eq('user_id', userId); // Ensure user can only update their own projects
+    if (fetchError) {
+      console.error('❌ Error fetching project for verification:', fetchError);
+      if (fetchError.code === 'PGRST116') {
+        throw new Error('Project not found or you do not have permission to edit this project');
+      }
+      throw new Error(`Failed to verify project: ${fetchError.message}`);
+    }
 
-  if (error) {
-    console.error('❌ Error updating project:', error);
-    throw new Error(`Failed to update project: ${error.message}`);
+    if (!project) {
+      throw new Error('Project not found or you do not have permission to edit this project');
+    }
+
+    // Proceed with the update - only update the fields that are provided
+    // and explicitly exclude any fields that might trigger validation errors
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString()
+    };
+    
+    // Only add the fields that are provided in the data parameter
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.tech_stack !== undefined) updateData.tech_stack = data.tech_stack;
+    if (data.target_platform !== undefined) updateData.target_platform = data.target_platform;
+
+    const { error: updateError } = await supabase
+      .from('projects')
+      .update(updateData)
+      .eq('id', projectId)
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('❌ Error updating project:', updateError);
+      throw new Error(`Failed to update project: ${updateError.message}`);
+    }
+
+    console.log('✅ Project updated successfully');
+
+    revalidatePath('/projects');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error in updateProject function:', error);
+    throw error;
   }
-
-  console.log('✅ Project updated successfully');
-
-  revalidatePath('/projects');
-  return { success: true };
 }
 
 export async function deleteProject(projectId: string): Promise<{ success: boolean }> {

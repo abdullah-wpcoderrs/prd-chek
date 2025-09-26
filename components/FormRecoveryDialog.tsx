@@ -169,15 +169,7 @@ export function FormRecoveryDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isRestoring}
-            className="font-sans"
-          >
-            Cancel
-          </Button>
+        <DialogFooter className="flex justify-between sm:justify-between">
           <Button
             variant="outline"
             onClick={onDiscard}

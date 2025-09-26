@@ -299,15 +299,23 @@ export default function ProjectsPage() {
     setUpdatingProjectId(projectToEdit.id);
 
     try {
-      await updateProject(projectToEdit.id, editForm);
-      toast({
-        title: "Project updated",
-        description: `"${editForm.name}" has been successfully updated.`,
-        variant: "default",
-      });
+      const result = await updateProject(projectToEdit.id, editForm);
+      if (result.success) {
+        toast({
+          title: "Project updated",
+          description: `"${editForm.name}" has been successfully updated.`,
+          variant: "default",
+        });
 
-      setEditDialogOpen(false);
-      setProjectToEdit(null);
+        // Close the dialog and clear the project to edit
+        setEditDialogOpen(false);
+        setProjectToEdit(null);
+
+        // Refresh the entire page to show updated data
+        window.location.reload();
+      } else {
+        throw new Error("Update was not successful");
+      }
     } catch (error) {
       console.error('Error updating project:', error);
       toast({
