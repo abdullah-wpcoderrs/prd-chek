@@ -101,11 +101,7 @@ export async function createProjectAndStartGeneration(data: CreateProjectDataV2)
         target_platform: data.targetPlatform || 'web',
         status: 'pending',
         progress: 0,
-        current_step: 'Initializing project',
-        // Store the complete form data as JSON
-        form_data: data.formData,
-        // Mark as v2 project
-        project_version: 'v2'
+        current_step: 'Initializing project'
       }])
       .select()
       .single();
