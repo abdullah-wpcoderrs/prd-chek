@@ -3,7 +3,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ValueVision } from "@/types";
-import { Heart, Eye, BarChart3 } from "lucide-react";
+import { Heart, Eye } from "lucide-react";
 
 interface FormStep4ValueVisionProps {
   data: ValueVision;
@@ -66,29 +66,7 @@ export function FormStep4ValueVision({ data, onUpdate }: FormStep4ValueVisionPro
         </div>
       </div>
 
-      {/* Success Metric Example */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-green-600" />
-          <Label htmlFor="successMetric" className="text-base font-semibold text-gray-900 font-sans">
-            Success Metric Example
-            <span className="text-sm font-normal text-gray-500 ml-2">(Optional)</span>
-          </Label>
-        </div>
-        <Textarea
-          id="successMetric"
-          value={data.successMetric || ""}
-          onChange={(e) => updateField('successMetric', e.target.value)}
-          placeholder="e.g., Increase team project completion rate by 40% within 6 months, or achieve 90% user retention after 3 months, or reduce project planning time from 4 hours to 1 hour per week."
-          className="min-h-[80px] text-base font-sans resize-none"
-          maxLength={200}
-        />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {(data.successMetric || "").length}/200
-          </span>
-        </div>
-      </div>
+
 
 
     </div>

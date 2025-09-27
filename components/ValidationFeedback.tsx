@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle } from "lucide-react";
-import { ValidationError } from "@/lib/utils/form-validation";
+import { ValidationError } from "@/lib/utils/form-validation-new";
 
 interface ValidationFeedbackProps {
   errors?: ValidationError[];

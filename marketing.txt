@@ -1,0 +1,105 @@
+prd-chek: Marketing Strategy & Playbook
+
+1. Competitive Analysis
+
+Overview of the Market
+The market for AI-powered product documentation tools is rapidly growing. Businesses are increasingly looking for ways to automate tedious tasks, improve efficiency, and ensure alignment across their teams. The primary value proposition of these tools is to reduce the time and effort required to create comprehensive and well-structured product documents, such as Product Requirements Documents (PRDs), Business Requirements Documents (BRDs), and technical specifications.
+
+Key Competitors
+Based on current market research, the key competitors in the AI PRD generation space include:
+
+Feedough AI PRD Generator: A simple tool that creates PRDs from basic product details.
+
+PRD Agent by Leanware: Uses OpenAI's GPT models to generate detailed PRDs.
+
+QuillBot's AI PRD Generator: Focuses on capturing goals, requirements, and user stories.
+
+ChatPRD: An AI copilot for product management that helps draft, refine, and update PRDs.
+
+Chisel Labs: An AI agent that auto-generates initial drafts and summarizes user feedback.
+
+Notion AI: Integrated within the Notion platform, offering dynamic documentation and collaboration features.
+
+Leiga AI-Powered PRD Writing Tool: Aims to significantly reduce the time spent on PRD writing.
+
+prd-chek’s Competitive Advantages (The "So What?")
+While the market has several players, prd-chek can differentiate itself by focusing on tangible business outcomes and a superior workflow.
+
+Focus on Business Outcomes, Not Just Features: While competitors focus on "generating PRDs," prd-chek's messaging will focus on what that means for the business: cost reduction, increased efficiency, and a stronger competitive position.
+
+Comprehensive Document Suite: prd-chek doesn't just generate PRDs. It creates a full suite of documents (BRDs, TRDs, etc.), providing value across the entire product lifecycle, from ideation to launch. This is a significant advantage over tools that only focus on a single document type.
+
+Deep Workflow Integration: The multi-step form is a key differentiator. It guides the user through a structured thinking process, ensuring that the generated documents are not just well-formatted, but also well-conceived. This is more valuable than a simple text prompt.
+
+Customizable & High-Quality Templates: The use of templates ensures a high-quality, consistent output that can be tailored to different industries and use cases.
+
+Direct Link to Cost Reduction & Efficiency: The core marketing message will be directly tied to saving money and shipping faster. This is a message that resonates with business leaders.
+
+2. Marketing Communication Playbook
+
+Target Audience
+
+Primary: Product Managers, Project Managers, Startup Founders
+
+Secondary: Business Analysts, Engineering Managers, VCs and Investors
+
+Core Messaging (The "Why")
+
+"Stop wasting time on tedious documentation. Start shipping faster."
+
+"Translate your vision into actionable documents that drive results."
+
+"Reduce ambiguity, align your team, and build better products."
+
+Key Talking Points (The "How")
+
+For Product Managers: Generate comprehensive PRDs, BRDs, and more in minutes, not hours. prd-chek’s intelligent multi-step form guides you through the process, ensuring you cover all the critical details. Free up your time for strategic thinking and customer discovery.
+
+For Startup Founders: Go from idea to a full suite of investor-ready documents instantly. prd-chek helps you create a compelling business case, a clear product vision, and a detailed roadmap. Impress stakeholders and accelerate your funding process.
+
+For Business Analysts: Create detailed BRDs that bridge the gap between business needs and technical requirements. prd-chek ensures that your business objectives are clearly translated into functional specifications, reducing the risk of miscommunication and rework.
+
+Business Outcomes to Emphasize
+
+Cost Reduction: Your most valuable resource is your team's time. prd-chek can reduce the man-hours spent on documentation by up to 80%. Re-allocate your team to what they do best: building great products.
+
+Increased Efficiency: The cost of a slow product development lifecycle is immense. prd-chek helps you accelerate every stage, from ideation to launch. Get to market faster and start generating revenue sooner.
+
+Improved Alignment: Misalignment is the silent killer of product success. prd-chek creates a single source of truth for your entire team, ensuring that engineering, marketing, and sales are all working towards the same goals.
+
+Competitive Leverage: In today's market, speed is everything. prd-chek gives you the agility to out-maneuver your competition by enabling you to move from idea to execution faster and with greater clarity.
+
+3. LinkedIn Marketing Guide
+
+Content Strategy
+The goal is to establish prd-chek as a thought leader in the product management space, with a focus on efficiency and business outcomes.
+
+Problem-Awareness Posts: Focus on the pain of manual documentation. Use questions to drive engagement (e.g., "What's the most time-consuming part of your product planning process?"). Share statistics on the cost of inefficient workflows.
+
+Solution-Oriented Posts: Introduce prd-chek as the solution. Use short video demos to showcase the product in action. Highlight the multi-step form and the comprehensive document suite.
+
+Business Outcome Posts: Share case studies (even hypothetical ones to start) of how prd-chek can impact a business (e.g., "How a SaaS startup can save $50,000 in engineering costs with prd-chek"). Focus on the ROI of using the tool.
+
+Behind-the-Scenes: Share the story of why prd-chek was built. Talk about the challenges and learnings of building a SaaS product.
+
+Engagement Strategy
+
+Targeted Outreach: Connect with individuals who have "Product Manager," "Project Manager," or "Founder" in their title. Send a personalized connection request, e.g., "Hi [Name], I saw you're a Product Manager at [Company]. I'm building a tool to help PMs automate their documentation and would love to connect and get your feedback."
+
+Participate in Groups: Join groups like "Product Management Community," "SaaS Founders," and "Agile and Scrum." Provide value by answering questions and participating in discussions. Do not just spam the group with links to prd-chek.
+
+Use Relevant Hashtags: #productmanagement #prd #saas #startup #ai #costreduction #efficiency #competitiveadvantage
+
+Example LinkedIn Posts
+
+Post 1 (Problem):
+The average Product Manager spends over 10 hours a week on documentation. That's 10 hours that could be spent talking to customers, analyzing data, or planning the next big feature. What if you could get that time back? #productmanagement #efficiency
+
+Post 2 (Solution):
+I got tired of the documentation treadmill, so I built prd-chek. It's an AI-powered tool that generates a full suite of product documents (PRDs, BRDs, and more) from a simple, guided form.
+Spend less time writing, more time building.
+Check it out (link in bio). #ai #saas #prd #productmanager
+
+Post 3 (Business Outcome):
+Your engineers' time is too valuable to be wasted on unclear requirements. prd-chek helps you create crystal-clear documents that reduce ambiguity and keep your team shipping.
+The result? Faster development cycles, lower costs, and a stronger competitive advantage. #costreduction #competitiveadvantage #startup

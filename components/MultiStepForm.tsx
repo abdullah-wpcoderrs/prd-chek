@@ -27,7 +27,7 @@ import {
   validateStep5,
   validateEntireForm,
   StepValidationResult
-} from "@/lib/utils/form-validation";
+} from "@/lib/utils/form-validation-new";
 
 interface MultiStepFormProps {
   onSubmit: (data: ProductManagerFormData) => void;
@@ -37,9 +37,9 @@ interface MultiStepFormProps {
 
 const STEPS = [
   { id: 1, title: "Product Basics", description: "Core product information" },
-  { id: 2, title: "Users & Problems", description: "Target users and pain points" },
-  { id: 3, title: "Market Context", description: "Competitive landscape" },
-  { id: 4, title: "Value & Vision", description: "Value proposition and vision" },
+  { id: 2, title: "Value & Vision", description: "Value proposition and vision" },
+  { id: 3, title: "Users & Problems", description: "Target users and pain points" },
+  { id: 4, title: "Market Context", description: "Competitive landscape" },
   { id: 5, title: "Requirements & Planning", description: "Features and planning" },
 ];
 
@@ -62,21 +62,19 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
       productPitch: "",
       industry: "",
       currentStage: "",
+      differentiation: "",
     },
     step2: {
+      valueProposition: "",
+      productVision: "",
+    },
+    step3: {
       targetUsers: "",
       painPoints: [],
       primaryJobToBeDone: "",
     },
-    step3: {
-      competitors: [],
-      differentiation: "",
-      marketTrend: "",
-    },
     step4: {
-      valueProposition: "",
-      productVision: "",
-      successMetric: "",
+      competitors: [],
     },
     step5: {
       mustHaveFeatures: [],
@@ -86,26 +84,30 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     },
   });
 
-  // Helper function to check if there are unsaved changes
-  const hasUnsavedChanges = useCallback((): boolean => {
+  // Helper function to check if form data is empty
+  const isFormDataEmpty = (data: ProductManagerFormData): boolean => {
     const emptyForm = {
-      step1: { productName: "", productPitch: "", industry: "", currentStage: "" as const },
-      step2: { targetUsers: "", painPoints: [], primaryJobToBeDone: "" },
-      step3: { competitors: [], differentiation: "", marketTrend: "" },
-      step4: { valueProposition: "", productVision: "", successMetric: "" },
+      step1: { productName: "", productPitch: "", industry: "", currentStage: "" as const, differentiation: "" },
+      step2: { valueProposition: "", productVision: "" },
+      step3: { targetUsers: "", painPoints: [], primaryJobToBeDone: "" },
+      step4: { competitors: [] },
       step5: { mustHaveFeatures: [], niceToHaveFeatures: [], constraints: "", prioritizationMethod: "RICE" as const }
     };
+    return JSON.stringify(data) === JSON.stringify(emptyForm);
+  };
 
-    return JSON.stringify(formData) !== JSON.stringify(emptyForm);
+  // Helper function to check if there are unsaved changes
+  const hasUnsavedChanges = useCallback((): boolean => {
+    return !isFormDataEmpty(formData);
   }, [formData]);
 
   // Update validation and completion status
   const updateValidationAndCompletion = useCallback((data: ProductManagerFormData) => {
     const results = {
       step1: validateStep1(data.step1),
-      step2: validateStep2(data.step2),
-      step3: validateStep3(data.step3),
-      step4: validateStep4(data.step4),
+      step2: validateStep2(data.step2), // step2 is now ValueVision
+      step3: validateStep3(data.step3), // step3 is now UsersProblems  
+      step4: validateStep4(data.step4), // step4 is now MarketContext
       step5: validateStep5(data.step5)
     };
 
@@ -122,12 +124,12 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   }, []);
 
   // Form persistence hook
-  const { saveNow, clearSavedData, hasSavedData, loadFromStorage } = useFormPersistence({
+  const { saveNow, clearSavedData } = useFormPersistence({
     key: 'prd-chek-form-data',
     data: formData,
     autoSaveInterval: 30000, // 30 seconds
     onRestore: (data) => {
-      if (!hasRestoredRef.current && !initialData) {
+      if (!hasRestoredRef.current && !initialData && !isFormDataEmpty(data)) {
         setSavedFormData(data);
         setSavedTimestamp(Date.now());
         setShowRecoveryDialog(true);
@@ -136,18 +138,7 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
     }
   });
 
-  // Check for saved data on mount (only once)
-  useEffect(() => {
-    if (!hasRestoredRef.current && hasSavedData() && !initialData) {
-      const saved = loadFromStorage();
-      if (saved) {
-        setSavedFormData(saved);
-        setSavedTimestamp(Date.now());
-        setShowRecoveryDialog(true);
-        hasRestoredRef.current = true;
-      }
-    }
-  }, [hasSavedData, initialData, loadFromStorage]);
+
 
   // Update form data when initialData changes
   useEffect(() => {
@@ -338,21 +329,21 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
         );
       case 2:
         return (
-          <FormStep2UsersProblems
+          <FormStep4ValueVision
             data={formData.step2}
             onUpdate={(data) => updateStepData('step2', data)}
           />
         );
       case 3:
         return (
-          <FormStep3MarketContext
+          <FormStep2UsersProblems
             data={formData.step3}
             onUpdate={(data) => updateStepData('step3', data)}
           />
         );
       case 4:
         return (
-          <FormStep4ValueVision
+          <FormStep3MarketContext
             data={formData.step4}
             onUpdate={(data) => updateStepData('step4', data)}
           />
@@ -372,7 +363,6 @@ export function MultiStepForm({ onSubmit, isSubmitting = false, initialData }: M
   const progress = (currentStep / 5) * 100;
   const currentStepValidation = validationResults[`step${currentStep}` as keyof typeof validationResults];
   const fullValidation = validateEntireForm(formData);
-
   return (
     <>
       {/* Recovery Dialog */}

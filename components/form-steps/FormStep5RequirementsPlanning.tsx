@@ -53,13 +53,7 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
           onChange={(e) => updateField('mustHaveFeatures', e.target.value.split('\n').filter(feature => feature.trim()))}
           placeholder="List core features essential for your MVP (one per line)&#10;e.g.:&#10;User authentication and login system&#10;Project creation and management&#10;Task assignment and tracking&#10;Basic notifications"
           className="min-h-[120px] text-base font-sans resize-none"
-          maxLength={1000}
         />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {data.mustHaveFeatures.join('\n').length}/1000
-          </span>
-        </div>
       </div>
 
       {/* Nice-to-have Features */}
@@ -76,13 +70,7 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
           onChange={(e) => updateField('niceToHaveFeatures', e.target.value.split('\n').filter(feature => feature.trim()))}
           placeholder="List features that would be valuable but aren't critical for launch (one per line)&#10;e.g.:&#10;Dark mode theme option&#10;Advanced analytics dashboard&#10;Third-party integrations&#10;Mobile app"
           className="min-h-[100px] text-base font-sans resize-none"
-          maxLength={800}
         />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {data.niceToHaveFeatures.join('\n').length}/800
-          </span>
-        </div>
       </div>
 
       {/* Technical or Business Constraints */}
@@ -100,13 +88,7 @@ export function FormStep5RequirementsPlanning({ data, onUpdate }: FormStep5Requi
           onChange={(e) => updateField('constraints', e.target.value)}
           placeholder="e.g., Must integrate with existing Salesforce system, GDPR compliance required, mobile-first design mandatory, budget limit of $50k, launch deadline of Q2 2024..."
           className="min-h-[100px] text-base font-sans resize-none"
-          maxLength={400}
         />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {(data.constraints || "").length}/400
-          </span>
-        </div>
       </div>
 
       {/* Prioritization Method */}

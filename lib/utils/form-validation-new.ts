@@ -44,44 +44,37 @@ const VALIDATION_RULES: { [key: string]: ValidationRule } = {
   currentStage: {
     required: true
   },
+  differentiation: {
+    required: true,
+    minLength: 20
+  },
   targetUsers: {
     required: true,
-    minLength: 10,
-    maxLength: 300
+    minLength: 10
   },
   primaryJobToBeDone: {
     required: true,
-    minLength: 10,
-    maxLength: 200
+    minLength: 10
   },
   painPoints: {
     required: true,
     minItems: 1,
     maxItems: 10,
-    itemMinLength: 5,
-    itemMaxLength: 100
-  },
-  differentiation: {
-    required: true,
-    minLength: 20,
-    maxLength: 400
+    itemMinLength: 5
   },
   valueProposition: {
     required: true,
-    minLength: 20,
-    maxLength: 300
+    minLength: 20
   },
   productVision: {
     required: true,
-    minLength: 20,
-    maxLength: 400
+    minLength: 20
   },
   mustHaveFeatures: {
     required: true,
     minItems: 1,
     maxItems: 20,
-    itemMinLength: 3,
-    itemMaxLength: 100
+    itemMinLength: 3
   },
   prioritizationMethod: {
     required: true
@@ -192,7 +185,7 @@ function validateField(value: unknown, rules: ValidationRule, fieldName: string)
   return errors;
 }
 
-// Step 1 validation
+// Step 1 validation (ProductBasics - now includes differentiation)
 export function validateStep1(data: ProductBasics): StepValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
@@ -202,6 +195,7 @@ export function validateStep1(data: ProductBasics): StepValidationResult {
   errors.push(...validateField(data.productPitch, VALIDATION_RULES.productPitch, 'productPitch'));
   errors.push(...validateField(data.industry, VALIDATION_RULES.industry, 'industry'));
   errors.push(...validateField(data.currentStage, VALIDATION_RULES.currentStage, 'currentStage'));
+  errors.push(...validateField(data.differentiation, VALIDATION_RULES.differentiation, 'differentiation'));
 
   // Custom validations
   if (data.productName && data.productPitch && 
@@ -220,8 +214,35 @@ export function validateStep1(data: ProductBasics): StepValidationResult {
   };
 }
 
-// Step 2 validation
-export function validateStep2(data: UsersProblems): StepValidationResult {
+// Step 2 validation (ValueVision - moved from step 4)
+export function validateStep2(data: ValueVision): StepValidationResult {
+  const errors: ValidationError[] = [];
+  const warnings: ValidationError[] = [];
+
+  errors.push(...validateField(data.valueProposition, VALIDATION_RULES.valueProposition, 'valueProposition'));
+  errors.push(...validateField(data.productVision, VALIDATION_RULES.productVision, 'productVision'));
+
+  // Check if value proposition and vision are too similar
+  if (data.valueProposition && data.productVision) {
+    const similarity = calculateStringSimilarity(data.valueProposition, data.productVision);
+    if (similarity > 0.8) {
+      warnings.push({
+        field: 'productVision',
+        message: 'Product vision should be distinct from the value proposition',
+        type: 'custom'
+      });
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
+// Step 3 validation (UsersProblems - moved from step 2)
+export function validateStep3(data: UsersProblems): StepValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
 
@@ -230,7 +251,7 @@ export function validateStep2(data: UsersProblems): StepValidationResult {
   errors.push(...validateField(data.painPoints, VALIDATION_RULES.painPoints, 'painPoints'));
 
   // Check for duplicate pain points
-  const uniquePainPoints = new Set(data.painPoints.map(p => p.toLowerCase().trim()));
+  const uniquePainPoints = new Set(data.painPoints.map((p: string) => p.toLowerCase().trim()));
   if (uniquePainPoints.size < data.painPoints.length) {
     warnings.push({
       field: 'painPoints',
@@ -246,14 +267,12 @@ export function validateStep2(data: UsersProblems): StepValidationResult {
   };
 }
 
-// Step 3 validation
-export function validateStep3(data: MarketContext): StepValidationResult {
+// Step 4 validation (MarketContext - moved from step 3, only competitors)
+export function validateStep4(data: MarketContext): StepValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
 
-  errors.push(...validateField(data.differentiation, VALIDATION_RULES.differentiation, 'differentiation'));
-
-  // Validate competitors
+  // Validate competitors (optional)
   if (data.competitors.length > 10) {
     warnings.push({
       field: 'competitors',
@@ -263,37 +282,12 @@ export function validateStep3(data: MarketContext): StepValidationResult {
   }
 
   // Check for duplicate competitors
-  const uniqueCompetitors = new Set(data.competitors.map(c => c.name.toLowerCase().trim()));
-  if (uniqueCompetitors.size < data.competitors.length) {
-    warnings.push({
-      field: 'competitors',
-      message: 'Some competitors appear to be duplicates',
-      type: 'custom'
-    });
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-}
-
-// Step 4 validation
-export function validateStep4(data: ValueVision): StepValidationResult {
-  const errors: ValidationError[] = [];
-  const warnings: ValidationError[] = [];
-
-  errors.push(...validateField(data.valueProposition, VALIDATION_RULES.valueProposition, 'valueProposition'));
-  errors.push(...validateField(data.productVision, VALIDATION_RULES.productVision, 'productVision'));
-
-  // Check if value proposition and vision are too similar
-  if (data.valueProposition && data.productVision) {
-    const similarity = calculateStringSimilarity(data.valueProposition, data.productVision);
-    if (similarity > 0.8) {
+  if (data.competitors.length > 0) {
+    const uniqueCompetitors = new Set(data.competitors.map(c => c.name.toLowerCase().trim()));
+    if (uniqueCompetitors.size < data.competitors.length) {
       warnings.push({
-        field: 'productVision',
-        message: 'Product vision should be distinct from the value proposition',
+        field: 'competitors',
+        message: 'Some competitors appear to be duplicates',
         type: 'custom'
       });
     }
@@ -351,11 +345,11 @@ export function validateEntireForm(data: ProductManagerFormData): {
   totalWarnings: number;
 } {
   const stepResults = {
-    step1: validateStep1(data.step1),
-    step2: validateStep2(data.step2),
-    step3: validateStep3(data.step3),
-    step4: validateStep4(data.step4),
-    step5: validateStep5(data.step5)
+    step1: validateStep1(data.step1), // ProductBasics
+    step2: validateStep2(data.step2), // ValueVision
+    step3: validateStep3(data.step3), // UsersProblems
+    step4: validateStep4(data.step4), // MarketContext
+    step5: validateStep5(data.step5)  // RequirementsPlanning
   };
 
   const totalErrors = Object.values(stepResults).reduce((sum, result) => sum + result.errors.length, 0);

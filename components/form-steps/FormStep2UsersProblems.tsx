@@ -34,13 +34,7 @@ export function FormStep2UsersProblems({ data, onUpdate }: FormStep2UsersProblem
           onChange={(e) => updateField('targetUsers', e.target.value)}
           placeholder="e.g., Remote software development teams of 5-50 people, project managers in tech startups, freelance developers who work with multiple clients..."
           className="min-h-[120px] text-base font-sans resize-none"
-          maxLength={500}
         />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {data.targetUsers.length}/500
-          </span>
-        </div>
       </div>
 
       {/* Top Pain Points */}
@@ -57,13 +51,7 @@ export function FormStep2UsersProblems({ data, onUpdate }: FormStep2UsersProblem
           onChange={(e) => updateField('painPoints', e.target.value.split('\n').filter(point => point.trim()))}
           placeholder="List the main problems or frustrations your users currently experience (one per line)&#10;e.g.:&#10;Lost customer data&#10;Missed follow-ups&#10;Time-consuming manual data entry"
           className="min-h-[120px] text-base font-sans resize-none"
-          maxLength={750}
         />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {data.painPoints.join('\n').length}/750
-          </span>
-        </div>
       </div>
 
       {/* Primary Job-To-Be-Done */}
@@ -80,16 +68,8 @@ export function FormStep2UsersProblems({ data, onUpdate }: FormStep2UsersProblem
           onChange={(e) => updateField('primaryJobToBeDone', e.target.value)}
           placeholder="e.g., Help remote teams coordinate project tasks efficiently while maintaining clear visibility into project progress and deadlines."
           className="min-h-[80px] text-base font-sans resize-none"
-          maxLength={200}
         />
-        <div className="flex justify-end">
-          <span className="text-xs text-gray-500 font-sans">
-            {data.primaryJobToBeDone.length}/200
-          </span>
-        </div>
       </div>
-
-
     </div>
   );
 }

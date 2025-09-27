@@ -13,21 +13,19 @@ export function FormPersistenceTest() {
       productPitch: "This is a test product pitch",
       industry: "Technology",
       currentStage: "idea",
+      differentiation: "Test differentiation",
     },
     step2: {
+      valueProposition: "Test value proposition",
+      productVision: "Test product vision",
+    },
+    step3: {
       targetUsers: "Test users",
       painPoints: ["Test pain point 1", "Test pain point 2"],
       primaryJobToBeDone: "Test job to be done",
     },
-    step3: {
-      competitors: [{ name: "Competitor 1", note: "Test note" }],
-      differentiation: "Test differentiation",
-      marketTrend: "Test market trend",
-    },
     step4: {
-      valueProposition: "Test value proposition",
-      productVision: "Test product vision",
-      successMetric: "Test success metric",
+      competitors: [{ name: "Competitor 1", note: "Test note" }],
     },
     step5: {
       mustHaveFeatures: ["Feature 1", "Feature 2"],

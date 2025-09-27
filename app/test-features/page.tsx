@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { FormPersistenceTest } from "@/components/test/FormPersistenceTest";
 import { ValidationFeedback, FieldValidation, ValidationSummary } from "@/components/ValidationFeedback";
-import { validateStep1, validateStep2 } from "@/lib/utils/form-validation";
+import { validateStep1, validateStep3 } from "@/lib/utils/form-validation-new";
 import { ProductBasics, UsersProblems } from '@/types';
 
 export default function TestFeaturesPage() {
@@ -17,33 +17,34 @@ export default function TestFeaturesPage() {
     productPitch: "",
     industry: "",
     currentStage: "",
+    differentiation: "",
   });
 
-  const [step2Data, setStep2Data] = useState<UsersProblems>({
+  const [step3Data, setStep3Data] = useState<UsersProblems>({
     targetUsers: "",
     painPoints: [],
     primaryJobToBeDone: "",
   });
 
   const step1Validation = validateStep1(step1Data);
-  const step2Validation = validateStep2(step2Data);
+  const step3Validation = validateStep3(step3Data);
 
   const addPainPoint = () => {
-    setStep2Data(prev => ({
+    setStep3Data(prev => ({
       ...prev,
       painPoints: [...prev.painPoints, ""]
     }));
   };
 
   const updatePainPoint = (index: number, value: string) => {
-    setStep2Data(prev => ({
+    setStep3Data(prev => ({
       ...prev,
       painPoints: prev.painPoints.map((point, i) => i === index ? value : point)
     }));
   };
 
   const removePainPoint = (index: number) => {
-    setStep2Data(prev => ({
+    setStep3Data(prev => ({
       ...prev,
       painPoints: prev.painPoints.filter((_, i) => i !== index)
     }));
@@ -72,9 +73,9 @@ export default function TestFeaturesPage() {
           <div>
             <h2 className="text-2xl font-bold mb-4">Validation Test</h2>
             <ValidationSummary
-              totalErrors={step1Validation.errors.length + step2Validation.errors.length}
-              totalWarnings={step1Validation.warnings.length + step2Validation.warnings.length}
-              completedSteps={[step1Validation.isValid, step2Validation.isValid].filter(Boolean).length}
+              totalErrors={step1Validation.errors.length + step3Validation.errors.length}
+              totalWarnings={step1Validation.warnings.length + step3Validation.warnings.length}
+              completedSteps={[step1Validation.isValid, step3Validation.isValid].filter(Boolean).length}
               totalSteps={2}
             />
           </div>
@@ -146,14 +147,14 @@ export default function TestFeaturesPage() {
           </Card>
         </div>
 
-        {/* Step 2 Validation Test */}
+        {/* Step 3 Validation Test */}
         <div className="mt-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                Step 2 Validation Test (Array Validation)
-                <Badge variant={step2Validation.isValid ? "default" : "destructive"}>
-                  {step2Validation.isValid ? "Valid" : "Invalid"}
+                Step 3 Validation Test (Array Validation)
+                <Badge variant={step3Validation.isValid ? "default" : "destructive"}>
+                  {step3Validation.isValid ? "Valid" : "Invalid"}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -161,15 +162,15 @@ export default function TestFeaturesPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Target Users</label>
                 <Textarea
-                  value={step2Data.targetUsers}
-                  onChange={(e) => setStep2Data(prev => ({ ...prev, targetUsers: e.target.value }))}
+                  value={step3Data.targetUsers}
+                  onChange={(e) => setStep3Data(prev => ({ ...prev, targetUsers: e.target.value }))}
                   placeholder="Describe your target users (min 10 characters)"
                   rows={2}
                 />
                 <FieldValidation
-                  error={step2Validation.errors.find(e => e.field === 'targetUsers')}
-                  isValid={step2Data.targetUsers.length >= 10}
-                  showValidIcon={step2Data.targetUsers.length > 0}
+                  error={step3Validation.errors.find(e => e.field === 'targetUsers')}
+                  isValid={step3Data.targetUsers.length >= 10}
+                  showValidIcon={step3Data.targetUsers.length > 0}
                 />
               </div>
 
@@ -180,7 +181,7 @@ export default function TestFeaturesPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  {step2Data.painPoints.map((point, index) => (
+                  {step3Data.painPoints.map((point, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
                         value={point}
@@ -199,32 +200,32 @@ export default function TestFeaturesPage() {
                 </div>
                 
                 <FieldValidation
-                  error={step2Validation.errors.find(e => e.field === 'painPoints')}
-                  warning={step2Validation.warnings.find(w => w.field === 'painPoints')}
-                  isValid={step2Data.painPoints.length > 0 && step2Data.painPoints.every(p => p.trim().length >= 5)}
-                  showValidIcon={step2Data.painPoints.length > 0}
+                  error={step3Validation.errors.find(e => e.field === 'painPoints')}
+                  warning={step3Validation.warnings.find(w => w.field === 'painPoints')}
+                  isValid={step3Data.painPoints.length > 0 && step3Data.painPoints.every(p => p.trim().length >= 5)}
+                  showValidIcon={step3Data.painPoints.length > 0}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">Primary Job To Be Done</label>
                 <Textarea
-                  value={step2Data.primaryJobToBeDone}
-                  onChange={(e) => setStep2Data(prev => ({ ...prev, primaryJobToBeDone: e.target.value }))}
+                  value={step3Data.primaryJobToBeDone}
+                  onChange={(e) => setStep3Data(prev => ({ ...prev, primaryJobToBeDone: e.target.value }))}
                   placeholder="What's the main job your product helps users accomplish? (min 10 characters)"
                   rows={2}
                 />
                 <FieldValidation
-                  error={step2Validation.errors.find(e => e.field === 'primaryJobToBeDone')}
-                  isValid={step2Data.primaryJobToBeDone.length >= 10}
-                  showValidIcon={step2Data.primaryJobToBeDone.length > 0}
+                  error={step3Validation.errors.find(e => e.field === 'primaryJobToBeDone')}
+                  isValid={step3Data.primaryJobToBeDone.length >= 10}
+                  showValidIcon={step3Data.primaryJobToBeDone.length > 0}
                 />
               </div>
 
               <ValidationFeedback
-                errors={step2Validation.errors}
-                warnings={step2Validation.warnings}
-                showSuccess={step2Validation.isValid}
+                errors={step3Validation.errors}
+                warnings={step3Validation.warnings}
+                showSuccess={step3Validation.isValid}
               />
             </CardContent>
           </Card>

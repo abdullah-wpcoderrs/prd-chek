@@ -150,21 +150,19 @@ export function convertTemplateToFormData(template: Template): ProductManagerFor
             productPitch: template.description,
             industry: CATEGORY_MAPPINGS.industry[category as keyof typeof CATEGORY_MAPPINGS.industry] || 'other',
             currentStage: 'idea',
+            differentiation: `Unlike other ${category.toLowerCase()} solutions, this product combines ${template.features.slice(0, 2).join(' and ').toLowerCase()} in one integrated platform with superior user experience and advanced features`,
         },
         step2: {
+            valueProposition: CATEGORY_MAPPINGS.valueProposition[category as keyof typeof CATEGORY_MAPPINGS.valueProposition] || `Deliver exceptional value through innovative ${category.toLowerCase()} solutions`,
+            productVision: CATEGORY_MAPPINGS.productVision[category as keyof typeof CATEGORY_MAPPINGS.productVision] || `To lead innovation in ${category.toLowerCase()} solutions and create lasting positive impact`,
+        },
+        step3: {
             targetUsers: CATEGORY_MAPPINGS.targetUsers[category as keyof typeof CATEGORY_MAPPINGS.targetUsers] || 'Users seeking efficient solutions for their daily workflows and tasks',
             painPoints: CATEGORY_MAPPINGS.painPoints[category as keyof typeof CATEGORY_MAPPINGS.painPoints] || ['Inefficient current solutions', 'Lack of integrated tools', 'Poor user experience'],
             primaryJobToBeDone: `Efficiently manage ${category.toLowerCase()} operations and workflows while providing exceptional user experience`,
         },
-        step3: {
-            competitors: CATEGORY_MAPPINGS.competitors[category as keyof typeof CATEGORY_MAPPINGS.competitors] || [{ name: 'Generic Competitor', note: 'Market competitor' }],
-            differentiation: `Unlike other ${category.toLowerCase()} solutions, this product combines ${template.features.slice(0, 2).join(' and ').toLowerCase()} in one integrated platform with superior user experience and advanced features`,
-            marketTrend: `Growing demand for ${category.toLowerCase()} solutions driven by digital transformation, remote work trends, and increasing user expectations for seamless experiences`,
-        },
         step4: {
-            valueProposition: CATEGORY_MAPPINGS.valueProposition[category as keyof typeof CATEGORY_MAPPINGS.valueProposition] || `Deliver exceptional value through innovative ${category.toLowerCase()} solutions`,
-            productVision: CATEGORY_MAPPINGS.productVision[category as keyof typeof CATEGORY_MAPPINGS.productVision] || `To lead innovation in ${category.toLowerCase()} solutions and create lasting positive impact`,
-            successMetric: `Achieve 40% improvement in user productivity and 90% user satisfaction within 6 months of launch`,
+            competitors: CATEGORY_MAPPINGS.competitors[category as keyof typeof CATEGORY_MAPPINGS.competitors] || [{ name: 'Generic Competitor', note: 'Market competitor' }],
         },
         step5: {
             mustHaveFeatures: template.features.slice(0, Math.min(5, template.features.length)),
@@ -197,29 +195,27 @@ export function getTemplatePreviewData(template: Template): {
     let populatedCount = 0;
 
     // Count Step 1 fields
-    totalFields += 4;
+    totalFields += 5;
     if (formData.step1.productName) { populatedCount++; populatedFields.push('Product Name'); }
     if (formData.step1.productPitch) { populatedCount++; populatedFields.push('Product Pitch'); }
     if (formData.step1.industry) { populatedCount++; populatedFields.push('Industry'); }
     if (formData.step1.currentStage) { populatedCount++; populatedFields.push('Current Stage'); }
+    if (formData.step1.differentiation) { populatedCount++; populatedFields.push('Differentiation'); }
 
     // Count Step 2 fields
-    totalFields += 3;
-    if (formData.step2.targetUsers) { populatedCount++; populatedFields.push('Target Users'); }
-    if (formData.step2.painPoints.length > 0) { populatedCount++; populatedFields.push('Pain Points'); }
-    if (formData.step2.primaryJobToBeDone) { populatedCount++; populatedFields.push('Primary Job To Be Done'); }
+    totalFields += 2;
+    if (formData.step2.valueProposition) { populatedCount++; populatedFields.push('Value Proposition'); }
+    if (formData.step2.productVision) { populatedCount++; populatedFields.push('Product Vision'); }
 
     // Count Step 3 fields
     totalFields += 3;
-    if (formData.step3.competitors.length > 0) { populatedCount++; populatedFields.push('Competitors'); }
-    if (formData.step3.differentiation) { populatedCount++; populatedFields.push('Differentiation'); }
-    if (formData.step3.marketTrend) { populatedCount++; populatedFields.push('Market Trend'); }
+    if (formData.step3.targetUsers) { populatedCount++; populatedFields.push('Target Users'); }
+    if (formData.step3.painPoints.length > 0) { populatedCount++; populatedFields.push('Pain Points'); }
+    if (formData.step3.primaryJobToBeDone) { populatedCount++; populatedFields.push('Primary Job To Be Done'); }
 
     // Count Step 4 fields
-    totalFields += 3;
-    if (formData.step4.valueProposition) { populatedCount++; populatedFields.push('Value Proposition'); }
-    if (formData.step4.productVision) { populatedCount++; populatedFields.push('Product Vision'); }
-    if (formData.step4.successMetric) { populatedCount++; populatedFields.push('Success Metric'); }
+    totalFields += 1;
+    if (formData.step4.competitors.length > 0) { populatedCount++; populatedFields.push('Competitors'); }
 
     // Count Step 5 fields
     totalFields += 4;

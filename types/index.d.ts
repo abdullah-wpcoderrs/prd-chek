@@ -25,6 +25,7 @@ export interface ProductBasics {
   currentStage: 'idea' | 'mvp' | 'growth' | 'scaling' | '';
   techStack?: string;
   targetPlatform?: 'web' | 'mobile' | 'desktop' | 'both' | 'other';
+  differentiation: string;
 }
 
 export interface UsersProblems {
@@ -40,14 +41,11 @@ export interface Competitor {
 
 export interface MarketContext {
   competitors: Competitor[];
-  differentiation: string;
-  marketTrend?: string;
 }
 
 export interface ValueVision {
   valueProposition: string;
   productVision: string;
-  successMetric?: string;
 }
 
 export interface RequirementsPlanning {
@@ -59,9 +57,9 @@ export interface RequirementsPlanning {
 
 export interface ProductManagerFormData {
   step1: ProductBasics;
-  step2: UsersProblems;
-  step3: MarketContext;
-  step4: ValueVision;
+  step2: ValueVision;
+  step3: UsersProblems;
+  step4: MarketContext;
   step5: RequirementsPlanning;
 }
 

@@ -33,23 +33,21 @@ Create a comprehensive Research & Insights Report for "${formData.step1.productN
 
 ## Market Research
 ### Target User Analysis
-Primary Users: ${formData.step2.targetUsers}
+Primary Users: ${formData.step3.targetUsers}
 
 ### Pain Point Analysis
 Current Challenges:
-${formData.step2.painPoints.map(pain => `- ${pain}`).join('\n')}
+${formData.step3.painPoints.map(pain => `- ${pain}`).join('\n')}
 
-Primary Job to be Done: ${formData.step2.primaryJobToBeDone}
+Primary Job to be Done: ${formData.step3.primaryJobToBeDone}
 
 ### Competitive Landscape
-${formData.step3.competitors.map(comp => `**${comp.name}**: ${comp.note}`).join('\n')}
-
-Market Trend: ${formData.step3.marketTrend}
+${formData.step4.competitors.map(comp => `**${comp.name}**: ${comp.note}`).join('\n')}
 
 ## Key Insights
 1. **User Needs**: Analyze the pain points and derive key user needs
-2. **Market Opportunity**: Based on competitive analysis and market trends
-3. **Differentiation Potential**: ${formData.step3.differentiation}
+2. **Market Opportunity**: Based on competitive analysis
+3. **Differentiation Potential**: ${formData.step1.differentiation}
 4. **Technology Fit**: How ${techStack} aligns with user needs and market demands
 
 ## Recommendations
@@ -75,24 +73,20 @@ Generate a detailed, professional research report with data-driven insights and 
 Create a comprehensive Vision & Strategy Document for "${formData.step1.productName}":
 
 ## Product Vision
-${formData.step4.productVision}
+${formData.step2.productVision}
 
 ## Value Proposition
-${formData.step4.valueProposition}
+${formData.step2.valueProposition}
 
 ## Strategic Framework
 
 ### Market Position
 - Industry: ${formData.step1.industry}
 - Current Stage: ${formData.step1.currentStage}
-- Differentiation: ${formData.step3.differentiation}
+- Differentiation: ${formData.step1.differentiation}
 
 ### Target Market
-- Primary Users: ${formData.step2.targetUsers}
-- Market Trend: ${formData.step3.marketTrend}
-
-### Success Metrics
-Primary Success Metric: ${formData.step4.successMetric}
+- Primary Users: ${formData.step3.targetUsers}
 
 ## Strategic Objectives
 Based on the vision and value proposition, define:
@@ -137,12 +131,12 @@ Create a comprehensive PRD for "${formData.step1.productName}":
 
 ## User Requirements
 ### Primary Users
-${formData.step2.targetUsers}
+${formData.step3.targetUsers}
 
 ### User Problems & Needs
-${formData.step2.painPoints.map(pain => `- ${pain}`).join('\n')}
+${formData.step3.painPoints.map(pain => `- ${pain}`).join('\n')}
 
-Primary Job to be Done: ${formData.step2.primaryJobToBeDone}
+Primary Job to be Done: ${formData.step3.primaryJobToBeDone}
 
 ## Feature Requirements
 
@@ -162,9 +156,6 @@ Method: ${formData.step5.prioritizationMethod}
 
 ## Constraints & Assumptions
 ${formData.step5.constraints}
-
-## Success Criteria
-${formData.step4.successMetric}
 
 ## Detailed Functional Requirements
 For each must-have feature, provide:
@@ -204,26 +195,23 @@ Create a comprehensive BRD for "${formData.step1.productName}":
 
 ## Business Objectives
 ### Primary Value Proposition
-${formData.step4.valueProposition}
+${formData.step2.valueProposition}
 
 ### Business Vision
-${formData.step4.productVision}
-
-### Success Metrics
-${formData.step4.successMetric}
+${formData.step2.productVision}
 
 ## Market Analysis
 ### Target Market
-${formData.step2.targetUsers}
+${formData.step3.targetUsers}
 
 ### Market Problems
-${formData.step2.painPoints.map(pain => `- ${pain}`).join('\n')}
+${formData.step3.painPoints.map(pain => `- ${pain}`).join('\n')}
 
 ### Competitive Landscape
-${formData.step3.competitors.map(comp => `**${comp.name}**: ${comp.note}`).join('\n')}
+${formData.step4.competitors.map(comp => `**${comp.name}**: ${comp.note}`).join('\n')}
 
 ### Market Differentiation
-${formData.step3.differentiation}
+${formData.step1.differentiation}
 
 ## Business Requirements
 
@@ -409,8 +397,6 @@ For each feature, provide:
 ## Success Tracking
 
 ### Key Performance Indicators (KPIs)
-Primary Success Metric: ${formData.step4.successMetric}
-
 Additional KPIs:
 - User adoption metrics
 - Feature usage metrics

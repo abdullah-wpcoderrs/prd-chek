@@ -1,17 +1,15 @@
-"use client";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ProductBasics } from "@/types";
-import { Lightbulb, Building, TrendingUp } from "lucide-react";
+import { Lightbulb, Building, TrendingUp, Zap } from "lucide-react";
 
 interface FormStep1ProductBasicsProps {
   data: ProductBasics;
   onUpdate: (data: ProductBasics) => void;
 }
-
 const INDUSTRY_OPTIONS = [
   { value: "fintech", label: "Financial Technology" },
   { value: "healthtech", label: "Healthcare Technology" },
@@ -194,6 +192,23 @@ export function FormStep1ProductBasics({ data, onUpdate }: FormStep1ProductBasic
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Product Differentiation */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-yellow-600" />
+          <Label htmlFor="differentiation" className="text-base font-semibold text-gray-900 font-sans">
+            What makes your product different? *
+          </Label>
+        </div>
+        <Textarea
+          id="differentiation"
+          value={data.differentiation || ''}
+          onChange={(e) => updateField('differentiation', e.target.value)}
+          placeholder="e.g., Unlike other project management tools, we use AI to automatically prioritize tasks based on deadlines, team capacity, and project dependencies, reducing planning time by 70%."
+          className="min-h-[120px] text-base font-sans resize-none"
+        />
       </div>
     </div>
   );
