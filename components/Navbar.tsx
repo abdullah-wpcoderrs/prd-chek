@@ -16,7 +16,7 @@ import {
 const Navbar = () => {
   const { user, loading, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const handleSignOut = async () => {
     await signOut();
     setIsMobileMenuOpen(false); // Close mobile menu on sign out
@@ -26,13 +26,13 @@ const Navbar = () => {
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
-  
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="flex justify-between items-center p-4 gap-4 h-16 max-w-7xl mx-auto">
         {/* Logo */}
         <Link href="/" className="text-2xl font-bold text-primary font-sans">
-          PRDGen
+          PRD-<span className="text-black">CHEK</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -54,7 +54,7 @@ const Navbar = () => {
               </Link>
             </>
           )}
-          
+
           {/* Show public links for unauthenticated users */}
           {!loading && !user && (
             <>
@@ -66,7 +66,7 @@ const Navbar = () => {
               </Link>
             </>
           )}
-          
+
           {loading ? (
             <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
           ) : user ? (
@@ -123,7 +123,7 @@ const Navbar = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          
+
           {/* Hamburger Menu Button */}
           <Button
             variant="ghost"
@@ -148,29 +148,29 @@ const Navbar = () => {
             {/* Authenticated user links */}
             {user && (
               <>
-                <Link 
-                  href="/dashboard" 
+                <Link
+                  href="/dashboard"
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >
                   Dashboard
                 </Link>
-                <Link 
-                  href="/projects" 
+                <Link
+                  href="/projects"
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >
                   Projects
                 </Link>
-                <Link 
-                  href="/templates" 
+                <Link
+                  href="/templates"
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >
                   Templates
                 </Link>
-                <Link 
-                  href="/how-it-works" 
+                <Link
+                  href="/how-it-works"
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >
@@ -178,19 +178,19 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            
+
             {/* Unauthenticated user links */}
             {!loading && !user && (
               <>
-                <Link 
-                  href="/#features" 
+                <Link
+                  href="/#features"
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >
                   Features
                 </Link>
-                <Link 
-                  href="/how-it-works" 
+                <Link
+                  href="/how-it-works"
                   className="block py-2 text-sm font-medium hover:text-primary transition-colors font-sans"
                   onClick={closeMobileMenu}
                 >
