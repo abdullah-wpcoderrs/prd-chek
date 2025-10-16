@@ -12,7 +12,8 @@ import {
   Loader2,
   FileText,
   Minimize,
-  ExternalLink
+  ExternalLink,
+  Copy
 } from "lucide-react";
 import { useSupabase } from "@/lib/hooks/useSupabase";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -211,6 +212,61 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
     }
   };
 
+  const handleCopyContent = async () => {
+    if (!htmlContent) {
+      toast({
+        title: "Copy failed",
+        description: "No content available to copy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Extract the body content from the HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      const bodyContent = doc.body.innerHTML;
+
+      // Create a ClipboardItem with both HTML and plain text formats
+      const plainText = doc.body.textContent || '';
+      
+      // Use the modern Clipboard API to copy with formatting
+      if (navigator.clipboard && window.ClipboardItem) {
+        const htmlBlob = new Blob([bodyContent], { type: 'text/html' });
+        const textBlob = new Blob([plainText], { type: 'text/plain' });
+        
+        const clipboardItem = new ClipboardItem({
+          'text/html': htmlBlob,
+          'text/plain': textBlob,
+        });
+        
+        await navigator.clipboard.write([clipboardItem]);
+        
+        toast({
+          title: "Content copied",
+          description: "Document content with formatting has been copied to your clipboard.",
+          variant: "default",
+        });
+      } else {
+        // Fallback for browsers that don't support ClipboardItem
+        await navigator.clipboard.writeText(plainText);
+        toast({
+          title: "Content copied",
+          description: "Document content has been copied as plain text.",
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      console.error('Copy error:', error);
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy content. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleShare = () => {
     if (navigator.share && htmlContent) {
       navigator.share({
@@ -315,6 +371,17 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
 
             {/* Action Buttons - Responsive layout */}
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap sm:flex-nowrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyContent}
+                disabled={!htmlContent}
+                className="font-sans text-xs sm:text-sm px-2 sm:px-3"
+              >
+                <Copy className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Copy</span>
+              </Button>
+
               <Button
                 variant="outline"
                 size="sm"
