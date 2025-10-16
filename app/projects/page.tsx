@@ -29,6 +29,7 @@ import { useRealtimeProjects } from "@/lib/hooks/useRealtimeProjects";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/lib/hooks/use-toast";
+import htmlDocx from "html-docx-js/dist/html-docx";
 import {
   FileText,
   Users,
@@ -196,6 +197,12 @@ export default function ProjectsPage() {
         return;
       }
 
+      toast({
+        title: "Generating Word document",
+        description: "Please wait while we prepare your document...",
+        variant: "default",
+      });
+
       // Fetch the HTML content
       const response = await fetch(document.download_url, {
         method: 'GET',
@@ -211,20 +218,185 @@ export default function ProjectsPage() {
 
       const htmlContent = await response.text();
 
-      // Create downloadable HTML file
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
+      // Parse the HTML content to extract body
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      const bodyContent = doc.body.innerHTML;
+
+      // Create a complete HTML document with proper styling for Word
+      const styledHtml = `
+        <!DOCTYPE html>
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+          <head>
+            <meta charset="UTF-8">
+            <xml>
+              <w:WordDocument>
+                <w:View>Print</w:View>
+                <w:Zoom>100</w:Zoom>
+                <w:DoNotOptimizeForBrowser/>
+              </w:WordDocument>
+            </xml>
+            <style>
+              @page {
+                size: 8.5in 11in;
+                margin: 1in 1in 1in 1in;
+                mso-header-margin: 0.5in;
+                mso-footer-margin: 0.5in;
+                mso-paper-source: 0;
+              }
+              @page Section1 {
+                size: 8.5in 11in;
+                margin: 1in 1in 1in 1in;
+                mso-header-margin: 0.5in;
+                mso-footer-margin: 0.5in;
+                mso-paper-source: 0;
+              }
+              div.Section1 {
+                page: Section1;
+              }
+              body {
+                font-family: Calibri, Arial, sans-serif;
+                font-size: 11pt;
+                line-height: 1.15;
+                color: #000000;
+                margin: 0;
+                padding: 0;
+              }
+              h1 {
+                font-size: 20pt;
+                font-weight: bold;
+                margin: 12pt 0 6pt 0;
+                color: #000000;
+                line-height: 1.15;
+                page-break-after: avoid;
+              }
+              h2 {
+                font-size: 16pt;
+                font-weight: bold;
+                margin: 10pt 0 6pt 0;
+                color: #000000;
+                line-height: 1.15;
+                page-break-after: avoid;
+              }
+              h3 {
+                font-size: 14pt;
+                font-weight: bold;
+                margin: 10pt 0 6pt 0;
+                color: #000000;
+                line-height: 1.15;
+                page-break-after: avoid;
+              }
+              h4 {
+                font-size: 12pt;
+                font-weight: bold;
+                margin: 10pt 0 6pt 0;
+                color: #000000;
+                page-break-after: avoid;
+              }
+              h5, h6 {
+                font-size: 11pt;
+                font-weight: bold;
+                margin: 10pt 0 6pt 0;
+                color: #000000;
+                page-break-after: avoid;
+              }
+              p {
+                margin: 0 0 10pt 0;
+                line-height: 1.15;
+              }
+              ul, ol {
+                margin: 0 0 10pt 0;
+                padding-left: 0.5in;
+              }
+              li {
+                margin: 0 0 5pt 0;
+                line-height: 1.15;
+              }
+              table {
+                border-collapse: collapse;
+                margin: 10pt 0;
+                width: 100%;
+                mso-table-lspace: 0pt;
+                mso-table-rspace: 0pt;
+                mso-table-anchor-vertical: paragraph;
+                mso-table-anchor-horizontal: column;
+                mso-table-left: left;
+                mso-padding-alt: 0in 5.4pt 0in 5.4pt;
+              }
+              th, td {
+                padding: 5pt;
+                border: 1pt solid #000000;
+                vertical-align: top;
+                mso-border-alt: solid #000000 0.5pt;
+              }
+              th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+              }
+              blockquote {
+                margin: 10pt 0 10pt 0.5in;
+                padding: 5pt 10pt;
+                border-left: 3pt solid #cccccc;
+                font-style: italic;
+              }
+              code {
+                font-family: 'Courier New', monospace;
+                font-size: 10pt;
+              }
+              pre {
+                font-family: 'Courier New', monospace;
+                font-size: 10pt;
+                margin: 10pt 0;
+                padding: 10pt;
+                background-color: #f5f5f5;
+                border: 1pt solid #cccccc;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+              }
+              a {
+                color: #0563c1;
+                text-decoration: underline;
+              }
+              strong, b {
+                font-weight: bold;
+              }
+              em, i {
+                font-style: italic;
+              }
+              hr {
+                margin: 10pt 0;
+                border: none;
+                border-top: 1pt solid #cccccc;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="Section1">
+              ${bodyContent}
+            </div>
+          </body>
+        </html>
+      `;
+
+      // Convert HTML to Word document with options
+      const converted = htmlDocx.asBlob(styledHtml, {
+        orientation: 'portrait',
+        margins: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+      });
+
+      // Create download link
+      const url = URL.createObjectURL(converted);
       const link = window.document.createElement('a');
       link.href = url;
-      link.download = `${document.name}.html`;
+      link.download = `${document.name}.docx`;
       window.document.body.appendChild(link);
       link.click();
       window.document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Download started",
-        description: `${document.name}.html has been downloaded.`,
+        title: "Word document downloaded",
+        description: `${document.name}.docx has been downloaded successfully.`,
         variant: "default",
       });
     } catch (error) {
@@ -235,6 +407,50 @@ export default function ProjectsPage() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDownloadAllDocuments = async (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const completedDocs = project.documents.filter(
+      doc => (doc.status === 'ready' || doc.status === 'completed') && doc.download_url
+    );
+
+    if (completedDocs.length === 0) {
+      toast({
+        title: "No documents available",
+        description: "There are no completed documents to download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Downloading documents",
+      description: `Preparing ${completedDocs.length} document(s) for download...`,
+      variant: "default",
+    });
+
+    // Download each document sequentially with a small delay
+    for (let i = 0; i < completedDocs.length; i++) {
+      const doc = completedDocs[i];
+      try {
+        await handleDownloadDocument(doc);
+        // Add a small delay between downloads to avoid overwhelming the browser
+        if (i < completedDocs.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (error) {
+        console.error(`Failed to download ${doc.name}:`, error);
+      }
+    }
+
+    toast({
+      title: "Download complete",
+      description: `Successfully downloaded ${completedDocs.length} document(s).`,
+      variant: "default",
+    });
   };
 
   const handleCloseViewer = () => {
@@ -777,7 +993,7 @@ Target Platform: ${project.target_platform}`;
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Handle download all
+                                  handleDownloadAllDocuments(project.id);
                                 }}
                               >
                                 <Download className="w-4 h-4 mr-2" />
@@ -908,6 +1124,7 @@ Target Platform: ${project.target_platform}`;
                         style={{ backgroundColor: 'var(--steel-blue-600)' }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-700)'}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--steel-blue-600)'}
+                        onClick={() => selectedProject && handleDownloadAllDocuments(selectedProject)}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Download All Documents
