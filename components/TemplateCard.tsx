@@ -78,17 +78,17 @@ export function TemplateCard({ template }: TemplateCardProps) {
             </div>
           </div>
           
-          <CardTitle className="font-sans text-xl mb-2">{template.name}</CardTitle>
-          <CardDescription className="font-sans">{template.description}</CardDescription>
+          <CardTitle className="font-sans text-[16px] md:text-xl mb-2">{template.name}</CardTitle>
+          <CardDescription className="font-sans text-[13px] md:text-base">{template.description}</CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-4">
           {/* Tech Stacks */}
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2 font-sans">Compatible Tech Stacks:</div>
+            <div className="text-[13px] md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2 font-sans">Compatible Tech Stacks:</div>
             <div className="flex flex-wrap gap-1">
               {template.tech_stacks.map((stack, index) => (
-                <Badge key={index} variant="outline" className="text-xs font-sans">
+                <Badge key={index} variant="outline" className="text-[13px] font-sans">
                   {stack}
                 </Badge>
               ))}
@@ -97,17 +97,17 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
           {/* Features */}
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2 font-sans">Key Features:</div>
-            <ul className="text-xs text-gray-600 space-y-1 font-sans">
+            <div className="text-[13px] md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2 font-sans">Key Features:</div>
+            <ul className="text-[13px] text-gray-600 space-y-1 font-sans">
               {template.features.slice(0, 3).map((feature, index) => (
                 <li key={index} className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full" style={{backgroundColor: 'var(--steel-blue-500)'}}></div>
-                  {feature}
+                  <div className="w-1 h-1 rounded-full flex-shrink-0" style={{backgroundColor: 'var(--steel-blue-500)'}}></div>
+                  <span className="line-clamp-1">{feature}</span>
                 </li>
               ))}
               {template.features.length > 3 && (
                 <li 
-                  className="cursor-pointer hover:underline" 
+                  className="cursor-pointer hover:underline text-[13px]" 
                   style={{color: 'var(--steel-blue-600)'}}
                   onClick={handlePreview}
                 >
@@ -119,9 +119,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
           {/* Form Field Population Info */}
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2 font-sans">Form Pre-population:</div>
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+            <div className="text-[13px] md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2 font-sans">Form Pre-population:</div>
+            <div className="flex items-center gap-2 text-[13px] md:text-sm">
+              <CheckCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500 flex-shrink-0" />
               <span className="text-gray-600 font-sans">
                 {(() => {
                   const previewData = getTemplatePreviewData(template);
@@ -132,14 +132,14 @@ export function TemplateCard({ template }: TemplateCardProps) {
           </div>
 
           {/* Stats */}
-          <div className="flex justify-between items-center text-sm text-gray-500 font-sans">
+          <div className="flex justify-between items-center text-[13px] md:text-sm text-gray-500 font-sans">
             <div className="flex items-center gap-1">
-              <Download className="w-4 h-4" />
-              {template.downloads.toLocaleString()} downloads
+              <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="truncate">{template.downloads.toLocaleString()} downloads</span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {template.document_count} documents
+              <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span>{template.document_count} documents</span>
             </div>
           </div>
 
@@ -173,8 +173,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl font-bold font-sans flex items-center gap-2">
-                <Eye className="w-6 h-6" style={{ color: 'var(--steel-blue-600)' }} />
+              <DialogTitle className="text-[18px] md:text-2xl font-bold font-sans flex items-center gap-2">
+                <Eye className="w-5 h-5 md:w-6 md:h-6" style={{ color: 'var(--steel-blue-600)' }} />
                 {template.name} Preview
               </DialogTitle>
               <Button 
@@ -193,25 +193,25 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
           <div className="space-y-6 py-4">
             {/* Template Info */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2 font-sans">Category</h3>
+                <h3 className="font-semibold text-gray-900 mb-2 font-sans text-[13px] md:text-base">Category</h3>
                 <Badge 
-                  className={template.category === 'Business' ? 'text-white' : categoryColors[template.category as keyof typeof categoryColors]}
+                  className={`text-[13px] md:text-sm ${template.category === 'Business' ? 'text-white' : categoryColors[template.category as keyof typeof categoryColors]}`}
                   style={template.category === 'Business' ? {backgroundColor: 'var(--steel-blue-600)'} : {}}
                 >
                   {template.category}
                 </Badge>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2 font-sans">Rating & Downloads</h3>
-                <div className="flex items-center gap-4 text-sm text-gray-600">
+                <h3 className="font-semibold text-gray-900 mb-2 font-sans text-[13px] md:text-base">Rating & Downloads</h3>
+                <div className="flex items-center gap-3 md:gap-4 text-[13px] md:text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star className="w-3.5 h-3.5 md:w-4 md:h-4 fill-yellow-400 text-yellow-400" />
                     {template.rating} rating
                   </div>
                   <div className="flex items-center gap-1">
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     {template.downloads.toLocaleString()} downloads
                   </div>
                 </div>
@@ -220,16 +220,16 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
             {/* Description */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2 font-sans">Description</h3>
-              <p className="text-gray-600 font-sans">{template.description}</p>
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-[13px] md:text-base">Description</h3>
+              <p className="text-gray-600 font-sans text-[13px] md:text-base">{template.description}</p>
             </div>
 
             {/* Tech Stacks */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2 font-sans">Compatible Tech Stacks</h3>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-[13px] md:text-base">Compatible Tech Stacks</h3>
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {template.tech_stacks.map((stack, index) => (
-                  <Badge key={index} variant="outline" className="font-sans">
+                  <Badge key={index} variant="outline" className="font-sans text-[13px]">
                     {stack}
                   </Badge>
                 ))}
@@ -238,12 +238,12 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
             {/* All Features */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2 font-sans">All Features</h3>
-              <ul className="text-sm text-gray-600 space-y-2 font-sans">
+              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-[13px] md:text-base">All Features</h3>
+              <ul className="text-[13px] md:text-sm text-gray-600 space-y-1.5 md:space-y-2 font-sans">
                 {template.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{backgroundColor: 'var(--steel-blue-500)'}}></div>
-                    {feature}
+                  <li key={index} className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full flex-shrink-0 mt-1.5" style={{backgroundColor: 'var(--steel-blue-500)'}}></div>
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -259,10 +259,10 @@ export function TemplateCard({ template }: TemplateCardProps) {
                 return (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 font-sans">
+                      <span className="text-[13px] md:text-sm text-gray-600 font-sans">
                         {previewData.formFieldsPopulated} of {previewData.totalFormFields} form fields will be pre-populated
                       </span>
-                      <span className="text-sm font-medium text-green-600 font-sans">
+                      <span className="text-[13px] md:text-sm font-medium text-green-600 font-sans">
                         {completionPercentage}% complete
                       </span>
                     </div>
@@ -276,13 +276,13 @@ export function TemplateCard({ template }: TemplateCardProps) {
                     
                     <div className="grid grid-cols-2 gap-2 mt-3">
                       {previewData.populatedFields.slice(0, 8).map((field, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600 font-sans">
+                        <div key={index} className="flex items-center gap-2 text-[13px] text-gray-600 font-sans">
                           <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                           <span className="truncate">{field}</span>
                         </div>
                       ))}
                       {previewData.populatedFields.length > 8 && (
-                        <div className="text-xs text-gray-500 font-sans col-span-2">
+                        <div className="text-[13px] text-gray-500 font-sans col-span-2">
                           +{previewData.populatedFields.length - 8} more fields...
                         </div>
                       )}
@@ -295,14 +295,14 @@ export function TemplateCard({ template }: TemplateCardProps) {
             {/* Documents */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-2 font-sans">Generated Documents</h3>
-              <p className="text-sm text-gray-600 font-sans mb-3">
+              <p className="text-[13px] md:text-sm text-gray-600 font-sans mb-3">
                 This template will generate 6 comprehensive documents through our 3-stage pipeline:
               </p>
               
               {/* Stage 1: Discovery & Research */}
               <div className="mb-3">
-                <h4 className="text-xs font-semibold text-blue-600 mb-1 font-sans">Stage 1: Discovery & Research</h4>
-                <ul className="text-sm text-gray-600 space-y-1 font-sans ml-2">
+                <h4 className="text-[13px] font-semibold text-blue-600 mb-1 font-sans">Stage 1: Discovery & Research</h4>
+                <ul className="text-[13px] md:text-sm text-gray-600 space-y-1 font-sans ml-2">
                   <li className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                     Research & Insights Report
@@ -312,8 +312,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
               {/* Stage 2: Vision & Strategy */}
               <div className="mb-3">
-                <h4 className="text-xs font-semibold text-purple-600 mb-1 font-sans">Stage 2: Vision & Strategy</h4>
-                <ul className="text-sm text-gray-600 space-y-1 font-sans ml-2">
+                <h4 className="text-[13px] font-semibold text-purple-600 mb-1 font-sans">Stage 2: Vision & Strategy</h4>
+                <ul className="text-[13px] md:text-sm text-gray-600 space-y-1 font-sans ml-2">
                   <li className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                     Vision & Strategy Document
@@ -323,8 +323,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
               {/* Stage 3: Requirements & Planning */}
               <div>
-                <h4 className="text-xs font-semibold text-green-600 mb-1 font-sans">Stage 3: Requirements & Planning</h4>
-                <ul className="text-sm text-gray-600 space-y-1 font-sans ml-2">
+                <h4 className="text-[13px] font-semibold text-green-600 mb-1 font-sans">Stage 3: Requirements & Planning</h4>
+                <ul className="text-[13px] md:text-sm text-gray-600 space-y-1 font-sans ml-2">
                   <li className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     Product Requirements Document (PRD)

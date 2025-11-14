@@ -162,15 +162,15 @@ export default function DashboardPage() {
             AI-Powered Documentation Generator for Technical Product Managers
           </div>
           
-          <h1 className="text-3xl md:text-6xl font-bold text-gray-900 mb-6 font-sans">
+          <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 font-sans px-4">
             From Idea to <span className="text-blue-600">Production-Ready</span> Documentation
           </h1>
           
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto font-sans leading-relaxed">
+          <p className="text-base md:text-xl text-gray-600 max-w-4xl mx-auto font-sans leading-relaxed px-4">
             Skip the documentation bottleneck. Generate comprehensive PRDs, technical specs, and planning documents that enable seamless stakeholder alignment and engineering handoff.
           </p>
           
-          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-gray-500">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 md:mt-8 text-xs md:text-sm text-gray-500 ">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="font-sans">5-minute setup</span>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 font-sans">Template Selected: {selectedTemplate.name}</h3>
-                    <p className="text-sm text-gray-600 font-sans">{selectedTemplate.description}</p>
+                    <p className="text-[13px] md:text-sm text-gray-600 font-sans">{selectedTemplate.description}</p>
                   </div>
                 </div>
                 <Button
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="mt-3 text-sm text-gray-600 font-sans">
+              <div className="mt-3 text-[13px] md:text-sm text-gray-600 font-sans">
                 <span className="font-medium">Pre-filled features:</span> {selectedTemplate.features.slice(0, 3).join(', ')}
                 {selectedTemplate.features.length > 3 && ` and ${selectedTemplate.features.length - 3} more...`}
               </div>
@@ -252,32 +252,32 @@ export default function DashboardPage() {
 
         {/* Brief Process Overview */}
         <div className="max-w-4xl mx-auto mt-16">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 font-sans">
+          <div className="text-center mb-6 md:mb-8 px-4">
+            <h2 className="text-[18px] md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 font-sans">
               Complete Documentation in 3 Stages
             </h2>
-            <p className="text-gray-600 font-sans">
+            <p className="text-[13px] md:text-base text-gray-600 font-sans">
               Generate comprehensive, stakeholder-ready documentation optimized for technical teams and engineering handoff
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 text-sm font-bold">1</div>
-              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-sm">Discovery & Research</h3>
-              <p className="text-xs text-gray-600 font-sans">Market analysis, competitive research, and user insights</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8 px-4">
+            <div className="text-center p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 text-[13px] md:text-sm font-bold">1</div>
+              <h3 className="font-semibold text-gray-900 mb-1.5 md:mb-2 font-sans text-[13px] md:text-sm">Discovery & Research</h3>
+              <p className="text-[13px] text-gray-600 font-sans">Market analysis, competitive research, and user insights</p>
             </div>
             
-            <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-100">
-              <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 text-sm font-bold">2</div>
-              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-sm">Vision & Strategy</h3>
-              <p className="text-xs text-gray-600 font-sans">Strategic framework with measurable success metrics</p>
+            <div className="text-center p-3 md:p-4 bg-purple-50 rounded-lg border border-purple-100">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 text-[13px] md:text-sm font-bold">2</div>
+              <h3 className="font-semibold text-gray-900 mb-1.5 md:mb-2 font-sans text-[13px] md:text-sm">Vision & Strategy</h3>
+              <p className="text-[13px] text-gray-600 font-sans">Strategic framework with measurable success metrics</p>
             </div>
             
-            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-100">
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 text-sm font-bold">3</div>
-              <h3 className="font-semibold text-gray-900 mb-2 font-sans text-sm">Requirements & Planning</h3>
-              <p className="text-xs text-gray-600 font-sans">PRD, BRD, TRD, and implementation toolkit</p>
+            <div className="text-center p-3 md:p-4 bg-green-50 rounded-lg border border-green-100">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 text-[13px] md:text-sm font-bold">3</div>
+              <h3 className="font-semibold text-gray-900 mb-1.5 md:mb-2 font-sans text-[13px] md:text-sm">Requirements & Planning</h3>
+              <p className="text-[13px] text-gray-600 font-sans">PRD, BRD, TRD, and implementation toolkit</p>
             </div>
           </div>
           

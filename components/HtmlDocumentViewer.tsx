@@ -558,8 +558,8 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <FileText className="w-5 h-5 text-blue-600 flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-gray-900 font-sans truncate">{document.name}</h3>
-              <p className="text-sm text-gray-500 font-sans truncate">
+              <h3 className="font-semibold text-[16px] md:text-lg text-gray-900 font-sans truncate">{document.name}</h3>
+              <p className="text-[13px] md:text-sm text-gray-500 font-sans truncate">
                 {document.type}
                 {document.createdAt && ` • ${new Date(document.createdAt).toLocaleDateString()}`}
               </p>
@@ -578,7 +578,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
               >
                 <ZoomOut className="w-4 h-4" />
               </Button>
-              <span className="px-2 text-sm font-medium font-sans min-w-[50px] text-center">
+              <span className="px-2 text-[13px] md:text-sm font-medium font-sans min-w-[50px] text-center">
                 {zoom}%
               </span>
               <Button
@@ -599,7 +599,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
                 size="sm"
                 onClick={handleCopyContent}
                 disabled={!htmlContent}
-                className="font-sans text-xs sm:text-sm px-2 sm:px-3"
+                className="font-sans text-[13px] sm:text-sm px-2 sm:px-3"
               >
                 <Copy className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">Copy</span>
@@ -610,7 +610,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
                 size="sm"
                 onClick={handleDownload}
                 disabled={!htmlContent || isGeneratingDoc}
-                className="font-sans text-xs sm:text-sm px-2 sm:px-3"
+                className="font-sans text-[13px] sm:text-sm px-2 sm:px-3"
               >
                 {isGeneratingDoc ? (
                   <Loader2 className="w-4 h-4 sm:mr-1 animate-spin" />
@@ -627,7 +627,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
                 size="sm"
                 onClick={handleConvertToMarkdown}
                 disabled={!htmlContent || isGeneratingMarkdown}
-                className="font-sans text-xs sm:text-sm px-2 sm:px-3"
+                className="font-sans text-[13px] sm:text-sm px-2 sm:px-3"
               >
                 {isGeneratingMarkdown ? (
                   <Loader2 className="w-4 h-4 sm:mr-1 animate-spin" />
@@ -670,20 +670,20 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-                <p className="text-gray-600 font-sans">Loading document...</p>
+                <p className="text-[13px] md:text-base text-gray-600 font-sans">Loading document...</p>
               </div>
             </div>
           ) : contentError ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md">
+              <div className="text-center max-w-md px-4">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-red-600 text-2xl">!</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 font-sans">
+                <h3 className="text-[16px] md:text-lg font-semibold text-gray-900 mb-2 font-sans">
                   Unable to Load Document
                 </h3>
-                <p className="text-gray-600 mb-4 font-sans">{contentError}</p>
-                <Button onClick={fetchHtmlContent} className="font-sans">
+                <p className="text-[13px] md:text-base text-gray-600 mb-4 font-sans">{contentError}</p>
+                <Button onClick={fetchHtmlContent} className="font-sans text-[13px] md:text-sm">
                   Try Again
                 </Button>
               </div>
@@ -696,132 +696,278 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
                     font-family: "Geist", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
                     line-height: 1.6;
                     color: #1f2937;
+                    font-size: 13px;
                   }
+                  
+                  /* Mobile-first responsive typography */
+                  @media (min-width: 768px) {
+                    .html-document-content {
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content h1 {
-                    font-size: 2.0rem;
+                    font-size: 18px;
                     font-weight: 800;
-                    margin: 2rem 0 1.5rem 0;
+                    margin: 1.5rem 0 1rem 0;
                     color: #111827;
                     line-height: 1.2;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content h1 {
+                      font-size: 2.0rem;
+                      margin: 2rem 0 1.5rem 0;
+                    }
+                  }
+                  
                   .html-document-content h2 {
-                    font-size: 1.5rem;
+                    font-size: 16px;
                     font-weight: 700;
-                    margin: 2rem 0 1rem 0;
+                    margin: 1.25rem 0 0.75rem 0;
                     color: #111827;
                     line-height: 1.3;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content h2 {
+                      font-size: 1.5rem;
+                      margin: 2rem 0 1rem 0;
+                    }
+                  }
+                  
                   .html-document-content h3 {
-                    font-size: 1.35rem;
+                    font-size: 16px;
                     font-weight: 600;
-                    margin: 1.5rem 0 0.75rem 0;
+                    margin: 1rem 0 0.5rem 0;
                     color: #111827;
                     line-height: 1.4;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content h3 {
+                      font-size: 1.35rem;
+                      margin: 1.5rem 0 0.75rem 0;
+                    }
+                  }
+                  
                   .html-document-content h4 {
-                    font-size: 1.25rem;
+                    font-size: 16px;
                     font-weight: 500;
-                    margin: 1.25rem 0 0.5rem 0;
+                    margin: 1rem 0 0.5rem 0;
                     color: #111827;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content h4 {
+                      font-size: 1.25rem;
+                      margin: 1.25rem 0 0.5rem 0;
+                    }
+                  }
+                  
                   .html-document-content h5 {
-                    font-size: 1.125rem;
+                    font-size: 13px;
                     font-weight: 500;
-                    margin: 1rem 0 0.5rem 0;
+                    margin: 0.75rem 0 0.5rem 0;
                     color: #111827;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content h5 {
+                      font-size: 1.125rem;
+                      margin: 1rem 0 0.5rem 0;
+                    }
+                  }
+                  
                   .html-document-content h6 {
-                    font-size: 1rem;
+                    font-size: 13px;
                     font-weight: 500;
-                    margin: 1rem 0 0.5rem 0;
+                    margin: 0.75rem 0 0.5rem 0;
                     color: #111827;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content h6 {
+                      font-size: 1rem;
+                      margin: 1rem 0 0.5rem 0;
+                    }
+                  }
+                  
                   .html-document-content p {
-                    margin: 1rem 0;
+                    margin: 0.75rem 0;
                     line-height: 1.7;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content p {
+                      margin: 1rem 0;
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content ul, .html-document-content ol {
-                    margin: 1rem 0;
-                    padding-left: 2rem;
+                    margin: 0.75rem 0;
+                    padding-left: 1.5rem;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content ul, .html-document-content ol {
+                      margin: 1rem 0;
+                      padding-left: 2rem;
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content li {
-                    margin: 0.5rem 0;
+                    margin: 0.375rem 0;
                     line-height: 1.6;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content li {
+                      margin: 0.5rem 0;
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin: 1.5rem 0;
+                    margin: 1rem 0;
                     border: 1px solid #e5e7eb;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content table {
+                      margin: 1.5rem 0;
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content th, .html-document-content td {
-                    padding: 0.75rem;
+                    padding: 0.5rem;
                     text-align: left;
                     border: 1px solid #e5e7eb;
                     vertical-align: top;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content th, .html-document-content td {
+                      padding: 0.75rem;
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content th {
                     background-color: #f9fafb;
                     font-weight: 600;
                   }
+                  
                   .html-document-content blockquote {
-                    margin: 1.5rem 0;
-                    padding: 1rem 1.5rem;
-                    border-left: 4px solid #3b82f6;
+                    margin: 1rem 0;
+                    padding: 0.75rem 1rem;
+                    border-left: 3px solid #3b82f6;
                     background-color: #f8fafc;
                     font-style: italic;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content blockquote {
+                      margin: 1.5rem 0;
+                      padding: 1rem 1.5rem;
+                      border-left: 4px solid #3b82f6;
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content code {
                     background-color: #f1f5f9;
                     padding: 0.125rem 0.25rem;
                     border-radius: 0.25rem;
                     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-                    font-size: 0.875em;
+                    font-size: 12px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content code {
+                      font-size: 14px;
+                    }
+                  }
+                  
                   .html-document-content pre {
                     background-color: #1e293b;
                     color: #e2e8f0;
-                    padding: 1rem;
+                    padding: 0.75rem;
                     border-radius: 0.5rem;
                     overflow-x: auto;
-                    margin: 1.5rem 0;
+                    margin: 1rem 0;
+                    font-size: 12px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content pre {
+                      padding: 1rem;
+                      margin: 1.5rem 0;
+                      font-size: 14px;
+                    }
+                  }
+                  
                   .html-document-content pre code {
                     background-color: transparent;
                     padding: 0;
                     color: inherit;
                   }
+                  
                   .html-document-content a {
                     color: #3b82f6;
                     text-decoration: underline;
+                    font-size: 13px;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content a {
+                      font-size: 16px;
+                    }
+                  }
+                  
                   .html-document-content a:hover {
                     color: #1d4ed8;
                   }
+                  
                   .html-document-content strong, .html-document-content b {
                     font-weight: 600;
                   }
+                  
                   .html-document-content em, .html-document-content i {
                     font-style: italic;
                   }
+                  
                   .html-document-content hr {
-                    margin: 2rem 0;
+                    margin: 1.5rem 0;
                     border: none;
                     border-top: 1px solid #e5e7eb;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content hr {
+                      margin: 2rem 0;
+                    }
+                  }
+                  
                   .html-document-content img {
                     max-width: 100%;
                     height: auto;
-                    margin: 1rem 0;
+                    margin: 0.75rem 0;
                   }
+                  @media (min-width: 768px) {
+                    .html-document-content img {
+                      margin: 1rem 0;
+                    }
+                  }
+                  
                   .html-document-content div, .html-document-content section {
-                    margin: 0.5rem 0;
+                    margin: 0.375rem 0;
+                  }
+                  @media (min-width: 768px) {
+                    .html-document-content div, .html-document-content section {
+                      margin: 0.5rem 0;
+                    }
                   }
                 `
               }} />
               <div
                 ref={contentRef}
-                className="html-document-content p-8"
+                className="html-document-content p-4 md:p-8"
                 style={{
                   transform: `scale(${zoom / 100})`,
                   transformOrigin: 'top left',
@@ -836,7 +982,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 font-sans">No content available</p>
+                <p className="text-[13px] md:text-base text-gray-500 font-sans">No content available</p>
               </div>
             </div>
           )}
