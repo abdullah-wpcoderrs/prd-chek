@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MultiStepForm } from "@/components/MultiStepForm";
+import { PromptInterface } from "@/components/PromptInterface";
 import { createProjectAndStartGeneration } from "@/lib/actions/project.actions";
 import { ProductManagerFormData } from "@/types";
-import { Sparkles, FileText, Loader2, X } from "lucide-react";
+import { Sparkles, FileText, Loader2, X, MessageSquare, FormInput } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/use-toast";
@@ -26,6 +28,7 @@ export default function DashboardPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [initialFormData, setInitialFormData] = useState<ProductManagerFormData | null>(null);
+  const [activeTab, setActiveTab] = useState<"form" | "prompt">("form");
 
 
 
@@ -218,12 +221,34 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Multi-Step Form */}
-        <MultiStepForm 
-          onSubmit={handleFormSubmit}
-          isSubmitting={isGenerating}
-          initialData={initialFormData}
-        />
+        {/* Tab Navigation */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "form" | "prompt")} className="max-w-4xl mx-auto">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="form" className="flex items-center gap-2">
+              <FormInput className="w-4 h-4" />
+              Form Tab
+            </TabsTrigger>
+            <TabsTrigger value="prompt" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Prompt Tab
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="form" className="mt-0">
+            <MultiStepForm 
+              onSubmit={handleFormSubmit}
+              isSubmitting={isGenerating}
+              initialData={initialFormData}
+            />
+          </TabsContent>
+
+          <TabsContent value="prompt" className="mt-0">
+            <PromptInterface
+              onApprove={handleFormSubmit}
+              isSubmitting={isGenerating}
+            />
+          </TabsContent>
+        </Tabs>
 
         {/* Brief Process Overview */}
         <div className="max-w-4xl mx-auto mt-16">

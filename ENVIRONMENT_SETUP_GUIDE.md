@@ -30,6 +30,11 @@ NODE_ENV=development
 NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/generate-docs
 NEXT_PUBLIC_N8N_STATUS_WEBHOOK_URL=https://your-n8n-instance.com/webhook/status
 
+# OpenAI Configuration (Required for AI Prompt Tab)
+OPENAI_API_KEY=sk-your_openai_api_key_here
+OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MAX_TOKENS=2000
+
 # Debug Settings
 NEXT_PUBLIC_DEBUG_WEBHOOKS=false
 ```
