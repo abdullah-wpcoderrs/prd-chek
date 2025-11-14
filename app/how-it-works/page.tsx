@@ -16,11 +16,11 @@ export default function HowItWorksPage() {
             Complete Documentation Pipeline
           </div>
           
-          <h1 className="text-[18px] md:text-4xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 font-sans px-4">
+          <h1 className="text-[18px] md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 font-sans px-4">
             How PRD-CHEK Works
           </h1>
           
-          <p className="text-[13px] md:text-xl text-gray-600 max-w-4xl mx-auto font-sans leading-relaxed px-4">
+          <p className="text-[13px] md:text-base text-gray-600 max-w-4xl mx-auto font-sans leading-relaxed px-4">
             Transform product ideas into comprehensive, AI-ready documentation through our proven 3-stage methodology designed specifically for technical product managers and context engineers.
           </p>
         </div>
@@ -71,10 +71,10 @@ export default function HowItWorksPage() {
 
         {/* Complete Documentation Suite in 3 Stages */}
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-[18px] md:text-3xl font-bold text-gray-900 mb-3 md:mb-4 text-center font-sans px-4">
+          <h2 className="text-[18px] md:text-xl font-bold text-gray-900 mb-3 md:mb-4 text-center font-sans px-4">
             Complete Documentation Suite in 3 Stages
           </h2>
-          <p className="text-[13px] md:text-base text-gray-600 text-center mb-8 md:mb-12 font-sans px-4">
+          <p className="text-[13px] md:text-sm text-gray-600 text-center mb-8 md:mb-12 font-sans px-4">
             Each stage builds on the previous, creating a comprehensive development roadmap that enables seamless product-to-engineering handoff
           </p>
           

@@ -609,8 +609,8 @@ Target Platform: ${project.target_platform}`;
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
             <div>
-              <h1 className="text-[18px] md:text-4xl font-bold text-gray-900 font-sans">My Projects</h1>
-              <p className="text-[13px] md:text-lg text-gray-600 mt-1 md:mt-2 font-sans">
+              <h1 className="text-[18px] md:text-2xl font-bold text-gray-900 font-sans">My Projects</h1>
+              <p className="text-[13px] md:text-base text-gray-600 mt-1 md:mt-2 font-sans">
                 Manage your generated documentation projects
               </p>
             </div>

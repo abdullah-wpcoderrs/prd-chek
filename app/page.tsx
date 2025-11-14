@@ -16,11 +16,11 @@ export default function HomePage() {
               AI-Powered Documentation Generator for Technical Product Managers
             </div>
 
-            <h1 className="text-[18px] md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 md:mb-6 font-sans leading-tight">
+            <h1 className="text-[18px] md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-sans leading-tight">
               PRD-CHEK
             </h1>
 
-            <p className="text-[13px] md:text-xl lg:text-2xl text-gray-600 mb-6 md:mb-8 max-w-4xl mx-auto font-sans leading-relaxed px-4">
+            <p className="text-[13px] md:text-base text-gray-600 mb-6 md:mb-8 max-w-4xl mx-auto font-sans leading-relaxed px-4">
               Transform product concepts into comprehensive, AI-ready documentation suites.
               The essential toolkit for <span className="font-semibold text-gray-900">Technical Product Managers</span> and <span className="font-semibold text-gray-900">Context Engineers</span> building next-generation products.
             </p>
@@ -75,10 +75,10 @@ export default function HomePage() {
       <section id="features" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 md:mb-16 px-4">
-            <h2 className="text-[18px] md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 font-sans">
+            <h2 className="text-[18px] md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 font-sans">
               Documentation Suite for Technical Teams
             </h2>
-            <p className="text-[13px] md:text-xl text-gray-600 max-w-3xl mx-auto font-sans">
+            <p className="text-[13px] md:text-base text-gray-600 max-w-3xl mx-auto font-sans">
               Generate comprehensive, stakeholder-ready documentation that bridges the gap between product vision and technical implementation
             </p>
           </div>
@@ -131,10 +131,10 @@ export default function HomePage() {
       <section id="how-it-works" className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 md:mb-16 px-4">
-            <h2 className="text-[18px] md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 font-sans">
+            <h2 className="text-[18px] md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 font-sans">
               3-Stage Documentation Process
             </h2>
-            <p className="text-[13px] md:text-xl text-gray-600 max-w-3xl mx-auto font-sans">
+            <p className="text-[13px] md:text-base text-gray-600 max-w-3xl mx-auto font-sans">
               From product concept to implementation-ready specifications in minutes
             </p>
           </div>
@@ -192,10 +192,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="px-4">
-              <h2 className="text-[18px] md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 font-sans">
+              <h2 className="text-[18px] md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 font-sans">
                 Built for Technical Product Management
               </h2>
-              <p className="text-[13px] md:text-xl text-gray-600 mb-6 md:mb-8 font-sans leading-relaxed">
+              <p className="text-[13px] md:text-base text-gray-600 mb-6 md:mb-8 font-sans leading-relaxed">
                 Designed specifically for technical product managers and context engineers who need comprehensive documentation that bridges product vision with engineering implementation.
               </p>
 
@@ -264,10 +264,10 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-12 md:py-20 px-4 text-white" style={{ background: `linear-gradient(to right, var(--steel-blue-600), var(--steel-blue-700))` }}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-[18px] md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 font-sans">
+          <h2 className="text-[18px] md:text-2xl font-bold mb-4 md:mb-6 font-sans">
             Ready to Accelerate Your Product Development?
           </h2>
-          <p className="text-[13px] md:text-xl mb-6 md:mb-8 font-sans" style={{ color: 'var(--steel-blue-100)' }}>
+          <p className="text-[13px] md:text-base mb-6 md:mb-8 font-sans" style={{ color: 'var(--steel-blue-100)' }}>
             Join technical product managers who trust PRD-CHEK for comprehensive, stakeholder-ready documentation
           </p>
 
