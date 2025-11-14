@@ -11,7 +11,8 @@ import {
   Loader2,
   FileText,
   Minimize,
-  Copy
+  Copy,
+  FileDown
 } from "lucide-react";
 import { useSupabase } from "@/lib/hooks/useSupabase";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -38,6 +39,7 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
   const [loadingContent, setLoadingContent] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
   const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
+  const [isGeneratingMarkdown, setIsGeneratingMarkdown] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const supabase = useSupabase();
   const { user } = useAuth();
@@ -452,6 +454,76 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
     }
   };
 
+  const handleConvertToMarkdown = async () => {
+    if (!htmlContent) {
+      toast({
+        title: "Conversion failed",
+        description: "No content available to convert.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingMarkdown(true);
+    
+    try {
+      toast({
+        title: "Converting to Markdown",
+        description: "Please wait while we prepare your markdown file...",
+        variant: "default",
+      });
+
+      // Parse the HTML content to extract body
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      const bodyContent = doc.body.innerHTML;
+
+      // Call the API to convert HTML to Markdown
+      const response = await fetch('/api/documents/convert-to-markdown', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          htmlContent: bodyContent,
+          documentName: document.name,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to convert to markdown');
+      }
+
+      const { markdown, filename } = await response.json();
+
+      // Create download link for markdown file
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Markdown file downloaded",
+        description: `${filename} has been downloaded successfully.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Markdown conversion error:', error);
+      toast({
+        title: "Conversion failed",
+        description: error instanceof Error ? error.message : "Failed to convert to markdown. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingMarkdown(false);
+    }
+  };
+
 
 
   const toggleFullscreen = () => {
@@ -546,7 +618,24 @@ export function HtmlDocumentViewer({ document, isOpen, onClose }: HtmlDocumentVi
                   <Download className="w-4 h-4 sm:mr-1" />
                 )}
                 <span className="hidden sm:inline">
-                  {isGeneratingDoc ? "Generating..." : "Download"}
+                  {isGeneratingDoc ? "Word" : "Word"}
+                </span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleConvertToMarkdown}
+                disabled={!htmlContent || isGeneratingMarkdown}
+                className="font-sans text-xs sm:text-sm px-2 sm:px-3"
+              >
+                {isGeneratingMarkdown ? (
+                  <Loader2 className="w-4 h-4 sm:mr-1 animate-spin" />
+                ) : (
+                  <FileDown className="w-4 h-4 sm:mr-1" />
+                )}
+                <span className="hidden sm:inline">
+                  {isGeneratingMarkdown ? "Converting..." : "Markdown"}
                 </span>
               </Button>
 
