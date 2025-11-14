@@ -136,7 +136,7 @@ export function PromptInterface({ onApprove, isSubmitting = false }: PromptInter
           <h2 className="text-2xl font-bold text-gray-900">AI Project Assistant</h2>
         </div>
         <p className="text-gray-600">
-          Describe your project idea and I'll help you create a comprehensive outline.
+          Describe your project idea and I&apos;ll help you create a comprehensive outline.
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export function PromptInterface({ onApprove, isSubmitting = false }: PromptInter
           <Card className="p-8 text-center border-dashed">
             <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Let's get started!
+              Let&apos;s get started!
             </h3>
             <p className="text-gray-600 mb-4">
               Tell me about your project. Include details like:
